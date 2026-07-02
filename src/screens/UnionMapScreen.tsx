@@ -7,6 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
+import TopNav from '../components/TopNav';
 import ScreenHeader from '../components/ScreenHeader';
 import { api, type ElderAudio, type MapConnection } from '../api/client';
 import { useSession } from '../context/SessionContext';
@@ -68,6 +69,7 @@ export default function UnionMapScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <TopNav currentStep={5} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ScreenHeader
           stepLabel="Hatua 5 ya 5 — Ramani Hai ya Muungano"
@@ -152,7 +154,7 @@ export default function UnionMapScreen({ navigation }: Props) {
             variant="ghost"
             onPress={() => {
               clearSession();
-              navigation.navigate('Onboarding');
+              navigation.navigate('Landing');
             }}
           />
         </View>

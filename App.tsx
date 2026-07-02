@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './src/navigation/types';
 
+import LandingScreen from './src/screens/LandingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import MatchingScreen from './src/screens/MatchingScreen';
 import MissionChatScreen from './src/screens/MissionChatScreen';
@@ -19,9 +20,10 @@ export default function App() {
     <SessionProvider>
       <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Onboarding"
+        initialRouteName="Landing"
         screenOptions={{ headerShown: false }}
       >
+        <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Matching" component={MatchingScreen} />
         <Stack.Screen name="MissionChat" component={MissionChatScreen} />

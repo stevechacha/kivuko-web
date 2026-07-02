@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
-import ScreenHeader from '../components/ScreenHeader';
+import TopNav from '../components/TopNav';
 import { api, type MatchResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
 
@@ -75,8 +75,9 @@ export default function MatchingScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <TopNav currentStep={2} />
       <View style={styles.content}>
-        <ScreenHeader stepLabel="Hatua 2 ya 5 — Kiungo cha Kivuko" title="" />
+        <Text style={styles.eyebrow}>Hatua 2 ya 5 — Kiungo cha Kivuko</Text>
 
         {error ? (
           <Text style={styles.errorText}>{error}</Text>
@@ -142,7 +143,8 @@ export default function MatchingScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  content: { flex: 1, padding: spacing.lg, justifyContent: 'center' },
+  content: { flex: 1, padding: spacing.lg, justifyContent: 'center', maxWidth: 720, width: '100%', alignSelf: 'center' },
+  eyebrow: { fontSize: 12.5, letterSpacing: 1.8, textTransform: 'uppercase', fontWeight: '700', color: colors.greenDeep, marginBottom: spacing.md },
   loadingWrap: { alignItems: 'center' },
   radarCore: {
     width: 84,
