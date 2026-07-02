@@ -1,7 +1,7 @@
 // screens/MatchingScreen.tsx
 // Step 2 of 5 — Automated Peer Matching ("The Bridge Engine")
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, SafeAreaView, Pressable } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
@@ -80,7 +80,12 @@ export default function MatchingScreen({ route, navigation }: Props) {
         <Text style={styles.eyebrow}>Hatua 2 ya 5 — Kiungo cha Kivuko</Text>
 
         {error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <View style={styles.errorWrap}>
+            <Text style={styles.errorText}>{error}</Text>
+            <Pressable onPress={() => navigation.navigate('Onboarding')}>
+              <Text style={styles.errorLink}>Rudi kwenye Usajili →</Text>
+            </Pressable>
+          </View>
         ) : !matched ? (
           <View style={styles.loadingWrap}>
             <Animated.View style={[styles.radarCore, { opacity: pulse, transform: [{ scale: pulse }] }]}>
@@ -167,5 +172,7 @@ const styles = StyleSheet.create({
   avatarTag: { fontSize: 11, fontWeight: '700', marginTop: 8, textTransform: 'uppercase' },
   bridgeMini: { width: 48, height: 2, backgroundColor: colors.gold, opacity: 0.7 },
   muted: { fontSize: 13.5, color: colors.textMuted, textAlign: 'center', maxWidth: 300 },
+  errorWrap: { alignItems: 'center', gap: 12 },
   errorText: { color: colors.danger, textAlign: 'center', fontSize: 14 },
+  errorLink: { color: colors.blue, fontWeight: '700', fontSize: 14 },
 });
