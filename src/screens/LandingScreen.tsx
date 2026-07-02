@@ -1,6 +1,6 @@
 // screens/LandingScreen.tsx
 // Screen 0 — Hero landing (design: screen-landing)
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,17 +17,50 @@ import { colors, spacing, radius } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import BridgeIllustration from '../components/BridgeIllustration';
 import Button from '../components/Button';
+import ContinueSessionBanner from '../components/ContinueSessionBanner';
+import { api, type ElderAudio } from '../api/client';
+import { API_BASE_URL } from '../config/api';
+import { playAudioUrl, stopActiveAudio } from '../utils/audio';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
+const FEATURED_AUDIO: ElderAudio = {
+  id: 'featured',
+  name: 'Mwalimu Nyerere',
+  area: 'Taifa',
+  duration_label: 'Klipu ya kihistoria, sekunde 10',
+};
+
 export default function LandingScreen({ navigation }: Props) {
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [featuredAudio, setFeaturedAudio] = useState<ElderAudio>(FEATURED_AUDIO);
+  const [apiOnline, setApiOnline] = useState<boolean | null>(null);
   const { width } = useWindowDimensions();
   const isWide = width >= 820;
 
+  useEffect(() => {
+    api.health().then(() => setApiOnline(true)).catch(() => setApiOnline(false));
+    api.getAudioArchive()
+      .then((items) => {
+        if (items[0]) setFeaturedAudio(items[0]);
+      })
+      .catch(() => {
+        // keep default featured clip label
+      });
+  }, []);
+
   const toggleAudio = () => {
+    if (audioPlaying) {
+      stopActiveAudio();
+      setAudioPlaying(false);
+      return;
+    }
+
+    const started = featuredAudio.audio_url ? playAudioUrl(featuredAudio.audio_url) : false;
     setAudioPlaying(true);
-    setTimeout(() => setAudioPlaying(false), 2600);
+    if (!started) {
+      setTimeout(() => setAudioPlaying(false), 2600);
+    }
   };
 
   return (
@@ -54,6 +87,7 @@ export default function LandingScreen({ navigation }: Props) {
                 onPress={() => navigation.navigate('UnionMap')}
               />
             </View>
+            <ContinueSessionBanner navigation={navigation} />
             <Pressable style={styles.audioWidget} onPress={toggleAudio}>
               <View style={styles.audioPlay}>
                 <Text style={{ color: colors.white, fontSize: 14 }}>
@@ -61,8 +95,10 @@ export default function LandingScreen({ navigation }: Props) {
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.audioTitle}>Sauti ya Umoja — Mwalimu Nyerere</Text>
-                <Text style={styles.audioSub}>Klipu ya kihistoria, sekunde 10</Text>
+                <Text style={styles.audioTitle}>
+                  Sauti ya Umoja — {featuredAudio.name}
+                </Text>
+                <Text style={styles.audioSub}>{featuredAudio.duration_label}</Text>
               </View>
               <View style={styles.audioBars}>
                 {[0, 1, 2, 3].map((i) => (
@@ -77,6 +113,7 @@ export default function LandingScreen({ navigation }: Props) {
         </View>
         <Text style={styles.footer}>
           Kivuko la Muungano Hub — Onyesho la MVP · Elimu ya Muungano Ubunifu Challenge 2026
+          {apiOnline === false ? `\nAPI haipatikani (${API_BASE_URL})` : ''}
         </Text>
       </ScrollView>
     </SafeAreaView>

@@ -11,6 +11,7 @@ import TopNav from '../components/TopNav';
 import ScreenHeader from '../components/ScreenHeader';
 import { api, type ElderAudio, type MapConnection } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { playAudioUrl, stopActiveAudio } from '../utils/audio';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UnionMap'>;
 
@@ -42,6 +43,7 @@ export default function UnionMapScreen({ navigation }: Props) {
   const [connections, setConnections] = useState<MapConnection[]>([]);
   const [audioArchive, setAudioArchive] = useState<ElderAudio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -53,6 +55,8 @@ export default function UnionMapScreen({ navigation }: Props) {
         });
         setConnections(mapStats.connections);
         setAudioArchive(audio);
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : 'Imeshindwa kupakia ramani.');
       } finally {
         setLoading(false);
       }
@@ -60,9 +64,20 @@ export default function UnionMapScreen({ navigation }: Props) {
     load();
   }, []);
 
-  const handlePlay = (id: string) => {
-    setPlayingId(id);
-    setTimeout(() => setPlayingId((cur) => (cur === id ? null : cur)), 2600);
+  const handlePlay = (item: ElderAudio) => {
+    if (playingId === item.id) {
+      stopActiveAudio();
+      setPlayingId(null);
+      return;
+    }
+
+    if (item.audio_url && playAudioUrl(item.audio_url)) {
+      setPlayingId(item.id);
+      return;
+    }
+
+    setPlayingId(item.id);
+    setTimeout(() => setPlayingId((cur) => (cur === item.id ? null : cur)), 2600);
   };
 
   const mapLines = buildConnections(connections);
@@ -78,6 +93,8 @@ export default function UnionMapScreen({ navigation }: Props) {
 
         {loading ? (
           <ActivityIndicator color={colors.green} style={{ marginTop: spacing.xl }} />
+        ) : loadError ? (
+          <Text style={styles.errorText}>{loadError}</Text>
         ) : (
           <>
             <View style={styles.mapCard}>
@@ -135,7 +152,7 @@ export default function UnionMapScreen({ navigation }: Props) {
               </Text>
               {audioArchive.map((a) => (
                 <View key={a.id} style={styles.archiveItem}>
-                  <Pressable style={styles.archivePlay} onPress={() => handlePlay(a.id)}>
+                  <Pressable style={styles.archivePlay} onPress={() => handlePlay(a)}>
                     <Text style={{ color: colors.white, fontSize: 12 }}>{playingId === a.id ? '⏸' : '▶'}</Text>
                   </Pressable>
                   <View>
@@ -188,4 +205,5 @@ const styles = StyleSheet.create({
   archivePlay: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.blue, alignItems: 'center', justifyContent: 'center' },
   archiveName: { fontSize: 13.5, fontWeight: '700', color: colors.dark },
   archiveMeta: { fontSize: 11, color: colors.textMuted },
+  errorText: { color: colors.danger, fontSize: 14, marginTop: spacing.lg, textAlign: 'center' },
 });

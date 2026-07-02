@@ -15,6 +15,7 @@ interface SessionState {
   missionId: string | null;
   matchId: string | null;
   setParticipant: (p: Participant | null) => void;
+  updateParticipant: (patch: Partial<Participant>) => void;
   setMission: (missionId: string, matchId: string) => void;
   clearSession: () => void;
   hydrated: boolean;
@@ -58,7 +59,27 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const setParticipant = useCallback(
     (p: Participant | null) => {
       setParticipantState(p);
-      persist({ participant: p, missionId, matchId });
+      if (!p) {
+        setMissionId(null);
+        setMatchId(null);
+        persist({ participant: null, missionId: null, matchId: null });
+        return;
+      }
+      setMissionId(null);
+      setMatchId(null);
+      persist({ participant: p, missionId: null, matchId: null });
+    },
+    [persist],
+  );
+
+  const updateParticipant = useCallback(
+    (patch: Partial<Participant>) => {
+      setParticipantState((prev) => {
+        if (!prev) return prev;
+        const next = { ...prev, ...patch };
+        persist({ participant: next, missionId, matchId });
+        return next;
+      });
     },
     [matchId, missionId, persist],
   );
@@ -85,11 +106,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       missionId,
       matchId,
       setParticipant,
+      updateParticipant,
       setMission,
       clearSession,
       hydrated,
     }),
-    [participant, missionId, matchId, setParticipant, setMission, clearSession, hydrated],
+    [participant, missionId, matchId, setParticipant, updateParticipant, setMission, clearSession, hydrated],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

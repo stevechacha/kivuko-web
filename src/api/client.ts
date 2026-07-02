@@ -1,4 +1,4 @@
-import { API_V1 } from '../config/api';
+import { API_BASE_URL, API_V1 } from '../config/api';
 
 export class ApiError extends Error {
   status: number;
@@ -132,7 +132,29 @@ export interface ElderAudio {
   audio_url?: string;
 }
 
+export interface HealthResponse {
+  status: string;
+  service: string;
+}
+
+export interface CertificateVerifyResponse {
+  valid: boolean;
+  certificate?: Certificate;
+  detail?: string;
+}
+
 export const api = {
+  health() {
+    return fetch(`${API_BASE_URL}/health/`).then(async (res) => {
+      const body = (await res.json().catch(() => ({}))) as HealthResponse;
+      if (!res.ok) throw new ApiError('API health check failed', res.status);
+      return body;
+    });
+  },
+
+  verifyCertificate(certCode: string) {
+    return request<CertificateVerifyResponse>(`/certificates/verify/${encodeURIComponent(certCode)}`);
+  },
   register(data: {
     name: string;
     phone: string;

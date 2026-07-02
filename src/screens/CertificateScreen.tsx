@@ -26,8 +26,10 @@ function useMockQrGrid(seed: string) {
 }
 
 export default function CertificateScreen({ route, navigation }: Props) {
-  const { userName, missionId } = route.params;
-  const { participant } = useSession();
+  const { userName: routeUserName, missionId: routeMissionId } = route.params ?? {};
+  const { participant, missionId: sessionMissionId } = useSession();
+  const missionId = routeMissionId || sessionMissionId;
+  const userName = routeUserName || participant?.name || 'Mzalendo';
   const [generated, setGenerated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [certCode, setCertCode] = useState('');
@@ -38,6 +40,10 @@ export default function CertificateScreen({ route, navigation }: Props) {
   const qrCells = useMockQrGrid(certCode || 'pending');
 
   const handleGenerate = async () => {
+    if (!missionId) {
+      setError('Hakuna dhamira iliyopatikana. Kamilisha dhamira kwanza.');
+      return;
+    }
     if (!participant?.session_token) {
       setError('Kipindi kimeisha. Tafadhali jisajili tena.');
       return;

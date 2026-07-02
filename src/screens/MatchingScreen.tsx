@@ -19,8 +19,10 @@ const FALLBACK_STATUS = [
 ];
 
 export default function MatchingScreen({ route, navigation }: Props) {
-  const { name, region: userRegion } = route.params;
+  const { name: routeName, region: routeRegion } = route.params ?? {};
   const { participant, setMission } = useSession();
+  const name = routeName || participant?.name || 'Mzalendo';
+  const userRegion = routeRegion || participant?.region || 'bara';
   const [matched, setMatched] = useState(false);
   const [statusIndex, setStatusIndex] = useState(0);
   const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);

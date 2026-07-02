@@ -19,14 +19,16 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import TopNav from '../components/TopNav';
-import { api, type ChatMessage, type QuizQuestion } from '../api/client';
+import { api, type ChatMessage, type QuizQuestion, type QuizSubmitResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionChat'>;
 
 export default function MissionChatScreen({ route, navigation }: Props) {
-  const { userName, missionId } = route.params;
-  const { participant } = useSession();
+  const { userName: routeUserName, missionId: routeMissionId } = route.params ?? {};
+  const { participant, missionId: sessionMissionId, updateParticipant } = useSession();
+  const missionId = routeMissionId || sessionMissionId;
+  const userName = routeUserName || participant?.name || 'Mzalendo';
   const { width } = useWindowDimensions();
   const isWide = width >= 760;
   const chatScrollRef = useRef<ScrollView>(null);
@@ -38,9 +40,18 @@ export default function MissionChatScreen({ route, navigation }: Props) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [rewardVisible, setRewardVisible] = useState(false);
   const [sending, setSending] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(null);
 
   useEffect(() => {
+    if (!missionId) {
+      setLoadError('Hakuna dhamira iliyopatikana. Tafadhali fanya uoanishaji kwanza.');
+      setLoading(false);
+      return;
+    }
+
     const load = async () => {
+      setLoadError(null);
       try {
         const [chat, questions] = await Promise.all([
           participant?.session_token
@@ -50,6 +61,11 @@ export default function MissionChatScreen({ route, navigation }: Props) {
         ]);
         setMessages(chat);
         setQuiz(questions);
+        if (!participant?.session_token) {
+          setLoadError('Kipindi kimeisha. Tafadhali jisajili tena ili kuendelea.');
+        }
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : 'Imeshindwa kupakia dhamira.');
       } finally {
         setLoading(false);
       }
@@ -81,11 +97,15 @@ export default function MissionChatScreen({ route, navigation }: Props) {
     if (Object.keys(updated).length === quiz.length) {
       try {
         const result = await api.submitQuiz(missionId, updated, participant.session_token);
+        setQuizResult(result);
         if (result.completed) {
+          updateParticipant({
+            patriotism_points: (participant.patriotism_points || 0) + result.patriotism_points,
+          });
           setTimeout(() => setRewardVisible(true), 500);
         }
-      } catch {
-        setTimeout(() => setRewardVisible(true), 500);
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : 'Imeshindwa kuwasilisha majibu.');
       }
     }
   };
@@ -94,6 +114,20 @@ export default function MissionChatScreen({ route, navigation }: Props) {
     return (
       <SafeAreaView style={[styles.safe, styles.centered]}>
         <ActivityIndicator color={colors.green} size="large" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!missionId || loadError) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <TopNav currentStep={3} />
+        <View style={[styles.page, styles.centered, { flex: 1, paddingTop: 40 }]}>
+          <Text style={styles.errorText}>{loadError || 'Dhamira haipatikani.'}</Text>
+          <View style={{ marginTop: 16 }}>
+            <Button label="Rudi kwenye Usajili" onPress={() => navigation.navigate('Onboarding')} />
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
@@ -212,10 +246,14 @@ export default function MissionChatScreen({ route, navigation }: Props) {
             </Text>
             <View style={styles.rewardPillRow}>
               <View style={styles.rewardPill}>
-                <Text style={styles.rewardPillText}>🎁 TZS 500 Vocha ya Hewa</Text>
+                <Text style={styles.rewardPillText}>
+                  🎁 TZS {quizResult?.airtime_reward_tzs ?? 500} Vocha ya Hewa
+                </Text>
               </View>
               <View style={styles.rewardPill}>
-                <Text style={styles.rewardPillText}>⭐ Pointi 50 za Uzalendo</Text>
+                <Text style={styles.rewardPillText}>
+                  ⭐ Pointi {quizResult?.patriotism_points ?? 50} za Uzalendo
+                </Text>
               </View>
             </View>
             <View style={{ marginTop: 22 }}>
@@ -490,4 +528,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   rewardPillText: { fontSize: 13, fontWeight: '700', color: '#7A5E00' },
+  errorText: { color: colors.danger, fontSize: 14, textAlign: 'center', lineHeight: 20 },
 });
