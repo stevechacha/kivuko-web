@@ -1,5 +1,21 @@
 # Railway deploy — kivuko-web
 
+## 502 fix (most common)
+
+Your deploy logs show the app listening on one port, but **Networking** routes
+to another. They must match.
+
+Example from logs:
+```
+Kivuko web listening on 0.0.0.0:8080   ← app port
+Networking → Port 8081                   ← WRONG → causes 502
+```
+
+**Fix:** kivuko-web → **Settings → Networking** → click **⋮** on your domain →
+change port to **8080** (same number as in deploy logs) → Save.
+
+Or delete the domain and **Generate Domain** again (Railway auto-detects PORT).
+
 ## If build keeps failing
 
 1. **Pay Railway balance** (past-due banner blocks deploys).

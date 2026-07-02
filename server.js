@@ -62,4 +62,11 @@ const port = Number(process.env.PORT) || 3000;
 
 server.listen(port, '0.0.0.0', () => {
   console.log(`Kivuko web listening on 0.0.0.0:${port}`);
+  console.log(`Health check: http://0.0.0.0:${port}/`);
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    console.log(`Public URL: https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
+    console.log(
+      'IMPORTANT: Railway Networking port must match PORT above (Settings → Networking).',
+    );
+  }
 });
