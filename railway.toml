@@ -1,8 +1,8 @@
 [build]
-buildCommand = "npm install && npm run build"
+buildCommand = "npm ci && npm run build"
 
 [deploy]
-startCommand = "sh scripts/start.sh"
+startCommand = "node server.js"
 healthcheckPath = "/"
-healthcheckTimeout = 120
+healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
