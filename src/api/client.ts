@@ -1,0 +1,179 @@
+import { API_V1 } from '../config/api';
+
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  token?: string | null,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> | undefined),
+  };
+  if (token) {
+    headers['X-Session-Token'] = token;
+  }
+
+  const res = await fetch(`${API_V1}${path}`, { ...options, headers });
+  const body = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new ApiError(body.detail || body.message || 'Request failed', res.status);
+  }
+  return body as T;
+}
+
+export interface Participant {
+  id: string;
+  name: string;
+  phone: string;
+  college: string;
+  home_area: string;
+  region: 'bara' | 'visiwani';
+  region_label: string;
+  initials: string;
+  patriotism_points: number;
+  session_token: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  participant: Participant;
+}
+
+export interface Peer {
+  id: string;
+  name: string;
+  initials: string;
+  region: 'bara' | 'visiwani';
+  region_label: string;
+  home_area: string;
+}
+
+export interface MatchResponse {
+  match_id: string;
+  mission_id: string;
+  peer: Peer;
+  status_messages: string[];
+}
+
+export interface ChatMessage {
+  id: string;
+  from_role: 'me' | 'peer' | 'system';
+  text: string;
+  created_at?: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correct_index: number;
+}
+
+export interface QuizSubmitResponse {
+  completed: boolean;
+  score: number;
+  total_questions: number;
+  patriotism_points: number;
+  airtime_reward_tzs: number;
+  message: string;
+}
+
+export interface Certificate {
+  cert_code: string;
+  user_name: string;
+  verify_url: string;
+  issued_date: string;
+}
+
+export interface MapConnection {
+  id: string;
+  from_region: string;
+  to_region: string;
+}
+
+export interface MapStats {
+  pairs_today: number;
+  regions_active: number;
+  connections: MapConnection[];
+}
+
+export interface ElderAudio {
+  id: string;
+  name: string;
+  area: string;
+  duration_label: string;
+  audio_url?: string;
+}
+
+export const api = {
+  register(data: {
+    name: string;
+    phone: string;
+    college: string;
+    home_area: string;
+    region: 'bara' | 'visiwani';
+  }) {
+    return request<RegisterResponse>('/users/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  match(token: string) {
+    return request<MatchResponse>(
+      '/matching/match',
+      { method: 'POST', body: '{}' },
+      token,
+    );
+  },
+
+  getChat(missionId: string, token: string) {
+    return request<ChatMessage[]>(`/missions/${missionId}/chat`, {}, token);
+  },
+
+  sendMessage(missionId: string, text: string, token: string) {
+    return request<{ sent: ChatMessage; reply: ChatMessage }>(
+      `/missions/${missionId}/chat`,
+      { method: 'POST', body: JSON.stringify({ text }) },
+      token,
+    );
+  },
+
+  getQuizQuestions() {
+    return request<QuizQuestion[]>('/quiz/questions');
+  },
+
+  submitQuiz(missionId: string, answers: Record<string, number>, token: string) {
+    return request<QuizSubmitResponse>(
+      `/missions/${missionId}/quiz/submit`,
+      { method: 'POST', body: JSON.stringify({ answers }) },
+      token,
+    );
+  },
+
+  generateCertificate(missionId: string, token: string) {
+    return request<Certificate>(
+      '/certificates/generate',
+      { method: 'POST', body: JSON.stringify({ mission_id: missionId }) },
+      token,
+    );
+  },
+
+  getMapStats() {
+    return request<MapStats>('/map/stats');
+  },
+
+  getAudioArchive() {
+    return request<ElderAudio[]>('/audio/archive');
+  },
+};
