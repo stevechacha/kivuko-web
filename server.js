@@ -2,7 +2,6 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = Number(process.env.PORT) || 3000;
 const DIST = path.join(__dirname, 'dist');
 
 const MIME = {
@@ -48,10 +47,19 @@ const server = http.createServer((req, res) => {
 });
 
 if (!fs.existsSync(path.join(DIST, 'index.html'))) {
-  console.error('ERROR: dist/index.html not found. Run: npm run build');
+  console.error('ERROR: dist/index.html not found.');
+  console.error('CWD:', process.cwd());
+  console.error('DIST:', DIST);
+  try {
+    console.error('dist contents:', fs.readdirSync(DIST));
+  } catch (e) {
+    console.error('dist folder missing');
+  }
   process.exit(1);
 }
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Kivuko web listening on 0.0.0.0:${PORT}`);
+const port = Number(process.env.PORT) || 3000;
+
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Kivuko web listening on 0.0.0.0:${port}`);
 });
