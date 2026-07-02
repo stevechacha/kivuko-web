@@ -22,13 +22,30 @@ async function request<T>(
     headers['X-Session-Token'] = token;
   }
 
-  const res = await fetch(`${API_V1}${path}`, { ...options, headers });
-  const body = await res.json().catch(() => ({}));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
 
-  if (!res.ok) {
-    throw new ApiError(body.detail || body.message || 'Request failed', res.status);
+  try {
+    const res = await fetch(`${API_V1}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    const body = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new ApiError(body.detail || body.message || 'Request failed', res.status);
+    }
+    return body as T;
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new ApiError('Server is taking too long to respond. Check the API URL.', 408);
+    }
+    throw new ApiError('Could not reach the API. Check your connection.', 0);
+  } finally {
+    clearTimeout(timeout);
   }
-  return body as T;
 }
 
 export interface Participant {

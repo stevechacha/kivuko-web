@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Kivuko la Muungano Hub",
+    "slug": "kivuko-hub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    }
+  }
+}
