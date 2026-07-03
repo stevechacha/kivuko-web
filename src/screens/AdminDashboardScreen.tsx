@@ -17,6 +17,8 @@ import LanguageToggle from '../components/LanguageToggle';
 import { useLocale } from '../context/LocaleContext';
 import { api, type AdminDashboard, type LeaderboardEntry, type ReportedItem } from '../api/client';
 import { useAppBack } from '../navigation/useAppBack';
+import TopNav from '../components/TopNav';
+import AdminPinGate, { isAdminUnlocked } from '../components/AdminPinGate';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
 
@@ -30,6 +32,7 @@ const MOCK_STORIES = [
 export default function AdminDashboardScreen({ navigation }: Props) {
   const { t } = useLocale();
   const goBack = useAppBack(navigation);
+  const [unlocked, setUnlocked] = useState(isAdminUnlocked());
   const [tab, setTab] = useState<AdminTab>('stats');
   const [stats, setStats] = useState<AdminDashboard | null>(null);
   const [pendingReports, setPendingReports] = useState<ReportedItem[]>([]);
@@ -51,6 +54,15 @@ export default function AdminDashboardScreen({ navigation }: Props) {
       .catch((e) => setError(e instanceof Error ? e.message : t('admin.loadError')))
       .finally(() => setLoading(false));
   }, []);
+
+  if (!unlocked) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <TopNav currentStep={0} showBack onBack={goBack} hideSteps />
+        <AdminPinGate onUnlocked={() => setUnlocked(true)} onCancel={goBack} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>

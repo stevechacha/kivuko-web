@@ -176,17 +176,43 @@ export default function HubDashboardScreen({ navigation }: Props) {
           ))}
         </View>
 
-        <View style={styles.quickRow}>
-          <Button label={t('hub.quickTimeline')} variant="secondary" onPress={() => navigation.navigate('UnionTimeline')} />
-          <Button label={t('hub.quickGala')} variant="secondary" onPress={() => navigation.navigate('GalaLeaderboard')} />
+        <View style={styles.quickGrid}>
+          <Button
+            label={t('hub.quickTimeline')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('UnionTimeline')}
+          />
+          <Button
+            label={t('hub.quickGala')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('GalaLeaderboard')}
+          />
           <Button
             label={visits.omnichannel ? t('hub.quickOmnichannelResume') : t('hub.quickOmnichannel')}
             variant="ghost"
+            style={styles.quickBtn}
             onPress={() => navigation.navigate('Omnichannel')}
           />
-          <Button label={t('hub.quickJudgeTour')} variant="ghost" onPress={() => navigation.navigate('JudgeTour')} />
-          <Button label={t('hub.quickMap')} variant="ghost" onPress={() => navigation.navigate('UnionMap')} />
-          <Button label={t('hub.quickAdmin')} variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />
+          <Button
+            label={t('hub.quickJudgeTour')}
+            variant="ghost"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('JudgeTour')}
+          />
+          <Button
+            label={t('hub.quickMap')}
+            variant="ghost"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('UnionMap')}
+          />
+          <Button
+            label={t('hub.quickAdmin')}
+            variant="ghost"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('AdminDashboard')}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -290,5 +316,19 @@ const styles = StyleSheet.create({
   portalDesc: { fontSize: 12, color: colors.textMuted, lineHeight: 18, marginBottom: 14 },
   portalCta: { borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   portalCtaText: { color: colors.white, fontSize: 12, fontWeight: '700' },
-  quickRow: { marginTop: spacing.xl, gap: 8, alignItems: 'center' },
+  quickGrid: {
+    marginTop: spacing.xl,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  quickBtn: {
+    width: Platform.OS === 'web' ? '48%' : '100%',
+    maxWidth: 360,
+    flexGrow: 1,
+    marginRight: 0,
+    marginBottom: 0,
+  },
 });
