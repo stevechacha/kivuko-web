@@ -36,6 +36,8 @@ export interface WhatsAppChatProps {
   onSend: (text: string) => void | Promise<void>;
   onBack?: () => void;
   headerAction?: React.ReactNode;
+  /** On web, wrap chat in a phone-sized frame (default true). */
+  phoneFrame?: boolean;
 }
 
 function formatTime(iso?: string): string {
@@ -89,6 +91,7 @@ export default function WhatsAppChat({
   onSend,
   onBack,
   headerAction,
+  phoneFrame = Platform.OS === 'web',
 }: WhatsAppChatProps) {
   const [draft, setDraft] = React.useState('');
   const listRef = useRef<FlatList<ListItem>>(null);
@@ -109,7 +112,7 @@ export default function WhatsAppChat({
 
   const firstName = peerName.split(' ')[0];
 
-  return (
+  const chat = (
     <KeyboardAvoidingView
       style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -197,6 +200,16 @@ export default function WhatsAppChat({
       </View>
     </KeyboardAvoidingView>
   );
+
+  if (phoneFrame && Platform.OS === 'web') {
+    return (
+      <View style={styles.webOuter}>
+        <View style={styles.phoneFrame}>{chat}</View>
+      </View>
+    );
+  }
+
+  return chat;
 }
 
 function MessageBubble({
@@ -230,31 +243,63 @@ function MessageBubble({
 }
 
 const styles = StyleSheet.create({
+  webOuter: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#DADBD6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  phoneFrame: {
+    width: '100%',
+    maxWidth: 390,
+    height: '100%',
+    maxHeight: 680,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#C5C9CC',
+    backgroundColor: WA.bg,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+      } as object,
+      default: {},
+    }),
+  },
   root: { flex: 1, backgroundColor: WA.bg },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: WA.header,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 8,
-    gap: 10,
+    gap: 8,
   },
-  backBtn: { paddingHorizontal: 4 },
-  backIcon: { color: '#fff', fontSize: 32, lineHeight: 32, fontWeight: '300' },
+  backBtn: { paddingHorizontal: 2 },
+  backIcon: { color: '#fff', fontSize: 28, lineHeight: 28, fontWeight: '300' },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: WA.headerLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-  headerInfo: { flex: 1 },
-  headerName: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  headerStatus: { color: 'rgba(255,255,255,0.85)', fontSize: 12, marginTop: 1 },
+  avatarText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  headerInfo: { flex: 1, minWidth: 0 },
+  headerName: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  headerStatus: { color: 'rgba(255,255,255,0.85)', fontSize: 11, marginTop: 1 },
   chatArea: { flex: 1 },
-  listContent: { paddingHorizontal: 10, paddingVertical: 8, paddingBottom: 4, flexGrow: 1 },
+  listContent: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    paddingBottom: 4,
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+  },
   datePill: {
     alignSelf: 'center',
     backgroundColor: 'rgba(225,218,208,0.92)',
@@ -278,11 +323,11 @@ const styles = StyleSheet.create({
   bubbleRowMe: { justifyContent: 'flex-end' },
   bubbleRowPeer: { justifyContent: 'flex-start' },
   bubble: {
-    maxWidth: '82%',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingTop: 6,
-    paddingBottom: 4,
+    maxWidth: Platform.OS === 'web' ? 280 : '78%',
+    borderRadius: 7,
+    paddingHorizontal: 8,
+    paddingTop: 5,
+    paddingBottom: 3,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -296,8 +341,8 @@ const styles = StyleSheet.create({
   },
   bubbleMe: { backgroundColor: WA.bubbleMe, borderTopRightRadius: 2 },
   bubblePeer: { backgroundColor: WA.bubblePeer, borderTopLeftRadius: 2 },
-  senderName: { fontSize: 12, fontWeight: '700', color: WA.headerLight, marginBottom: 2 },
-  bubbleText: { fontSize: 15, lineHeight: 21, color: '#111B21' },
+  senderName: { fontSize: 11, fontWeight: '700', color: WA.headerLight, marginBottom: 1 },
+  bubbleText: { fontSize: 14, lineHeight: 19, color: '#111B21' },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 2 },
   timeText: { fontSize: 10, color: '#667781' },
   ticks: { fontSize: 11, color: WA.tick, fontWeight: '700', letterSpacing: -2 },
@@ -310,43 +355,43 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   typingDots: { fontSize: 10, color: '#8696A0', letterSpacing: 2 },
-  encryptBanner: { alignItems: 'center', paddingVertical: 6, paddingHorizontal: 16 },
-  encryptText: { fontSize: 10, color: '#8696A0', textAlign: 'center' },
+  encryptBanner: { alignItems: 'center', paddingVertical: 4, paddingHorizontal: 12 },
+  encryptText: { fontSize: 9, color: '#8696A0', textAlign: 'center' },
   inputBar: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     backgroundColor: WA.inputBg,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    gap: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 5,
+    gap: 5,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#D1D7DB',
   },
   inputWrap: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 24,
-    paddingHorizontal: 14,
-    paddingVertical: Platform.OS === 'web' ? 10 : 8,
-    maxHeight: 120,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === 'web' ? 7 : 6,
+    maxHeight: 100,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#E9EDEF',
   },
   input: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#111B21',
-    lineHeight: 20,
+    lineHeight: 18,
     ...Platform.select({ web: { outlineStyle: 'none' as const } }),
   },
   sendBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
   },
   sendBtnActive: { backgroundColor: WA.headerLight },
   sendBtnIdle: { backgroundColor: '#8696A0' },
-  sendIcon: { color: '#fff', fontSize: 18 },
+  sendIcon: { color: '#fff', fontSize: 16 },
 });

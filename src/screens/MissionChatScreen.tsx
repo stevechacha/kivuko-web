@@ -10,6 +10,7 @@ import {
   Pressable,
   ActivityIndicator,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -360,8 +361,14 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 12, color: colors.textMuted, fontSize: 14 },
   shell: { flex: 1 },
   shellWide: { flexDirection: 'row', maxWidth: 1200, alignSelf: 'center', width: '100%' },
-  chatPane: { flex: 1 },
-  chatPaneWide: { flex: 1.15, borderRightWidth: 1, borderRightColor: colors.line },
+  chatPane: {
+    flex: 1,
+    ...Platform.select({
+      web: { maxWidth: 420, width: '100%', alignSelf: 'center' as const },
+      default: {},
+    }),
+  },
+  chatPaneWide: { flex: 1, maxWidth: 420, borderRightWidth: 1, borderRightColor: colors.line },
   quizPane: { flex: 1, backgroundColor: colors.white, maxWidth: 420 },
   headerActionsRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginRight: 4 },
   reportHeaderBtn: {

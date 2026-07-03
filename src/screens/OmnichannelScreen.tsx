@@ -169,7 +169,7 @@ export default function OmnichannelScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  safeWa: { flex: 1, backgroundColor: '#ECE5DD' },
+  safeWa: { flex: 1, backgroundColor: '#DADBD6' },
   scroll: { padding: spacing.lg, paddingBottom: 60, maxWidth: 720, alignSelf: 'center', width: '100%' },
   eyebrow: {
     fontSize: 11,
