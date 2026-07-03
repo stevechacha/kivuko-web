@@ -13,6 +13,7 @@ import { api, type ElderAudio, type MapConnection, type LiveImpact } from '../ap
 import LiveActivityFeed from '../components/LiveActivityFeed';
 import { useSession } from '../context/SessionContext';
 import { playAudioUrl, stopActiveAudio } from '../utils/audio';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UnionMap'>;
 
@@ -39,6 +40,7 @@ function buildConnections(connections: MapConnection[]) {
 
 export default function UnionMapScreen({ navigation }: Props) {
   const { clearSession, participant, updateParticipant } = useSession();
+  const goBack = useAppBack(navigation);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [stats, setStats] = useState({ pairs: '128', regions: '14' });
   const [connections, setConnections] = useState<MapConnection[]>([]);
@@ -105,7 +107,7 @@ export default function UnionMapScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={5} />
+      <TopNav currentStep={5} showBack onBack={goBack} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ScreenHeader
           stepLabel="Hatua 5 ya 5 — Ramani Hai ya Muungano"

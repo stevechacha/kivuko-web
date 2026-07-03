@@ -6,17 +6,20 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
+import TopNav from '../components/TopNav';
 import ScreenHeader from '../components/ScreenHeader';
 import CelebrationOverlay from '../components/CelebrationOverlay';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Certificate'>;
 
 export default function CertificateScreen({ navigation }: Props) {
   useCleanWebUrl();
+  const goBack = useAppBack(navigation);
   const { participant, missionId } = useSession();
   const { t } = useLocale();
   const userName = participant?.name || 'Mzalendo';
@@ -93,6 +96,7 @@ export default function CertificateScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <TopNav currentStep={4} showPoints showBack onBack={goBack} />
       <CelebrationOverlay
         visible={celebrate}
         title={t('certificate.celebrateTitle')}

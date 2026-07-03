@@ -9,12 +9,14 @@ import Button from '../components/Button';
 import { api, type LeaderboardEntry } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GalaLeaderboard'>;
 
 export default function GalaLeaderboardScreen({ navigation }: Props) {
   const { participant } = useSession();
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [regionFilter, setRegionFilter] = useState<'all' | 'bara' | 'visiwani'>('all');
@@ -27,7 +29,7 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={0} showPoints />
+      <TopNav currentStep={0} showPoints showBack onBack={goBack} hideSteps />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
           <Text style={styles.heroBadge}>{t('gala.heroBadge')}</Text>

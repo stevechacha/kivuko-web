@@ -10,12 +10,14 @@ import PeerSubmittedBanner from '../components/PeerSubmittedBanner';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CultureMission'>;
 
 export default function CultureMissionScreen({ navigation }: Props) {
   const { participant, peer, updateParticipant } = useSession();
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const prompts = useMemo(
     () => [t('culture.p1'), t('culture.p2'), t('culture.p3')],
     [t],
@@ -43,7 +45,7 @@ export default function CultureMissionScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={2} showPoints />
+      <TopNav currentStep={2} showPoints showBack onBack={goBack} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>{t('culture.eyebrow')}</Text>
         <Text style={styles.title}>{t('culture.title')}</Text>

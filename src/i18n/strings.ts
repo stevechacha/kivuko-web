@@ -16,6 +16,8 @@ const swTree = {
   common: {
     logo: 'Kivuko la Muungano',
     home: 'Rudi Nyumbani',
+    back: 'Nyuma',
+    dashboard: 'Dashibodi',
     continue: 'Endelea',
     openDashboard: 'Fungua Dashibodi →',
     success: 'Imefanikiwa ✓',
@@ -360,6 +362,8 @@ const enTree = {
   common: {
     logo: 'Union Bridge Hub',
     home: 'Back Home',
+    back: 'Back',
+    dashboard: 'Dashboard',
     continue: 'Continue',
     openDashboard: 'Open Dashboard →',
     success: 'Success ✓',

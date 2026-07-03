@@ -12,6 +12,7 @@ import { api, type MatchResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Matching'>;
 
@@ -21,6 +22,7 @@ export default function MatchingScreen({ navigation }: Props) {
   useCleanWebUrl();
   const { participant, setMission } = useSession();
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const name = participant?.name || 'Mzalendo';
   const userRegion = participant?.region || 'bara';
   const [matched, setMatched] = useState(false);
@@ -93,7 +95,7 @@ export default function MatchingScreen({ navigation }: Props) {
         }
         onDone={() => setCelebrate(false)}
       />
-      <TopNav currentStep={2} />
+      <TopNav currentStep={2} showBack onBack={goBack} />
       <View style={styles.content}>
         <Text style={styles.eyebrow}>{t('matching.eyebrow')}</Text>
 

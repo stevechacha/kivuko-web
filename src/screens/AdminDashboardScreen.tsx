@@ -16,6 +16,7 @@ import Button from '../components/Button';
 import LanguageToggle from '../components/LanguageToggle';
 import { useLocale } from '../context/LocaleContext';
 import { api, type AdminDashboard, type LeaderboardEntry, type ReportedItem } from '../api/client';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
 
@@ -28,6 +29,7 @@ const MOCK_STORIES = [
 
 export default function AdminDashboardScreen({ navigation }: Props) {
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const [tab, setTab] = useState<AdminTab>('stats');
   const [stats, setStats] = useState<AdminDashboard | null>(null);
   const [pendingReports, setPendingReports] = useState<ReportedItem[]>([]);
@@ -53,6 +55,9 @@ export default function AdminDashboardScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.adminNav}>
+        <Pressable onPress={goBack} style={styles.adminBackBtn}>
+          <Text style={styles.adminBackText}>‹ {t('common.back')}</Text>
+        </Pressable>
         <Text style={styles.adminNavTitle}>{t('admin.panelTitle')}</Text>
         <View style={styles.navRight}>
           <LanguageToggle />
@@ -200,7 +205,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  adminNavTitle: { color: colors.white, fontWeight: '800', fontSize: 13 },
+  adminNavTitle: { color: colors.white, fontWeight: '800', fontSize: 13, flex: 1, textAlign: 'center' },
+  adminBackBtn: { paddingVertical: 4, paddingRight: 8, minWidth: 72 },
+  adminBackText: { color: colors.white, fontSize: 13, fontWeight: '600' },
   navRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   liveBadge: {
     flexDirection: 'row',

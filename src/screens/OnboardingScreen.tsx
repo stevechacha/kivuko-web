@@ -20,6 +20,7 @@ import TopNav from '../components/TopNav';
 import { api, ApiError } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding' | 'Login'>;
 
@@ -27,6 +28,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
   const initialMode = route.name === 'Login' ? 'login' : 'register';
   const { applySession } = useSession();
   const { t } = useLocale();
+  const goBack = useAppBack(navigation, 'landing');
   const [mode, setMode] = useState<'register' | 'login'>(initialMode);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -109,7 +111,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={1} />
+      <TopNav currentStep={1} showBack onBack={goBack} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.card}>
           <Text style={styles.eyebrow}>

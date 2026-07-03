@@ -13,31 +13,55 @@ interface Props {
   currentStep: number;
   showPoints?: boolean;
   onLogoPress?: () => void;
+  /** Show in-app back control (avoids relying on browser back). */
+  showBack?: boolean;
+  onBack?: () => void;
+  backLabel?: string;
+  /** Hide mission step dots (e.g. utility screens). */
+  hideSteps?: boolean;
 }
 
-export default function TopNav({ currentStep, showPoints, onLogoPress }: Props) {
+export default function TopNav({
+  currentStep,
+  showPoints,
+  onLogoPress,
+  showBack,
+  onBack,
+  backLabel,
+  hideSteps,
+}: Props) {
   const { participant } = useSession();
   const { t } = useLocale();
   const points = participant?.patriotism_points ?? 0;
+  const label = backLabel ?? t('common.back');
 
   return (
     <View style={styles.bar}>
       <View style={styles.inner}>
-        <Pressable style={styles.logoRow} onPress={onLogoPress} disabled={!onLogoPress}>
-          <Svg width={30} height={30} viewBox="0 0 40 40">
-            <Circle cx={20} cy={20} r={19} fill={colors.bg} stroke={colors.green} strokeWidth={1.5} />
-            <Path
-              d="M6 24 C 12 14, 18 14, 20 20 C 22 26, 28 26, 34 16"
-              stroke={colors.gold}
-              strokeWidth={2.4}
-              strokeLinecap="round"
-              fill="none"
-            />
-            <Circle cx={7} cy={24} r={2.6} fill={colors.green} />
-            <Circle cx={33} cy={16} r={2.6} fill={colors.blue} />
-          </Svg>
-          <Text style={styles.logoText}>{t('common.logo')}</Text>
-        </Pressable>
+        <View style={styles.left}>
+          {showBack && onBack ? (
+            <Pressable onPress={onBack} style={styles.backBtn} accessibilityRole="button">
+              <Text style={styles.backChevron}>‹</Text>
+              <Text style={styles.backLabel}>{label}</Text>
+            </Pressable>
+          ) : (
+            <Pressable style={styles.logoRow} onPress={onLogoPress} disabled={!onLogoPress}>
+              <Svg width={30} height={30} viewBox="0 0 40 40">
+                <Circle cx={20} cy={20} r={19} fill={colors.bg} stroke={colors.green} strokeWidth={1.5} />
+                <Path
+                  d="M6 24 C 12 14, 18 14, 20 20 C 22 26, 28 26, 34 16"
+                  stroke={colors.gold}
+                  strokeWidth={2.4}
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <Circle cx={7} cy={24} r={2.6} fill={colors.green} />
+                <Circle cx={33} cy={16} r={2.6} fill={colors.blue} />
+              </Svg>
+              <Text style={styles.logoText}>{t('common.logo')}</Text>
+            </Pressable>
+          )}
+        </View>
         <View style={styles.right}>
           <LanguageToggle />
           {showPoints && participant ? (
@@ -45,23 +69,21 @@ export default function TopNav({ currentStep, showPoints, onLogoPress }: Props) 
               <Text style={styles.pointsText}>⭐ {points.toLocaleString()} {t('common.pts')}</Text>
             </View>
           ) : null}
-          <View style={styles.dots}>
-            {Array.from({ length: STEPS }, (_, i) => {
-              const stepNum = i + 1;
-              const active = currentStep === stepNum;
-              const done = currentStep > stepNum;
-              return (
-                <View
-                  key={stepNum}
-                  style={[
-                    styles.dot,
-                    active && styles.dotActive,
-                    done && styles.dotDone,
-                  ]}
-                />
-              );
-            })}
-          </View>
+          {!hideSteps && (
+            <View style={styles.dots}>
+              {Array.from({ length: STEPS }, (_, i) => {
+                const stepNum = i + 1;
+                const active = currentStep === stepNum;
+                const done = currentStep > stepNum;
+                return (
+                  <View
+                    key={stepNum}
+                    style={[styles.dot, active && styles.dotActive, done && styles.dotDone]}
+                  />
+                );
+              })}
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -73,7 +95,7 @@ const styles = StyleSheet.create({
     backgroundColor: Platform.OS === 'web' ? 'rgba(248,249,249,0.92)' : colors.bg,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: spacing.lg,
   },
   inner: {
@@ -84,12 +106,29 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
+  left: { flex: 1, minWidth: 0 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingRight: 8,
+  },
+  backChevron: {
+    fontSize: 26,
+    lineHeight: 26,
+    color: colors.greenDeep,
+    fontWeight: '300',
+    marginTop: -2,
+  },
+  backLabel: { fontSize: 14, fontWeight: '700', color: colors.greenDeep },
   right: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   pointsBadge: {
     backgroundColor: '#F0FAF8',
     borderWidth: 1,
-    borderColor: '#C5E8E0',
+    borderColor: '#C8E8E0',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,

@@ -18,6 +18,7 @@ import CivicCompanionBox from '../components/CivicCompanionBox';
 import { api, type AcademyArticle } from '../api/client';
 import { useLocale } from '../context/LocaleContext';
 import { markVisited } from '../utils/visitTracking';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Academy'>;
 type Tab = 'army' | 'union' | 'patriot';
@@ -25,6 +26,7 @@ type Tab = 'army' | 'union' | 'patriot';
 export default function AcademyScreen({ route, navigation }: Props) {
   const initialTab = route.params?.tab ?? 'union';
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const [tab, setTab] = useState<Tab>(initialTab);
   const [articles, setArticles] = useState<AcademyArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ export default function AcademyScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={0} showPoints />
+      <TopNav currentStep={0} showPoints showBack onBack={goBack} hideSteps />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Text style={styles.headerIcon}>🛡️</Text>

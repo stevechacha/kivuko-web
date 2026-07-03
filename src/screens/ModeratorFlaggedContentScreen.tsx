@@ -19,6 +19,7 @@ import Button from '../components/Button';
 import LanguageToggle from '../components/LanguageToggle';
 import { useLocale } from '../context/LocaleContext';
 import { api, type ReportedItem } from '../api/client';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ModeratorFlaggedContent'>;
 
@@ -33,6 +34,7 @@ const REASON_KEYS: Record<string, 'moderator.reasonAbusive' | 'moderator.reasonC
 
 export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const [tab, setTab] = useState<FilterTab>('pending');
   const [items, setItems] = useState<ReportedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.nav}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <Pressable onPress={goBack} style={styles.backBtn}>
           <Text style={styles.backBtnText}>{t('moderator.back')}</Text>
         </Pressable>
         <Text style={styles.navTitle}>{t('moderator.navTitle')}</Text>

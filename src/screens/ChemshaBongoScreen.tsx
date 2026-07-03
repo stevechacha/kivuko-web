@@ -17,6 +17,7 @@ import TopNav from '../components/TopNav';
 import Button from '../components/Button';
 import { api, type QuizQuestion } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChemshaBongo'>;
 
@@ -24,6 +25,7 @@ const TIMER_SEC = 15;
 
 export default function ChemshaBongoScreen({ navigation }: Props) {
   const { participant, updateParticipant } = useSession();
+  const goBack = useAppBack(navigation);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -98,7 +100,7 @@ export default function ChemshaBongoScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={0} showPoints />
+      <TopNav currentStep={0} showPoints showBack onBack={goBack} hideSteps />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>Chemsha Bongo ya Muungano 🔥</Text>
         <Text style={styles.title}>Jibu haraka — kila sekunde inahesabu!</Text>

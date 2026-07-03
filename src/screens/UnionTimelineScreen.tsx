@@ -7,10 +7,12 @@ import { colors, radius, spacing } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import Button from '../components/Button';
 import { api, type TimelineEvent } from '../api/client';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UnionTimeline'>;
 
 export default function UnionTimelineScreen({ navigation }: Props) {
+  const goBack = useAppBack(navigation);
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,7 @@ export default function UnionTimelineScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={0} showPoints />
+      <TopNav currentStep={0} showPoints showBack onBack={goBack} hideSteps />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>Mstari wa Historia 🇹🇿</Text>
         <Text style={styles.title}>Safari ya Muungano (1961 — Leo)</Text>

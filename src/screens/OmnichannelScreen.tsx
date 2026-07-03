@@ -11,6 +11,7 @@ import WhatsAppChat from '../components/WhatsAppChat';
 import { api, type ChatMessage } from '../api/client';
 import { useLocale } from '../context/LocaleContext';
 import { markVisited } from '../utils/visitTracking';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Omnichannel'>;
 
@@ -32,6 +33,7 @@ function toMessage(from: 'me' | 'peer', text: string): ChatMessage {
 
 export default function OmnichannelScreen({ navigation }: Props) {
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const [waMessages, setWaMessages] = useState<ChatMessage[]>([]);
   const [waSending, setWaSending] = useState(false);
   const [waTyping, setWaTyping] = useState(false);
@@ -99,7 +101,7 @@ export default function OmnichannelScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={0} showPoints />
+      <TopNav currentStep={0} showPoints showBack onBack={goBack} hideSteps />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>{t('omnichannel.eyebrow')}</Text>
         <Text style={styles.title}>{t('omnichannel.title')}</Text>

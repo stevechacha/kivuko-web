@@ -10,12 +10,14 @@ import PeerSubmittedBanner from '../components/PeerSubmittedBanner';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VisionMission'>;
 
 export default function VisionMissionScreen({ navigation }: Props) {
   const { participant, peer, updateParticipant } = useSession();
   const { t } = useLocale();
+  const goBack = useAppBack(navigation);
   const [vision, setVision] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -37,7 +39,7 @@ export default function VisionMissionScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={3} showPoints />
+      <TopNav currentStep={3} showPoints showBack onBack={goBack} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>{t('vision.eyebrow')}</Text>
         <Text style={styles.title}>{t('vision.title')}</Text>

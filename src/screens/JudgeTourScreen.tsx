@@ -9,6 +9,7 @@ import TopNav from '../components/TopNav';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { api } from '../api/client';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JudgeTour'>;
 
@@ -24,6 +25,7 @@ type TourStep = {
 export default function JudgeTourScreen({ navigation }: Props) {
   const { participant, missionId } = useSession();
   const { t } = useLocale();
+  const goBack = useAppBack(navigation, 'landing');
   const [progressStep, setProgressStep] = useState(0);
 
   useEffect(() => {
@@ -114,7 +116,7 @@ export default function JudgeTourScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={0} />
+      <TopNav currentStep={0} showBack onBack={goBack} hideSteps />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
           <Text style={styles.badge}>{t('judgeTour.badge')}</Text>

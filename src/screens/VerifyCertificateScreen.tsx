@@ -13,12 +13,17 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
+import TopNav from '../components/TopNav';
 import { api } from '../api/client';
+import { useLocale } from '../context/LocaleContext';
+import { useAppBack } from '../navigation/useAppBack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VerifyCertificate'>;
 
 export default function VerifyCertificateScreen({ route, navigation }: Props) {
   const { certCode } = route.params;
+  const { t } = useLocale();
+  const goBack = useAppBack(navigation, 'landing');
   const [loading, setLoading] = useState(true);
   const [valid, setValid] = useState(false);
   const [userName, setUserName] = useState('');
@@ -45,6 +50,7 @@ export default function VerifyCertificateScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <TopNav currentStep={0} showBack onBack={goBack} hideSteps />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>Uthibitishaji wa Cheti</Text>
         <Text style={styles.title}>Kivuko la Muungano Hub</Text>
@@ -71,7 +77,7 @@ export default function VerifyCertificateScreen({ route, navigation }: Props) {
         )}
 
         <View style={{ marginTop: spacing.xl, alignItems: 'center' }}>
-          <Button label="Rudi Nyumbani" onPress={() => navigation.navigate('Landing')} />
+          <Button label={t('common.home')} onPress={goBack} />
         </View>
       </ScrollView>
     </SafeAreaView>

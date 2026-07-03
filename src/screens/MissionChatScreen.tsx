@@ -22,6 +22,8 @@ import { api, type ChatMessage, type Peer, type QuizQuestion, type QuizSubmitRes
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
+import { useAppBack } from '../navigation/useAppBack';
+import TopNav from '../components/TopNav';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionChat'>;
 
@@ -29,6 +31,7 @@ const POLL_MS = 1200;
 
 export default function MissionChatScreen({ navigation }: Props) {
   useCleanWebUrl();
+  const goBack = useAppBack(navigation);
   const { participant, missionId, matchId, peer: sessionPeer, updateParticipant, setMission } = useSession();
   const { t } = useLocale();
   const userName = participant?.name || 'Mzalendo';
@@ -178,9 +181,12 @@ export default function MissionChatScreen({ navigation }: Props) {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.safe, styles.centered]}>
-        <ActivityIndicator color={colors.green} size="large" />
-        <Text style={styles.loadingText}>Inapakia mazungumzo…</Text>
+      <SafeAreaView style={styles.safe}>
+        <TopNav currentStep={2} showBack onBack={goBack} hideSteps />
+        <View style={[styles.centered, { flex: 1 }]}>
+          <ActivityIndicator color={colors.green} size="large" />
+          <Text style={styles.loadingText}>Inapakia mazungumzo…</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -188,10 +194,11 @@ export default function MissionChatScreen({ navigation }: Props) {
   if (!missionId || loadError) {
     return (
       <SafeAreaView style={styles.safe}>
+        <TopNav currentStep={2} showBack onBack={goBack} hideSteps />
         <View style={[styles.centered, { flex: 1, padding: spacing.lg }]}>
           <Text style={styles.errorText}>{loadError || 'Dhamira haipatikani.'}</Text>
           <View style={{ marginTop: 16 }}>
-            <Button label="Rudi Nyumbani" onPress={() => navigation.navigate('Landing')} />
+            <Button label="Rudi Nyumbani" onPress={goBack} />
           </View>
         </View>
       </SafeAreaView>
@@ -229,7 +236,7 @@ export default function MissionChatScreen({ navigation }: Props) {
             sending={sending}
             peerTyping={peerTyping}
             onSend={sendMessage}
-            onBack={() => navigation.goBack()}
+            onBack={goBack}
             headerAction={headerActions}
           />
         </View>
