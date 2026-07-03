@@ -19,6 +19,7 @@ import BridgeIllustration from '../components/BridgeIllustration';
 import PatrioticHeroPanel from '../components/PatrioticHeroPanel';
 import Button from '../components/Button';
 import ContinueSessionBanner from '../components/ContinueSessionBanner';
+import JudgeDemoBanner from '../components/JudgeDemoBanner';
 import { useSession } from '../context/SessionContext';
 import { api, type ElderAudio } from '../api/client';
 import { API_BASE_URL } from '../config/api';
@@ -95,6 +96,7 @@ export default function LandingScreen({ navigation }: Props) {
               />
             </View>
             <ContinueSessionBanner navigation={navigation} />
+            <JudgeDemoBanner navigation={navigation} />
             <Pressable style={styles.audioWidget} onPress={toggleAudio}>
               <View style={styles.audioPlay}>
                 <Text style={{ color: colors.white, fontSize: 14 }}>

@@ -14,6 +14,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import Button from '../components/Button';
+import MissionJourneyTracker from '../components/MissionJourneyTracker';
 import { useSession } from '../context/SessionContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'HubDashboard'>;
@@ -50,10 +51,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
         if (missionId) {
           navigation.navigate('MissionChat', { missionId });
         } else {
-          navigation.navigate('Matching', {
-            name: participant?.name,
-            region: participant?.region,
-          });
+          navigation.navigate('ChemshaBongo');
         }
       },
     },
@@ -116,6 +114,19 @@ export default function HubDashboardScreen({ navigation }: Props) {
           </View>
         </View>
 
+        <MissionJourneyTracker
+          onStepPress={(step, status) => {
+            if (status === 'locked') return;
+            if (step === 1) {
+              if (missionId) navigation.navigate('MissionChat', { missionId });
+              else navigation.navigate('Matching', { name: participant?.name, region: participant?.region });
+            } else if (step === 2) navigation.navigate('CultureMission');
+            else if (step === 3) navigation.navigate('VisionMission');
+            else if (step === 4) navigation.navigate('Certificate', { missionId: missionId ?? undefined });
+            else if (step === 5) navigation.navigate('UnionMap');
+          }}
+        />
+
         <Text style={styles.sectionLabel}>Gusa Mlango Kupenya</Text>
 
         <View style={styles.grid}>
@@ -139,7 +150,10 @@ export default function HubDashboardScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.quickRow}>
-          <Button label="Ramani Hai ya Muungano" variant="secondary" onPress={() => navigation.navigate('UnionMap')} />
+          <Button label="Mstari wa Historia 1961—2026" variant="secondary" onPress={() => navigation.navigate('UnionTimeline')} />
+          <Button label="Gala ya Top 10 Vijana" variant="secondary" onPress={() => navigation.navigate('GalaLeaderboard')} />
+          <Button label="WhatsApp & USSD" variant="ghost" onPress={() => navigation.navigate('Omnichannel')} />
+          <Button label="Ramani Hai ya Muungano" variant="ghost" onPress={() => navigation.navigate('UnionMap')} />
           <Button label="Paneli ya Usimamizi" variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />
         </View>
       </ScrollView>

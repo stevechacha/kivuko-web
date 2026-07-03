@@ -37,7 +37,7 @@ function buildConnections(connections: MapConnection[]) {
 }
 
 export default function UnionMapScreen({ navigation }: Props) {
-  const { clearSession } = useSession();
+  const { clearSession, participant, updateParticipant } = useSession();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [stats, setStats] = useState({ pairs: '128', regions: '14' });
   const [connections, setConnections] = useState<MapConnection[]>([]);
@@ -55,6 +55,20 @@ export default function UnionMapScreen({ navigation }: Props) {
         });
         setConnections(mapStats.connections);
         setAudioArchive(audio);
+        if (participant?.session_token) {
+          try {
+            const progress = await api.getMissionProgress(participant.session_token);
+            const step5 = progress.steps.find((s) => s.number === 5);
+            if (step5 && step5.status !== 'completed') {
+              const updated = await api.completeMissionStep(5, participant.session_token);
+              if (updated.patriotism_points != null) {
+                updateParticipant({ patriotism_points: updated.patriotism_points });
+              }
+            }
+          } catch {
+            // step may already be complete
+          }
+        }
       } catch (e) {
         setLoadError(e instanceof Error ? e.message : 'Imeshindwa kupakia ramani.');
       } finally {

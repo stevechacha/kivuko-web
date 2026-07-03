@@ -58,7 +58,58 @@ export interface Participant {
   region_label: string;
   initials: string;
   patriotism_points: number;
+  patriotism_grade?: UzalendoGrade;
   session_token: string;
+}
+
+export interface UzalendoGrade {
+  code: string;
+  label: string;
+  badge: string;
+  next_threshold: number | null;
+}
+
+export interface MissionStep {
+  number: number;
+  title: string;
+  subtitle: string;
+  icon: string;
+  points: number;
+  status: 'completed' | 'active' | 'locked';
+}
+
+export interface MissionProgress {
+  steps: MissionStep[];
+  current_step: number;
+  completed_count: number;
+  total_steps: number;
+  grade: UzalendoGrade;
+  patriotism_points?: number;
+}
+
+export interface TimelineEvent {
+  id: string;
+  year: number;
+  month_label: string;
+  title: string;
+  description: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  home_area: string;
+  region_label: string;
+  patriotism_points: number;
+  grade: UzalendoGrade;
+}
+
+export interface ChemshaBongoResult {
+  bonus_points: number;
+  airtime_reward_tzs: number;
+  message: string;
+  patriotism_points: number;
+  grade: UzalendoGrade;
 }
 
 export interface RegisterResponse {
@@ -255,5 +306,29 @@ export const api = {
 
   getAudioArchive() {
     return request<ElderAudio[]>('/audio/archive');
+  },
+
+  getMissionProgress(token: string) {
+    return request<MissionProgress>('/users/me/progress', {}, token);
+  },
+
+  completeMissionStep(step: number, token: string) {
+    return request<MissionProgress>(`/users/me/steps/${step}/complete`, { method: 'POST', body: '{}' }, token);
+  },
+
+  getTimelineEvents() {
+    return request<TimelineEvent[]>('/timeline/events');
+  },
+
+  getLeaderboard(limit = 10) {
+    return request<LeaderboardEntry[]>(`/leaderboard/youth?limit=${limit}`);
+  },
+
+  submitChemshaBongo(score: number, total: number, token: string) {
+    return request<ChemshaBongoResult>(
+      '/quiz/chemsha-bongo',
+      { method: 'POST', body: JSON.stringify({ score, total }) },
+      token,
+    );
   },
 };

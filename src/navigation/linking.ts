@@ -52,6 +52,12 @@ export const linking: LinkingOptions<RootStackParamList> = {
         parse: { certCode: String },
       },
       AdminDashboard: 'admin',
+      ChemshaBongo: 'chemsha-bongo',
+      UnionTimeline: 'historia',
+      GalaLeaderboard: 'gala',
+      Omnichannel: 'njia-zote',
+      CultureMission: 'utamaduni',
+      VisionMission: 'maono',
     },
   },
 };

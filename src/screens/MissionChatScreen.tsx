@@ -258,10 +258,10 @@ export default function MissionChatScreen({ route, navigation }: Props) {
             </View>
             <View style={{ marginTop: 22 }}>
               <Button
-                label="Pata Cheti Chako →"
+                label="Endelea Dhamira 2: Utamaduni →"
                 onPress={() => {
                   setRewardVisible(false);
-                  navigation.navigate('Certificate', { userName, missionId });
+                  navigation.navigate('CultureMission');
                 }}
               />
             </View>
