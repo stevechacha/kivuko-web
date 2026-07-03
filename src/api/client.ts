@@ -2,10 +2,12 @@ import { API_BASE_URL, API_V1 } from '../config/api';
 
 export class ApiError extends Error {
   status: number;
+  loginRequired?: boolean;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, loginRequired?: boolean) {
     super(message);
     this.status = status;
+    this.loginRequired = loginRequired;
   }
 }
 
@@ -34,7 +36,11 @@ async function request<T>(
     const body = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      throw new ApiError(body.detail || body.message || 'Request failed', res.status);
+      throw new ApiError(
+        body.detail || body.message || 'Request failed',
+        res.status,
+        body.login_required === true,
+      );
     }
     return body as T;
   } catch (err) {
@@ -112,10 +118,14 @@ export interface ChemshaBongoResult {
   grade: UzalendoGrade;
 }
 
-export interface RegisterResponse {
-  message: string;
+export interface SessionResponse {
+  message?: string;
   participant: Participant;
+  active_mission_id: string | null;
+  active_match_id: string | null;
 }
+
+export interface RegisterResponse extends SessionResponse {}
 
 export interface Peer {
   id: string;
@@ -233,7 +243,7 @@ export const api = {
   },
 
   getMe(token: string) {
-    return request<Participant>('/users/me', {}, token);
+    return request<SessionResponse>('/users/me', {}, token);
   },
 
   getAcademyArticles(category?: string) {
@@ -257,6 +267,13 @@ export const api = {
     return request<RegisterResponse>('/users/register', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  login(phone: string) {
+    return request<SessionResponse>('/users/login', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
     });
   },
 

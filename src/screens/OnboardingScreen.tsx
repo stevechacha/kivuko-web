@@ -1,5 +1,5 @@
 // screens/OnboardingScreen.tsx
-// Step 1 of 5 — User Registration (design: screen-register)
+// Registration (usajili) and login (ingia) — live API, no pre-filled demo data
 import React, { useState } from 'react';
 import {
   View,
@@ -17,42 +17,85 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import TopNav from '../components/TopNav';
-import { api } from '../api/client';
+import { api, ApiError } from '../api/client';
 import { useSession } from '../context/SessionContext';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding' | 'Login'>;
 
-export default function OnboardingScreen({ navigation }: Props) {
-  const { setParticipant } = useSession();
-  const [name, setName] = useState('Amina Juma');
-  const [phone, setPhone] = useState('0755 123 456');
-  const [college, setCollege] = useState('Chuo Kikuu cha Dodoma');
-  const [region, setRegion] = useState('Dodoma');
+export default function OnboardingScreen({ navigation, route }: Props) {
+  const initialMode = route.name === 'Login' ? 'login' : 'register';
+  const { applySession } = useSession();
+  const [mode, setMode] = useState<'register' | 'login'>(initialMode);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [college, setCollege] = useState('');
+  const [region, setRegion] = useState('');
   const [side, setSide] = useState<'bara' | 'visiwani'>('bara');
   const [submitted, setSubmitted] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async () => {
+  const finishSession = (message?: string) => {
+    setSuccessMessage(message ?? (mode === 'login' ? 'Umefanikiwa kuingia!' : 'Karibu, Mzalendo!'));
+    setSubmitted(true);
+    setTimeout(() => {
+      navigation.navigate('HubDashboard');
+    }, 1200);
+  };
+
+  const handleRegister = async () => {
+    if (!name.trim() || !phone.trim() || !region.trim()) {
+      setError('Jaza jina, namba ya simu, na mkoa/eneo lako.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const res = await api.register({
-        name,
-        phone,
-        college,
-        home_area: region,
+        name: name.trim(),
+        phone: phone.trim(),
+        college: college.trim(),
+        home_area: region.trim(),
         region: side,
       });
-      setParticipant(res.participant);
-      setSubmitted(true);
-      setTimeout(() => {
-        navigation.navigate('HubDashboard');
-      }, 1400);
+      applySession(res);
+      finishSession(res.message);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Usajili umeshindwa. Jaribu tena.');
+      if (e instanceof ApiError && e.loginRequired) {
+        setError(e.message);
+        setMode('login');
+      } else {
+        setError(e instanceof Error ? e.message : 'Usajili umeshindwa. Jaribu tena.');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!phone.trim()) {
+      setError('Weka namba ya simu uliyosajiliwa nayo.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.login(phone.trim());
+      applySession(res);
+      finishSession(res.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Kuingia kumeshindwa. Jaribu tena.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (mode === 'login') {
+      handleLogin();
+    } else {
+      handleRegister();
     }
   };
 
@@ -61,47 +104,88 @@ export default function OnboardingScreen({ navigation }: Props) {
       <TopNav currentStep={1} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.card}>
-          <Text style={styles.eyebrow}>Hatua 1 ya 5 — Usajili</Text>
-          <Text style={styles.title}>Jisajili kuwa Mzalendo</Text>
+          <Text style={styles.eyebrow}>
+            {mode === 'login' ? 'Ingia tena' : 'Hatua 1 ya 5 — Usajili'}
+          </Text>
+          <Text style={styles.title}>
+            {mode === 'login' ? 'Ingia kwa Namba ya Simu' : 'Jisajili kuwa Mzalendo'}
+          </Text>
           <Text style={styles.subtitle}>
-            Taarifa hizi zitatumika kukuoanisha na rafiki wa Kivuko.
+            {mode === 'login'
+              ? 'Tumia namba uliyosajiliwa nayo. Taarifa zako zitatoka moja kwa moja kutoka kwa API.'
+              : 'Taarifa zako zitahifadhiwa kwenye seva halisi — si data ya majaribio.'}
           </Text>
 
-          <View style={styles.formBody}>
-            <Field label="Jina Kamili" value={name} onChangeText={setName} placeholder="mfano: Amina Juma" />
-            <Field label="Namba ya Simu" value={phone} onChangeText={setPhone} placeholder="07xx xxx xxx" keyboardType="phone-pad" />
-            <Field label="Chuo / Chuo Kikuu" value={college} onChangeText={setCollege} placeholder="mfano: Chuo Kikuu cha Dar es Salaam" />
-            <Field label="Mkoa / Eneo" value={region} onChangeText={setRegion} placeholder="mfano: Dodoma" />
-
-            <Text style={styles.fieldLabel}>Chagua Eneo Lako</Text>
-            <View style={styles.regionRow}>
-              <RegionOption
-                title="🏔️ Bara"
-                subtitle="Tanzania Mainland"
-                selected={side === 'bara'}
-                accent={colors.green}
-                selectedBg="#F0FAF8"
-                onPress={() => setSide('bara')}
-              />
-              <RegionOption
-                title="🌊 Visiwani"
-                subtitle="Zanzibar Isles"
-                selected={side === 'visiwani'}
-                accent={colors.blue}
-                selectedBg="#F0F7FC"
-                onPress={() => setSide('visiwani')}
-              />
-            </View>
+          <View style={styles.modeRow}>
+            <ModeTab
+              label="Jisajili"
+              active={mode === 'register'}
+              onPress={() => {
+                setMode('register');
+                setError(null);
+              }}
+            />
+            <ModeTab
+              label="Ingia"
+              active={mode === 'login'}
+              onPress={() => {
+                setMode('login');
+                setError(null);
+              }}
+            />
           </View>
 
-          {submitted && (
+          <View style={styles.formBody}>
+            {mode === 'register' && (
+              <>
+                <Field label="Jina Kamili" value={name} onChangeText={setName} placeholder="mfano: Amina Juma" />
+                <Field
+                  label="Chuo / Chuo Kikuu (si lazima)"
+                  value={college}
+                  onChangeText={setCollege}
+                  placeholder="mfano: Chuo Kikuu cha Dodoma"
+                />
+              </>
+            )}
+            <Field
+              label="Namba ya Simu"
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="07xx xxx xxx"
+              keyboardType="phone-pad"
+            />
+            {mode === 'register' && (
+              <>
+                <Field label="Mkoa / Eneo" value={region} onChangeText={setRegion} placeholder="mfano: Dodoma" />
+                <Text style={styles.fieldLabel}>Chagua Eneo Lako</Text>
+                <View style={styles.regionRow}>
+                  <RegionOption
+                    title="🏔️ Bara"
+                    subtitle="Tanzania Mainland"
+                    selected={side === 'bara'}
+                    accent={colors.green}
+                    selectedBg="#F0FAF8"
+                    onPress={() => setSide('bara')}
+                  />
+                  <RegionOption
+                    title="🌊 Visiwani"
+                    subtitle="Zanzibar Isles"
+                    selected={side === 'visiwani'}
+                    accent={colors.blue}
+                    selectedBg="#F0F7FC"
+                    onPress={() => setSide('visiwani')}
+                  />
+                </View>
+              </>
+            )}
+          </View>
+
+          {submitted && successMessage && (
             <View style={styles.welcomeBanner}>
               <Text style={{ fontSize: 26 }}>🎉</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.welcomeTitle}>Karibu, Mzalendo!</Text>
-                <Text style={styles.welcomeBody}>
-                  Usajili wako umefanikiwa. Tuko tayari kukutafutia rafiki wa Kivuko.
-                </Text>
+                <Text style={styles.welcomeTitle}>{successMessage}</Text>
+                <Text style={styles.welcomeBody}>Inaelekeza dashibodi yako…</Text>
               </View>
             </View>
           )}
@@ -113,16 +197,27 @@ export default function OnboardingScreen({ navigation }: Props) {
               <ActivityIndicator color={colors.green} />
             ) : (
               <Button
-                label={submitted ? 'Umesajiliwa ✓' : 'Jisajili →'}
+                label={submitted ? 'Imefanikiwa ✓' : mode === 'login' ? 'Ingia →' : 'Jisajili →'}
                 onPress={handleSubmit}
                 disabled={submitted}
               />
             )}
-            <Button label="Rudi Nyuma" variant="ghost" onPress={() => navigation.navigate('Landing')} />
+            <Button label="Rudi Nyumbani" variant="ghost" onPress={() => navigation.navigate('Landing')} />
           </View>
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function ModeTab(props: { label: string; active: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={props.onPress}
+      style={[styles.modeTab, props.active && styles.modeTabActive]}
+    >
+      <Text style={[styles.modeTabText, props.active && styles.modeTabTextActive]}>{props.label}</Text>
+    </Pressable>
   );
 }
 
@@ -143,6 +238,7 @@ function Field(props: {
         placeholder={props.placeholder}
         placeholderTextColor="#9AA5A3"
         keyboardType={props.keyboardType ?? 'default'}
+        autoComplete="off"
       />
     </View>
   );
@@ -204,7 +300,31 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontFamily: Platform.OS === 'web' ? 'Georgia, serif' : undefined,
   },
-  subtitle: { fontSize: 14, color: colors.textMuted, marginTop: 6 },
+  subtitle: { fontSize: 14, color: colors.textMuted, marginTop: 6, lineHeight: 20 },
+  modeRow: {
+    flexDirection: 'row',
+    marginTop: 20,
+    backgroundColor: '#F4F7F6',
+    borderRadius: 10,
+    padding: 4,
+    gap: 4,
+  },
+  modeTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modeTabActive: {
+    backgroundColor: colors.white,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  modeTabText: { fontSize: 14, fontWeight: '600', color: colors.textMuted },
+  modeTabTextActive: { color: colors.greenDeep },
   formBody: { marginTop: 24 },
   field: { marginBottom: 18 },
   fieldLabel: { fontSize: 13, fontWeight: '700', color: '#2C3E50', marginBottom: 7 },

@@ -87,7 +87,10 @@ export default function LandingScreen({ navigation }: Props) {
               {participant ? (
                 <Button label="Fungua Dashibodi →" onPress={() => navigation.navigate('HubDashboard')} />
               ) : (
-                <Button label="Anza Safari →" onPress={() => navigation.navigate('Onboarding')} />
+                <>
+                  <Button label="Anza Safari →" onPress={() => navigation.navigate('Onboarding')} />
+                  <Button label="Ingia →" variant="ghost" onPress={() => navigation.navigate('Login')} />
+                </>
               )}
               <Button
                 label="Angalia Ramani ya Muungano"

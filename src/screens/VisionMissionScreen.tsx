@@ -23,7 +23,7 @@ export default function VisionMissionScreen({ navigation }: Props) {
     try {
       await api.completeMissionStep(3, participant.session_token);
       const me = await api.getMe(participant.session_token);
-      updateParticipant({ patriotism_points: me.patriotism_points });
+      updateParticipant({ patriotism_points: me.participant.patriotism_points });
       setDone(true);
     } catch {
       setDone(true);

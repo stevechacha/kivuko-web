@@ -33,6 +33,7 @@ export default function App() {
         <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Login" component={OnboardingScreen} />
           <Stack.Screen name="HubDashboard" component={HubDashboardScreen} />
           <Stack.Screen name="Matching" component={MatchingScreen} />
           <Stack.Screen name="MissionChat" component={MissionChatScreen} />

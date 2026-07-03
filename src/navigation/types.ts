@@ -3,6 +3,7 @@
 export type RootStackParamList = {
   Landing: undefined;
   Onboarding: undefined;
+  Login: undefined;
   HubDashboard: undefined;
   Matching: undefined;
   MissionChat: undefined;

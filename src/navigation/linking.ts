@@ -15,6 +15,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Landing: '',
       Onboarding: 'usajili',
+      Login: 'ingia',
       HubDashboard: 'dashibodi',
       Matching: 'uoanishaji',
       MissionChat: 'dhamira',
