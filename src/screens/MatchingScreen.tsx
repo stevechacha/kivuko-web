@@ -8,7 +8,7 @@ import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import TopNav from '../components/TopNav';
 import CelebrationOverlay from '../components/CelebrationOverlay';
-import { api, type MatchResponse } from '../api/client';
+import { api, ApiError, type MatchResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
@@ -26,6 +26,7 @@ export default function MatchingScreen({ navigation }: Props) {
   const name = participant?.name || 'Mzalendo';
   const userRegion = participant?.region || 'bara';
   const [matched, setMatched] = useState(false);
+  const [waiting, setWaiting] = useState(false);
   const [statusIndex, setStatusIndex] = useState(0);
   const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export default function MatchingScreen({ navigation }: Props) {
         const result = await api.match(participant.session_token);
         setMatchResult(result);
         setMission(result.mission_id, result.match_id, result.peer);
+        setWaiting(false);
         setTimeout(() => {
           clearInterval(stepTimer);
           loop.stop();
@@ -61,7 +63,12 @@ export default function MatchingScreen({ navigation }: Props) {
           setCelebrate(true);
         }, 2400);
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('matching.errMatch'));
+        if (e instanceof ApiError && e.waiting) {
+          setWaiting(true);
+          setError(e.message);
+        } else {
+          setError(e instanceof Error ? e.message : t('matching.errMatch'));
+        }
         clearInterval(stepTimer);
         loop.stop();
       }
@@ -99,12 +106,29 @@ export default function MatchingScreen({ navigation }: Props) {
       <View style={styles.content}>
         <Text style={styles.eyebrow}>{t('matching.eyebrow')}</Text>
 
-        {error ? (
+        {error && !waiting ? (
           <View style={styles.errorWrap}>
             <Text style={styles.errorText}>{error}</Text>
             <Pressable onPress={() => navigation.navigate('Onboarding')}>
               <Text style={styles.errorLink}>{t('matching.backRegister')}</Text>
             </Pressable>
+          </View>
+        ) : waiting ? (
+          <View style={styles.errorWrap}>
+            <Text style={styles.waitingTitle}>{t('matching.waitingTitle')}</Text>
+            <Text style={styles.muted}>{error}</Text>
+            <Text style={styles.muted}>{t('matching.waitingBody')}</Text>
+            <View style={{ marginTop: spacing.md }}>
+              <Button
+                label={t('matching.retry')}
+                onPress={() => {
+                  setError(null);
+                  setWaiting(false);
+                  setStatusIndex(0);
+                  navigation.replace('Matching');
+                }}
+              />
+            </View>
           </View>
         ) : !matched ? (
           <View style={styles.loadingWrap}>
@@ -183,6 +207,7 @@ const styles = StyleSheet.create({
   bridgeMini: { width: 48, height: 2, backgroundColor: colors.gold, opacity: 0.7 },
   muted: { fontSize: 13.5, color: colors.textMuted, textAlign: 'center', maxWidth: 300 },
   errorWrap: { alignItems: 'center', gap: 12 },
+  waitingTitle: { fontSize: 18, fontWeight: '700', color: colors.dark, textAlign: 'center' },
   errorText: { color: colors.danger, textAlign: 'center', fontSize: 14 },
   errorLink: { color: colors.blue, fontWeight: '700', fontSize: 14 },
 });

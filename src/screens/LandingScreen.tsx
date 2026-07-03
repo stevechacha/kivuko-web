@@ -30,18 +30,11 @@ import { playAudioUrl, stopActiveAudio } from '../utils/audio';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
-const FEATURED_AUDIO: ElderAudio = {
-  id: 'featured',
-  name: 'Mwalimu Nyerere',
-  area: 'Taifa',
-  duration_label: 'Klipu ya kihistoria, sekunde 10',
-};
-
 export default function LandingScreen({ navigation }: Props) {
   const { participant } = useSession();
   const { t } = useLocale();
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [featuredAudio, setFeaturedAudio] = useState<ElderAudio>(FEATURED_AUDIO);
+  const [featuredAudio, setFeaturedAudio] = useState<ElderAudio | null>(null);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
   const [impact, setImpact] = useState<LiveImpact | null>(null);
   const { width } = useWindowDimensions();
@@ -70,8 +63,8 @@ export default function LandingScreen({ navigation }: Props) {
       return;
     }
 
-    const started = featuredAudio.audio_url ? playAudioUrl(featuredAudio.audio_url) : false;
-    setAudioPlaying(true);
+    const started = featuredAudio?.audio_url ? playAudioUrl(featuredAudio.audio_url) : false;
+    setAudioPlaying(started);
     if (!started) {
       setTimeout(() => setAudioPlaying(false), 2600);
     }
@@ -108,7 +101,11 @@ export default function LandingScreen({ navigation }: Props) {
             <LiveImpactTicker data={impact} />
             {impact?.activity?.length ? <LiveActivityFeed items={impact.activity} /> : null}
             <JudgeDemoBanner navigation={navigation} />
-            <Pressable style={styles.audioWidget} onPress={toggleAudio}>
+            <Pressable
+              style={styles.audioWidget}
+              onPress={toggleAudio}
+              disabled={!featuredAudio?.audio_url}
+            >
               <View style={styles.audioPlay}>
                 <Text style={{ color: colors.white, fontSize: 14 }}>
                   {audioPlaying ? '⏸' : '▶'}
@@ -116,9 +113,13 @@ export default function LandingScreen({ navigation }: Props) {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.audioTitle}>
-                  {t('landing.voiceTitle', { name: featuredAudio.name })}
+                  {featuredAudio
+                    ? t('landing.voiceTitle', { name: featuredAudio.name })
+                    : t('landing.voiceLoading')}
                 </Text>
-                <Text style={styles.audioSub}>{featuredAudio.duration_label}</Text>
+                <Text style={styles.audioSub}>
+                  {featuredAudio?.duration_label ?? t('landing.voiceSubEmpty')}
+                </Text>
               </View>
               <View style={styles.audioBars}>
                 {[0, 1, 2, 3].map((i) => (

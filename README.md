@@ -40,7 +40,7 @@ in `.env` to your deployed API URL (e.g. Render).
   (e.g. `https://kivukohub.go.tz/verify/{certId}`) — the API returns a real
   `verify_url`; swap in `react-native-qrcode-svg` to encode it as a scannable QR.
 - **Matching / chat / quiz data** are loaded from the API (`src/api/client.ts`).
-  `src/data/mockData.ts` remains as reference only.
+- **Oral history stories**, **USSD**, and **admin moderation** all use live API endpoints.
 - **Theme tokens** live in `src/theme/colors.ts`, using the exact flag-inspired
   palette from the brief (green `#117A65`, blue `#1F618D`, gold `#F1C40F`).
 - **Audio**: play buttons currently just toggle icon state for the demo. Wire

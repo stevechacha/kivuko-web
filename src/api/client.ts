@@ -4,11 +4,13 @@ import { getAdminApiKey } from '../utils/adminAccess';
 export class ApiError extends Error {
   status: number;
   loginRequired?: boolean;
+  waiting?: boolean;
 
-  constructor(message: string, status: number, loginRequired?: boolean) {
+  constructor(message: string, status: number, loginRequired?: boolean, waiting?: boolean) {
     super(message);
     this.status = status;
     this.loginRequired = loginRequired;
+    this.waiting = waiting;
   }
 }
 
@@ -53,6 +55,7 @@ async function request<T>(
         body.detail || body.message || fallback,
         res.status,
         body.login_required === true,
+        body.waiting === true,
       );
     }
     return body as T;
@@ -281,6 +284,22 @@ export interface AdminDashboard {
   recent_connections: MapConnection[];
 }
 
+export interface OralStory {
+  id: string;
+  title: string;
+  author_name: string;
+  body: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at_label: string;
+}
+
+export interface UssdResponse {
+  session_id: string;
+  lines: string[];
+  suggestions: string[];
+  points: number;
+}
+
 export const api = {
   health() {
     return fetch(`${API_BASE_URL}/health/`).then(async (res) => {
@@ -429,5 +448,31 @@ export const api = {
       { method: 'POST', body: JSON.stringify({ score, total }) },
       token,
     );
+  },
+
+  submitOralStory(responses: string[], token: string) {
+    return request<OralStory>(
+      '/stories/submit',
+      { method: 'POST', body: JSON.stringify({ responses }) },
+      token,
+    );
+  },
+
+  getAdminStories(status: 'pending' | 'approved' | 'rejected' = 'pending') {
+    return request<OralStory[]>(`/admin/stories?status=${status}`);
+  },
+
+  resolveStory(storyId: string, action: 'approve' | 'reject') {
+    return request<OralStory>(`/admin/stories/${storyId}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
+  },
+
+  ussdSession(text: string, sessionId?: string | null) {
+    return request<UssdResponse>('/channels/ussd/session', {
+      method: 'POST',
+      body: JSON.stringify({ text, session_id: sessionId ?? undefined }),
+    });
   },
 };

@@ -42,7 +42,7 @@ export default function UnionMapScreen({ navigation }: Props) {
   const { clearSession, participant, updateParticipant } = useSession();
   const goBack = useAppBack(navigation);
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const [stats, setStats] = useState({ pairs: '128', regions: '14' });
+  const [stats, setStats] = useState({ pairs: '0', regions: '0' });
   const [connections, setConnections] = useState<MapConnection[]>([]);
   const [audioArchive, setAudioArchive] = useState<ElderAudio[]>([]);
   const [loading, setLoading] = useState(true);

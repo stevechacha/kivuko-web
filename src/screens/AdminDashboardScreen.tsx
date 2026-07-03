@@ -15,7 +15,7 @@ import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import LanguageToggle from '../components/LanguageToggle';
 import { useLocale } from '../context/LocaleContext';
-import { api, ApiError, type AdminDashboard, type LeaderboardEntry, type ReportedItem } from '../api/client';
+import { api, ApiError, type AdminDashboard, type LeaderboardEntry, type OralStory, type ReportedItem } from '../api/client';
 import { useAppBack } from '../navigation/useAppBack';
 import TopNav from '../components/TopNav';
 import AdminPinGate from '../components/AdminPinGate';
@@ -25,11 +25,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
 
 type AdminTab = 'stats' | 'flagged' | 'stories' | 'gala';
 
-const MOCK_STORIES = [
-  { id: 's1', title: 'Kumbukumbu ya Muungano — Dodoma', author: 'Amina J.' },
-  { id: 's2', title: 'Sauti ya Bibi kutoka Unguja', author: 'Khadija M.' },
-];
-
 export default function AdminDashboardScreen({ navigation }: Props) {
   const { t } = useLocale();
   const goBack = useAppBack(navigation);
@@ -37,7 +32,9 @@ export default function AdminDashboardScreen({ navigation }: Props) {
   const [tab, setTab] = useState<AdminTab>('stats');
   const [stats, setStats] = useState<AdminDashboard | null>(null);
   const [pendingReports, setPendingReports] = useState<ReportedItem[]>([]);
+  const [pendingStories, setPendingStories] = useState<OralStory[]>([]);
   const [galaShortlist, setGalaShortlist] = useState<LeaderboardEntry[]>([]);
+  const [actingStoryId, setActingStoryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,11 +45,13 @@ export default function AdminDashboardScreen({ navigation }: Props) {
     Promise.all([
       api.getAdminDashboard(),
       api.getReportedContent('pending').catch(() => [] as ReportedItem[]),
+      api.getAdminStories('pending').catch(() => [] as OralStory[]),
       api.getLeaderboard(10).catch(() => [] as LeaderboardEntry[]),
     ])
-      .then(([dash, reports, leaders]) => {
+      .then(([dash, reports, stories, leaders]) => {
         setStats(dash);
         setPendingReports(reports);
+        setPendingStories(stories);
         setGalaShortlist(leaders);
       })
       .catch((e) => {
@@ -68,6 +67,16 @@ export default function AdminDashboardScreen({ navigation }: Props) {
       })
       .finally(() => setLoading(false));
   }, [unlocked, t]);
+
+  const resolveStory = async (storyId: string, action: 'approve' | 'reject') => {
+    setActingStoryId(storyId);
+    try {
+      await api.resolveStory(storyId, action);
+      setPendingStories((prev) => prev.filter((s) => s.id !== storyId));
+    } finally {
+      setActingStoryId(null);
+    }
+  };
 
   if (!unlocked) {
     return (
@@ -99,7 +108,7 @@ export default function AdminDashboardScreen({ navigation }: Props) {
           [
             ['stats', t('admin.tabStats')],
             ['flagged', `${t('admin.tabReports')}${pendingReports.length ? ` (${pendingReports.length})` : ''}`],
-            ['stories', t('admin.tabStories')],
+            ['stories', `${t('admin.tabStories')}${pendingStories.length ? ` (${pendingStories.length})` : ''}`],
             ['gala', t('admin.tabGala')],
           ] as const
         ).map(([id, label]) => (
@@ -169,16 +178,33 @@ export default function AdminDashboardScreen({ navigation }: Props) {
             {tab === 'stories' && (
               <>
                 <Text style={styles.sectionHint}>{t('admin.storiesHint')}</Text>
-                {MOCK_STORIES.map((s) => (
-                  <View key={s.id} style={styles.flagCard}>
-                    <Text style={styles.flagTitle}>{s.title}</Text>
-                    <Text style={styles.flagMeta}>{s.author} · {t('admin.pendingStatus')}</Text>
-                    <View style={styles.storyActions}>
-                      <Text style={styles.storyAction}>{t('admin.approve')}</Text>
-                      <Text style={styles.storyActionMuted}>{t('admin.reject')}</Text>
+                {pendingStories.length === 0 ? (
+                  <Text style={styles.empty}>{t('admin.noPendingStories')}</Text>
+                ) : (
+                  pendingStories.map((s) => (
+                    <View key={s.id} style={styles.flagCard}>
+                      <Text style={styles.flagTitle}>{s.title}</Text>
+                      <Text style={styles.flagMeta}>{s.author_name} · {t('admin.pendingStatus')}</Text>
+                      {s.body ? (
+                        <Text style={styles.flagExcerpt} numberOfLines={4}>{s.body}</Text>
+                      ) : null}
+                      <View style={styles.storyActions}>
+                        <Pressable
+                          disabled={actingStoryId === s.id}
+                          onPress={() => resolveStory(s.id, 'approve')}
+                        >
+                          <Text style={styles.storyAction}>{t('admin.approve')}</Text>
+                        </Pressable>
+                        <Pressable
+                          disabled={actingStoryId === s.id}
+                          onPress={() => resolveStory(s.id, 'reject')}
+                        >
+                          <Text style={styles.storyActionMuted}>{t('admin.reject')}</Text>
+                        </Pressable>
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  ))
+                )}
               </>
             )}
 

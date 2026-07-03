@@ -32,6 +32,7 @@ export default function CultureMissionScreen({ navigation }: Props) {
     if (!participant?.session_token || !canSubmit) return;
     setSubmitting(true);
     try {
+      await api.submitOralStory(responses, participant.session_token);
       await api.completeMissionStep(2, participant.session_token);
       const me = await api.getMe(participant.session_token);
       updateParticipant({ patriotism_points: me.participant.patriotism_points });
