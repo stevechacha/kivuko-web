@@ -16,20 +16,23 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
+import LanguageToggle from '../components/LanguageToggle';
+import { useLocale } from '../context/LocaleContext';
 import { api, type ReportedItem } from '../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ModeratorFlaggedContent'>;
 
 type FilterTab = 'pending' | 'resolved';
 
-const REASON_LABEL: Record<string, string> = {
-  abusive_language: 'Lugha chafu',
-  contact_request: 'Kuomba namba',
-  inappropriate_content: 'Maudhui yasiyofaa',
-  other: 'Nyingine',
+const REASON_KEYS: Record<string, 'moderator.reasonAbusive' | 'moderator.reasonContact' | 'moderator.reasonInappropriate' | 'moderator.reasonOther'> = {
+  abusive_language: 'moderator.reasonAbusive',
+  contact_request: 'moderator.reasonContact',
+  inappropriate_content: 'moderator.reasonInappropriate',
+  other: 'moderator.reasonOther',
 };
 
 export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
+  const { t } = useLocale();
   const [tab, setTab] = useState<FilterTab>('pending');
   const [items, setItems] = useState<ReportedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +44,7 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
     api
       .getReportedContent(tab)
       .then(setItems)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Imeshindwa kupakia ripoti.'))
+      .catch((e) => setError(e instanceof Error ? e.message : t('moderator.loadError')))
       .finally(() => setLoading(false));
   };
 
@@ -56,7 +59,7 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
       await api.resolveReport(item.id, action);
       setItems((prev) => prev.filter((i) => i.id !== item.id));
     } catch (e) {
-      Alert.alert('Imeshindwa', e instanceof Error ? e.message : 'Jaribu tena.');
+      Alert.alert(t('moderator.actionFailed'), e instanceof Error ? e.message : t('moderator.tryAgain'));
     } finally {
       setActingId(null);
     }
@@ -68,22 +71,22 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <View style={styles.nav}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>‹ Nyuma</Text>
+          <Text style={styles.backBtnText}>{t('moderator.back')}</Text>
         </Pressable>
-        <Text style={styles.navTitle}>MAUDHUI YALIYORIPOTIWA</Text>
-        <View style={{ width: 56 }} />
+        <Text style={styles.navTitle}>{t('moderator.navTitle')}</Text>
+        <LanguageToggle />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.tabRow}>
           <FilterChip
-            label={`Yanasubiri${pendingCount != null ? ` · ${pendingCount}` : ''}`}
+            label={`${t('moderator.tabPending')}${pendingCount != null ? ` · ${pendingCount}` : ''}`}
             active={tab === 'pending'}
             accent={colors.dark}
             onPress={() => setTab('pending')}
           />
           <FilterChip
-            label="Yametatuliwa"
+            label={t('moderator.tabResolved')}
             active={tab === 'resolved'}
             accent={colors.textMuted}
             onPress={() => setTab('resolved')}
@@ -98,7 +101,7 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
           <View style={styles.emptyWrap}>
             <Text style={styles.emptyIcon}>✓</Text>
             <Text style={styles.emptyTitle}>
-              {tab === 'pending' ? 'Hakuna ripoti zinazosubiri' : 'Hakuna ripoti zilizotatuliwa bado'}
+              {tab === 'pending' ? t('moderator.emptyPending') : t('moderator.emptyResolved')}
             </Text>
           </View>
         ) : (
@@ -111,12 +114,12 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
                       {item.reported_name} → {item.reporter_name} · {item.mission_title}
                     </Text>
                     <Text style={styles.cardMeta}>
-                      Iliripotiwa {item.reported_at_label}
+                      {t('moderator.reportedAt', { when: item.reported_at_label })}
                     </Text>
                   </View>
                   <View style={styles.reasonBadge}>
                     <Text style={styles.reasonBadgeText}>
-                      {REASON_LABEL[item.reason] ?? item.reason}
+                      {REASON_KEYS[item.reason] ? t(REASON_KEYS[item.reason]) : item.reason}
                     </Text>
                   </View>
                 </View>
@@ -130,28 +133,28 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
                 {tab === 'pending' && (
                   <View style={styles.actionRow}>
                     <ActionBtn
-                      label="Puuza"
+                      label={t('moderator.dismissLabel')}
                       variant="ghost"
                       loading={actingId === item.id}
                       onPress={() => resolve(item, 'dismiss')}
                     />
                     <ActionBtn
-                      label="Onya mtumiaji"
+                      label={t('moderator.warnUser')}
                       variant="warn"
                       loading={actingId === item.id}
                       onPress={() => resolve(item, 'warn')}
                     />
                     <ActionBtn
-                      label="Simamisha akaunti"
+                      label={t('moderator.suspendAccount')}
                       variant="danger"
                       loading={actingId === item.id}
                       onPress={() =>
                         Alert.alert(
-                          'Simamisha Akaunti?',
-                          `${item.reported_name} hataweza kuingia mfumoni hadi ukaguzi zaidi.`,
+                          t('moderator.suspendConfirmTitle'),
+                          t('moderator.suspendConfirmBody', { name: item.reported_name }),
                           [
-                            { text: 'Ghairi', style: 'cancel' },
-                            { text: 'Simamisha', style: 'destructive', onPress: () => resolve(item, 'suspend') },
+                            { text: t('common.cancel'), style: 'cancel' },
+                            { text: t('moderator.suspendBtn'), style: 'destructive', onPress: () => resolve(item, 'suspend') },
                           ]
                         )
                       }
@@ -164,7 +167,7 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
         )}
 
         <View style={{ marginTop: spacing.xl, alignItems: 'center' }}>
-          <Button label="Rudi Dashibodi ya Admin" variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />
+          <Button label={t('moderator.backAdmin')} variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />
         </View>
       </ScrollView>
     </SafeAreaView>

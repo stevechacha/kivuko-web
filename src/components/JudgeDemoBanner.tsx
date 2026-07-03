@@ -4,22 +4,19 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius } from '../theme/colors';
 import Button from './Button';
+import { useLocale } from '../context/LocaleContext';
 
 type Nav = Pick<NativeStackNavigationProp<RootStackParamList>, 'navigate'>;
 
 export default function JudgeDemoBanner({ navigation }: { navigation: Nav }) {
+  const { t } = useLocale();
+
   return (
     <View style={styles.banner}>
-      <Text style={styles.badge}>🎬 ONYESHO LA WAAMUZI</Text>
-      <Text style={styles.title}>Anza Safari ya Mwanzo hadi Mwisho</Text>
-      <Text style={styles.body}>
-        Mwongozo wa hatua 8 kwa dakika 3 — na one-line pitch tayari kwa waamuzi. Imewekwa tayari kwa video ya
-        mashindano.
-      </Text>
-      <Button
-        label="▶ Anza Onyesho la Waamuzi"
-        onPress={() => navigation.navigate('JudgeTour')}
-      />
+      <Text style={styles.badge}>{t('judgeBanner.badge')}</Text>
+      <Text style={styles.title}>{t('judgeBanner.title')}</Text>
+      <Text style={styles.body}>{t('judgeBanner.body')}</Text>
+      <Button label={t('judgeBanner.cta')} onPress={() => navigation.navigate('JudgeTour')} />
     </View>
   );
 }

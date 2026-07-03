@@ -19,6 +19,7 @@ import WhatsAppChat from '../components/WhatsAppChat';
 import ReportModal, { type ReportReasonId } from '../components/ReportModal';
 import { api, type ChatMessage, type Peer, type QuizQuestion, type QuizSubmitResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionChat'>;
@@ -28,6 +29,7 @@ const POLL_MS = 1200;
 export default function MissionChatScreen({ navigation }: Props) {
   useCleanWebUrl();
   const { participant, missionId, matchId, peer: sessionPeer, updateParticipant, setMission } = useSession();
+  const { t } = useLocale();
   const userName = participant?.name || 'Mzalendo';
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
@@ -200,7 +202,7 @@ export default function MissionChatScreen({ navigation }: Props) {
       <Pressable
         style={styles.reportHeaderBtn}
         onPress={() => setReportModalVisible(true)}
-        accessibilityLabel="Ripoti mazungumzo"
+        accessibilityLabel={t('report.title')}
       >
         <Text style={styles.reportHeaderBtnText}>🚩</Text>
       </Pressable>

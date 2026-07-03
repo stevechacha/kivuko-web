@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { colors, radius } from '../theme/colors';
+import { useLocale } from '../context/LocaleContext';
 
 function useCountUp(target: number, duration = 1400) {
   const [display, setDisplay] = useState(0);
@@ -47,6 +48,7 @@ export interface LiveImpactData {
 }
 
 export default function LiveImpactTicker({ data }: { data: LiveImpactData | null }) {
+  const { t } = useLocale();
   const pulse = React.useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -66,17 +68,20 @@ export default function LiveImpactTicker({ data }: { data: LiveImpactData | null
     <Animated.View style={[styles.wrap, { transform: [{ scale: pulse }] }]}>
       <View style={styles.liveRow}>
         <View style={styles.liveDot} />
-        <Text style={styles.liveLabel}>MUUNGANO HAI — TAKWIMU ZA MOJA KWA MOJA</Text>
+        <Text style={styles.liveLabel}>{t('liveImpact.liveLabel')}</Text>
       </View>
       <View style={styles.grid}>
-        <StatBlock label="Vijana Walioungana" value={data.youth_connected} />
-        <StatBlock label="Jozi za Leo" value={data.pairs_today} />
-        <StatBlock label="Mikoa Hai" value={data.regions_active} />
-        <StatBlock label="Vyeti vya QR" value={data.certificates_issued} />
+        <StatBlock label={t('liveImpact.youthConnected')} value={data.youth_connected} />
+        <StatBlock label={t('liveImpact.pairsToday')} value={data.pairs_today} />
+        <StatBlock label={t('liveImpact.regionsActive')} value={data.regions_active} />
+        <StatBlock label={t('liveImpact.certificates')} value={data.certificates_issued} />
       </View>
       <Text style={styles.bridgeLine}>
-        🏔️ Bara {data.bara_youth.toLocaleString()} · 🌊 Visiwani {data.visiwani_youth.toLocaleString()} ·{' '}
-        {data.live_connections} miunganiko hai
+        {t('liveImpact.bridgeLine', {
+          bara: data.bara_youth.toLocaleString(),
+          visiwani: data.visiwani_youth.toLocaleString(),
+          connections: data.live_connections,
+        })}
       </Text>
     </Animated.View>
   );

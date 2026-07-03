@@ -19,12 +19,14 @@ import Button from '../components/Button';
 import TopNav from '../components/TopNav';
 import { api, ApiError } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding' | 'Login'>;
 
 export default function OnboardingScreen({ navigation, route }: Props) {
   const initialMode = route.name === 'Login' ? 'login' : 'register';
   const { applySession } = useSession();
+  const { t } = useLocale();
   const [mode, setMode] = useState<'register' | 'login'>(initialMode);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -38,7 +40,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const finishSession = (message?: string) => {
-    setSuccessMessage(message ?? (mode === 'login' ? 'Umefanikiwa kuingia!' : 'Karibu, Mzalendo!'));
+    setSuccessMessage(message ?? (mode === 'login' ? t('onboarding.loginSuccess') : t('onboarding.welcome')));
     setSubmitted(true);
     setTimeout(() => {
       navigation.navigate('HubDashboard');
@@ -47,11 +49,11 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
   const handleRegister = async () => {
     if (!name.trim() || !phone.trim() || !region.trim()) {
-      setError('Jaza jina, namba ya simu, na mkoa/eneo lako.');
+      setError(t('onboarding.errRequired'));
       return;
     }
     if (!acceptedTerms) {
-      setError('Lazima ukubali masharti ya uoanishaji na usalama.');
+      setError(t('onboarding.errConsent'));
       return;
     }
     setLoading(true);
@@ -72,7 +74,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
         setError(e.message);
         setMode('login');
       } else {
-        setError(e instanceof Error ? e.message : 'Usajili umeshindwa. Jaribu tena.');
+        setError(e instanceof Error ? e.message : t('onboarding.errRegister'));
       }
     } finally {
       setLoading(false);
@@ -81,7 +83,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
   const handleLogin = async () => {
     if (!phone.trim()) {
-      setError('Weka namba ya simu uliyosajiliwa nayo.');
+      setError(t('onboarding.errPhone'));
       return;
     }
     setLoading(true);
@@ -91,7 +93,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
       applySession(res);
       finishSession(res.message);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Kuingia kumeshindwa. Jaribu tena.');
+      setError(e instanceof Error ? e.message : t('onboarding.errLogin'));
     } finally {
       setLoading(false);
     }
@@ -111,20 +113,18 @@ export default function OnboardingScreen({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.card}>
           <Text style={styles.eyebrow}>
-            {mode === 'login' ? 'Ingia tena' : 'Hatua 1 ya 5 — Usajili'}
+            {mode === 'login' ? t('onboarding.eyebrowLogin') : t('onboarding.eyebrowRegister')}
           </Text>
           <Text style={styles.title}>
-            {mode === 'login' ? 'Ingia kwa Namba ya Simu' : 'Jisajili kuwa Mzalendo'}
+            {mode === 'login' ? t('onboarding.titleLogin') : t('onboarding.titleRegister')}
           </Text>
           <Text style={styles.subtitle}>
-            {mode === 'login'
-              ? 'Tumia namba uliyosajiliwa nayo. Taarifa zako zitatoka moja kwa moja kutoka kwa API.'
-              : 'Taarifa zako zitahifadhiwa kwenye seva halisi — si data ya majaribio.'}
+            {mode === 'login' ? t('onboarding.subLogin') : t('onboarding.subRegister')}
           </Text>
 
           <View style={styles.modeRow}>
             <ModeTab
-              label="Jisajili"
+              label={t('onboarding.tabRegister')}
               active={mode === 'register'}
               onPress={() => {
                 setMode('register');
@@ -132,7 +132,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
               }}
             />
             <ModeTab
-              label="Ingia"
+              label={t('onboarding.tabLogin')}
               active={mode === 'login'}
               onPress={() => {
                 setMode('login');
@@ -144,38 +144,38 @@ export default function OnboardingScreen({ navigation, route }: Props) {
           <View style={styles.formBody}>
             {mode === 'register' && (
               <>
-                <Field label="Jina Kamili" value={name} onChangeText={setName} placeholder="mfano: Amina Juma" />
+                <Field label={t('onboarding.fullName')} value={name} onChangeText={setName} placeholder={t('onboarding.phName')} />
                 <Field
-                  label="Chuo / Chuo Kikuu (si lazima)"
+                  label={t('onboarding.college')}
                   value={college}
                   onChangeText={setCollege}
-                  placeholder="mfano: Chuo Kikuu cha Dodoma"
+                  placeholder={t('onboarding.phCollege')}
                 />
               </>
             )}
             <Field
-              label="Namba ya Simu"
+              label={t('onboarding.phone')}
               value={phone}
               onChangeText={setPhone}
-              placeholder="07xx xxx xxx"
+              placeholder={t('onboarding.phPhone')}
               keyboardType="phone-pad"
             />
             {mode === 'register' && (
               <>
-                <Field label="Mkoa / Eneo" value={region} onChangeText={setRegion} placeholder="mfano: Dodoma" />
-                <Text style={styles.fieldLabel}>Chagua Eneo Lako</Text>
+                <Field label={t('onboarding.region')} value={region} onChangeText={setRegion} placeholder={t('onboarding.phRegion')} />
+                <Text style={styles.fieldLabel}>{t('onboarding.chooseRegion')}</Text>
                 <View style={styles.regionRow}>
                   <RegionOption
-                    title="🏔️ Bara"
-                    subtitle="Tanzania Mainland"
+                    title={t('onboarding.baraTitle')}
+                    subtitle={t('onboarding.baraSub')}
                     selected={side === 'bara'}
                     accent={colors.green}
                     selectedBg="#F0FAF8"
                     onPress={() => setSide('bara')}
                   />
                   <RegionOption
-                    title="🌊 Visiwani"
-                    subtitle="Zanzibar Isles"
+                    title={t('onboarding.visiwaniTitle')}
+                    subtitle={t('onboarding.visiwaniSub')}
                     selected={side === 'visiwani'}
                     accent={colors.blue}
                     selectedBg="#F0F7FC"
@@ -186,10 +186,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
                   <View style={[styles.consentBox, acceptedTerms && styles.consentBoxChecked]}>
                     {acceptedTerms && <Text style={styles.consentTick}>✓</Text>}
                   </View>
-                  <Text style={styles.consentText}>
-                    Nakubali kuoanishwa na mzalendo mwenzangu, masharti ya matumizi, na kuwa maudhui yanaweza
-                    kukaguliwa kwa usalama (Consent-Based Publishing).
-                  </Text>
+                  <Text style={styles.consentText}>{t('onboarding.consent')}</Text>
                 </Pressable>
               </>
             )}
@@ -200,7 +197,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
               <Text style={{ fontSize: 26 }}>🎉</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.welcomeTitle}>{successMessage}</Text>
-                <Text style={styles.welcomeBody}>Inaelekeza dashibodi yako…</Text>
+                <Text style={styles.welcomeBody}>{t('onboarding.redirecting')}</Text>
               </View>
             </View>
           )}
@@ -212,12 +209,12 @@ export default function OnboardingScreen({ navigation, route }: Props) {
               <ActivityIndicator color={colors.green} />
             ) : (
               <Button
-                label={submitted ? 'Imefanikiwa ✓' : mode === 'login' ? 'Ingia →' : 'Jisajili →'}
+                label={submitted ? t('common.success') : mode === 'login' ? t('onboarding.loginCta') : t('onboarding.registerCta')}
                 onPress={handleSubmit}
                 disabled={submitted}
               />
             )}
-            <Button label="Rudi Nyumbani" variant="ghost" onPress={() => navigation.navigate('Landing')} />
+            <Button label={t('common.home')} variant="ghost" onPress={() => navigation.navigate('Landing')} />
           </View>
         </View>
       </ScrollView>

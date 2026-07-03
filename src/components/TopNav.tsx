@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Platform, Pressable } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, spacing } from '../theme/colors';
 import { useSession } from '../context/SessionContext';
+import LanguageToggle from './LanguageToggle';
+import { useLocale } from '../context/LocaleContext';
 
 const STEPS = 5;
 
@@ -15,6 +17,7 @@ interface Props {
 
 export default function TopNav({ currentStep, showPoints, onLogoPress }: Props) {
   const { participant } = useSession();
+  const { t } = useLocale();
   const points = participant?.patriotism_points ?? 0;
 
   return (
@@ -33,12 +36,13 @@ export default function TopNav({ currentStep, showPoints, onLogoPress }: Props) 
             <Circle cx={7} cy={24} r={2.6} fill={colors.green} />
             <Circle cx={33} cy={16} r={2.6} fill={colors.blue} />
           </Svg>
-          <Text style={styles.logoText}>Kivuko la Muungano</Text>
+          <Text style={styles.logoText}>{t('common.logo')}</Text>
         </Pressable>
         <View style={styles.right}>
+          <LanguageToggle />
           {showPoints && participant ? (
             <View style={styles.pointsBadge}>
-              <Text style={styles.pointsText}>⭐ {points.toLocaleString()} Pts</Text>
+              <Text style={styles.pointsText}>⭐ {points.toLocaleString()} {t('common.pts')}</Text>
             </View>
           ) : null}
           <View style={styles.dots}>

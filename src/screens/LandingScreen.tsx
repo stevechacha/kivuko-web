@@ -23,6 +23,7 @@ import JudgeDemoBanner from '../components/JudgeDemoBanner';
 import LiveImpactTicker from '../components/LiveImpactTicker';
 import LiveActivityFeed from '../components/LiveActivityFeed';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 import { api, type ElderAudio, type LiveImpact } from '../api/client';
 import { API_BASE_URL } from '../config/api';
 import { playAudioUrl, stopActiveAudio } from '../utils/audio';
@@ -38,6 +39,7 @@ const FEATURED_AUDIO: ElderAudio = {
 
 export default function LandingScreen({ navigation }: Props) {
   const { participant } = useSession();
+  const { t } = useLocale();
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [featuredAudio, setFeaturedAudio] = useState<ElderAudio>(FEATURED_AUDIO);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
@@ -81,27 +83,23 @@ export default function LandingScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={[styles.heroGrid, isWide && styles.heroGridWide]}>
           <View style={[styles.heroCopy, isWide && { flex: 1.1 }]}>
-            <Text style={styles.eyebrow}>Elimu ya Muungano Ubunifu — MVP Demo</Text>
+            <Text style={styles.eyebrow}>{t('landing.eyebrow')}</Text>
             <Text style={styles.h1}>
-              Bara na Visiwani,{'\n'}
-              <Text style={styles.accent}>Kizazi Kimoja.</Text>
+              {t('landing.h1Line1')}{'\n'}
+              <Text style={styles.accent}>{t('landing.h1Accent')}</Text>
             </Text>
-            <Text style={styles.lead}>
-              Kivuko la Muungano Hub inaoanisha kijana mmoja Bara na kijana mmoja Visiwani,
-              na kuwapeleka pamoja kwenye Dhamira za Pamoja kuhusu historia, utamaduni, na maono
-              ya taifa — huku kila hatua ikijengeka kuwa uzoefu wa kweli, si somo la kukariri.
-            </Text>
+            <Text style={styles.lead}>{t('landing.lead')}</Text>
             <View style={styles.ctaRow}>
               {participant ? (
-                <Button label="Fungua Dashibodi →" onPress={() => navigation.navigate('HubDashboard')} />
+                <Button label={t('common.openDashboard')} onPress={() => navigation.navigate('HubDashboard')} />
               ) : (
                 <>
-                  <Button label="Anza Safari →" onPress={() => navigation.navigate('Onboarding')} />
-                  <Button label="Ingia →" variant="ghost" onPress={() => navigation.navigate('Login')} />
+                  <Button label={t('landing.startJourney')} onPress={() => navigation.navigate('Onboarding')} />
+                  <Button label={t('landing.login')} variant="ghost" onPress={() => navigation.navigate('Login')} />
                 </>
               )}
               <Button
-                label="Angalia Ramani ya Muungano"
+                label={t('landing.viewMap')}
                 variant="ghost"
                 onPress={() => navigation.navigate('UnionMap')}
               />
@@ -118,7 +116,7 @@ export default function LandingScreen({ navigation }: Props) {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.audioTitle}>
-                  Sauti ya Umoja — {featuredAudio.name}
+                  {t('landing.voiceTitle', { name: featuredAudio.name })}
                 </Text>
                 <Text style={styles.audioSub}>{featuredAudio.duration_label}</Text>
               </View>
@@ -138,8 +136,8 @@ export default function LandingScreen({ navigation }: Props) {
           </View>
         </View>
         <Text style={styles.footer}>
-          Kivuko la Muungano Hub — Onyesho la MVP · Elimu ya Muungano Ubunifu Challenge 2026
-          {apiOnline === false ? `\nAPI haipatikani (${API_BASE_URL})` : ''}
+          {t('landing.footer')}
+          {apiOnline === false ? `\n${t('common.apiOffline')} (${API_BASE_URL})` : ''}
         </Text>
       </ScrollView>
     </SafeAreaView>

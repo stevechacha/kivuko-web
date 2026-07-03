@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../theme/colors';
+import { useLocale } from '../context/LocaleContext';
 
 export default function PeerSubmittedBanner({ peerName }: { peerName: string }) {
+  const { t } = useLocale();
   const [visible, setVisible] = useState(false);
   const firstName = peerName.split(' ')[0];
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 1400);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setVisible(true), 1400);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!visible) return null;
@@ -17,8 +19,8 @@ export default function PeerSubmittedBanner({ peerName }: { peerName: string }) 
     <View style={styles.banner}>
       <Text style={styles.icon}>✓</Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>Pacha wako amejibu</Text>
-        <Text style={styles.body}>{firstName} ameshiriki majibu yake — endelea pamoja!</Text>
+        <Text style={styles.title}>{t('peerBanner.submitted')}</Text>
+        <Text style={styles.body}>{t('peerBanner.body', { name: firstName })}</Text>
       </View>
     </View>
   );

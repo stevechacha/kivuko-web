@@ -13,6 +13,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
+import LanguageToggle from '../components/LanguageToggle';
+import { useLocale } from '../context/LocaleContext';
 import { api, type AdminDashboard, type LeaderboardEntry, type ReportedItem } from '../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
@@ -20,11 +22,12 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
 type AdminTab = 'stats' | 'flagged' | 'stories' | 'gala';
 
 const MOCK_STORIES = [
-  { id: 's1', title: 'Kumbukumbu ya Muungano — Dodoma', author: 'Amina J.', status: 'Inasubiri' },
-  { id: 's2', title: 'Sauti ya Bibi kutoka Unguja', author: 'Khadija M.', status: 'Inasubiri' },
+  { id: 's1', title: 'Kumbukumbu ya Muungano — Dodoma', author: 'Amina J.' },
+  { id: 's2', title: 'Sauti ya Bibi kutoka Unguja', author: 'Khadija M.' },
 ];
 
 export default function AdminDashboardScreen({ navigation }: Props) {
+  const { t } = useLocale();
   const [tab, setTab] = useState<AdminTab>('stats');
   const [stats, setStats] = useState<AdminDashboard | null>(null);
   const [pendingReports, setPendingReports] = useState<ReportedItem[]>([]);
@@ -43,27 +46,30 @@ export default function AdminDashboardScreen({ navigation }: Props) {
         setPendingReports(reports);
         setGalaShortlist(leaders);
       })
-      .catch((e) => setError(e instanceof Error ? e.message : 'Imeshindwa kupakia dashibodi.'))
+      .catch((e) => setError(e instanceof Error ? e.message : t('admin.loadError')))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.adminNav}>
-        <Text style={styles.adminNavTitle}>PANELI YA UDHIBITI (ADMIN)</Text>
-        <View style={styles.liveBadge}>
-          <View style={styles.liveDot} />
-          <Text style={styles.liveText}>Msimamizi Mkuu</Text>
+        <Text style={styles.adminNavTitle}>{t('admin.panelTitle')}</Text>
+        <View style={styles.navRight}>
+          <LanguageToggle />
+          <View style={styles.liveBadge}>
+            <View style={styles.liveDot} />
+            <Text style={styles.liveText}>{t('admin.moderatorRole')}</Text>
+          </View>
         </View>
       </View>
 
       <View style={styles.tabRow}>
         {(
           [
-            ['stats', 'Takwimu'],
-            ['flagged', `Ripoti${pendingReports.length ? ` (${pendingReports.length})` : ''}`],
-            ['stories', 'Hadithi'],
-            ['gala', 'Gala Top 10'],
+            ['stats', t('admin.tabStats')],
+            ['flagged', `${t('admin.tabReports')}${pendingReports.length ? ` (${pendingReports.length})` : ''}`],
+            ['stories', t('admin.tabStories')],
+            ['gala', t('admin.tabGala')],
           ] as const
         ).map(([id, label]) => (
           <Pressable
@@ -86,15 +92,15 @@ export default function AdminDashboardScreen({ navigation }: Props) {
             {tab === 'stats' && stats && (
               <>
                 <View style={styles.statGrid}>
-                  <StatCard label="Wanachama" value={stats.total_participants} />
-                  <StatCard label="Jozi Hai" value={stats.active_matches} />
-                  <StatCard label="Dhamira Zilizokamilika" value={stats.completed_missions} />
-                  <StatCard label="Vyeti" value={stats.certificates_issued} />
-                  <StatCard label="Bara" value={stats.bara_participants} accent={colors.green} />
-                  <StatCard label="Visiwani" value={stats.visiwani_participants} accent={colors.blue} />
+                  <StatCard label={t('admin.statMembers')} value={stats.total_participants} />
+                  <StatCard label={t('admin.statMatches')} value={stats.active_matches} />
+                  <StatCard label={t('admin.statMissions')} value={stats.completed_missions} />
+                  <StatCard label={t('admin.statCerts')} value={stats.certificates_issued} />
+                  <StatCard label={t('common.bara')} value={stats.bara_participants} accent={colors.green} />
+                  <StatCard label={t('common.visiwani')} value={stats.visiwani_participants} accent={colors.blue} />
                 </View>
                 <View style={styles.connectionsCard}>
-                  <Text style={styles.connectionsTitle}>Miunganisho ya Hivi Karibuni</Text>
+                  <Text style={styles.connectionsTitle}>{t('admin.recentConnections')}</Text>
                   {stats.recent_connections.slice(0, 6).map((c) => (
                     <View key={c.id} style={styles.connectionRow}>
                       <Text style={styles.connectionText}>
@@ -108,11 +114,9 @@ export default function AdminDashboardScreen({ navigation }: Props) {
 
             {tab === 'flagged' && (
               <>
-                <Text style={styles.sectionHint}>
-                  Ripoti za mazungumzo zinazosubiri ukaguzi — kulingana na Sura ya 4 ya usalama.
-                </Text>
+                <Text style={styles.sectionHint}>{t('admin.flaggedHint')}</Text>
                 {pendingReports.length === 0 ? (
-                  <Text style={styles.empty}>Hakuna ripoti zinazosubiri kwa sasa.</Text>
+                  <Text style={styles.empty}>{t('admin.noReports')}</Text>
                 ) : (
                   pendingReports.slice(0, 5).map((r) => (
                     <View key={r.id} style={styles.flagCard}>
@@ -124,7 +128,7 @@ export default function AdminDashboardScreen({ navigation }: Props) {
                 )}
                 <View style={{ marginTop: spacing.md }}>
                   <Button
-                    label="Fungua Foleni Kamili ya Ripoti →"
+                    label={t('admin.openFullQueue')}
                     onPress={() => navigation.navigate('ModeratorFlaggedContent')}
                   />
                 </View>
@@ -133,14 +137,14 @@ export default function AdminDashboardScreen({ navigation }: Props) {
 
             {tab === 'stories' && (
               <>
-                <Text style={styles.sectionHint}>Hadithi za mdomo zinazosubiri idhini (Consent-Based Publishing).</Text>
+                <Text style={styles.sectionHint}>{t('admin.storiesHint')}</Text>
                 {MOCK_STORIES.map((s) => (
                   <View key={s.id} style={styles.flagCard}>
                     <Text style={styles.flagTitle}>{s.title}</Text>
-                    <Text style={styles.flagMeta}>{s.author} · {s.status}</Text>
+                    <Text style={styles.flagMeta}>{s.author} · {t('admin.pendingStatus')}</Text>
                     <View style={styles.storyActions}>
-                      <Text style={styles.storyAction}>✓ Idhinisha</Text>
-                      <Text style={styles.storyActionMuted}>✕ Kataa</Text>
+                      <Text style={styles.storyAction}>{t('admin.approve')}</Text>
+                      <Text style={styles.storyActionMuted}>{t('admin.reject')}</Text>
                     </View>
                   </View>
                 ))}
@@ -149,7 +153,7 @@ export default function AdminDashboardScreen({ navigation }: Props) {
 
             {tab === 'gala' && (
               <>
-                <Text style={styles.sectionHint}>Orodha fupi ya Gala ya Uzalendo — idhini ya msimamizi.</Text>
+                <Text style={styles.sectionHint}>{t('admin.galaShortlist')}</Text>
                 {galaShortlist.map((e) => (
                   <View key={e.rank} style={styles.galaRow}>
                     <Text style={styles.galaRank}>{e.rank}</Text>
@@ -166,9 +170,9 @@ export default function AdminDashboardScreen({ navigation }: Props) {
         )}
 
         <View style={{ marginTop: spacing.xl, alignItems: 'center', gap: 8 }}>
-          <Button label="Maudhui Yaliyoripotiwa" variant="secondary" onPress={() => navigation.navigate('ModeratorFlaggedContent')} />
-          <Button label="Angalia Ramani Hai" variant="secondary" onPress={() => navigation.navigate('UnionMap')} />
-          <Button label="Rudi Dashibodi" variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
+          <Button label={t('admin.flaggedLink')} variant="secondary" onPress={() => navigation.navigate('ModeratorFlaggedContent')} />
+          <Button label={t('admin.viewMap')} variant="secondary" onPress={() => navigation.navigate('UnionMap')} />
+          <Button label={t('admin.backDashboard')} variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -197,6 +201,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   adminNavTitle: { color: colors.white, fontWeight: '800', fontSize: 13 },
+  navRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 import { colors, radius } from '../theme/colors';
 import Button from './Button';
 
@@ -12,6 +13,7 @@ export default function ContinueSessionBanner({
   navigation: Pick<NativeStackNavigationProp<RootStackParamList>, 'navigate'>;
 }) {
   const { participant, missionId } = useSession();
+  const { t } = useLocale();
 
   if (!participant) return null;
 
@@ -19,19 +21,17 @@ export default function ContinueSessionBanner({
 
   return (
     <View style={styles.banner}>
-      <Text style={styles.title}>Karibu tena, {firstName}!</Text>
-      <Text style={styles.body}>
-        Kipindi chako kimehifadhiwa. Endelea safari yako ya Kivuko.
-      </Text>
+      <Text style={styles.title}>{t('continueBanner.title', { name: firstName })}</Text>
+      <Text style={styles.body}>{t('continueBanner.body')}</Text>
       <View style={styles.actions}>
         {missionId ? (
           <Button
-            label="Endelea Dhamira →"
+            label={t('continueBanner.resumeMission')}
             onPress={() => navigation.navigate('MissionChat')}
           />
         ) : (
           <Button
-            label="Fungua Dashibodi →"
+            label={t('common.openDashboard')}
             onPress={() => navigation.navigate('HubDashboard')}
           />
         )}

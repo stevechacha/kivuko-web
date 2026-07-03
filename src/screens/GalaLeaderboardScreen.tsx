@@ -8,11 +8,13 @@ import TopNav from '../components/TopNav';
 import Button from '../components/Button';
 import { api, type LeaderboardEntry } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GalaLeaderboard'>;
 
 export default function GalaLeaderboardScreen({ navigation }: Props) {
   const { participant } = useSession();
+  const { t } = useLocale();
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [regionFilter, setRegionFilter] = useState<'all' | 'bara' | 'visiwani'>('all');
@@ -28,12 +30,9 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
       <TopNav currentStep={0} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
-          <Text style={styles.heroBadge}>GALA YA UZALENDO 2026 🎊</Text>
-          <Text style={styles.heroTitle}>Top 10 Vijana wa Muungano</Text>
-          <Text style={styles.heroSub}>
-            Mwisho wa kila mzunguko, vijana 10 bora wanasherehekewa kwenye Gala ya Kitaifa ya Muungano na Uzalendo —
-            heshima ya kweli kwa wajasiri wa kidijitali.
-          </Text>
+          <Text style={styles.heroBadge}>{t('gala.heroBadge')}</Text>
+          <Text style={styles.heroTitle}>{t('gala.heroTitle')}</Text>
+          <Text style={styles.heroSub}>{t('gala.heroSub')}</Text>
         </View>
 
         <View style={styles.filterRow}>
@@ -44,7 +43,7 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
               onPress={() => setRegionFilter(r)}
             >
               <Text style={[styles.filterText, regionFilter === r && styles.filterTextActive]}>
-                {r === 'all' ? 'Wote' : r === 'bara' ? '🏔️ Bara' : '🌊 Visiwani'}
+                {r === 'all' ? t('common.all') : r === 'bara' ? t('gala.filterBara') : t('gala.filterVisiwani')}
               </Text>
             </Pressable>
           ))}
@@ -60,7 +59,7 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
                 <View key={entry.rank} style={[styles.row, isMe && styles.rowMe, entry.rank <= 3 && styles.rowTop]}>
                   <Text style={styles.rank}>{entry.rank <= 3 ? ['🥇', '🥈', '🥉'][entry.rank - 1] : entry.rank}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.name}>{entry.name}{isMe ? ' (Wewe)' : ''}</Text>
+                    <Text style={styles.name}>{entry.name}{isMe ? ` ${t('gala.you')}` : ''}</Text>
                     <Text style={styles.meta}>{entry.home_area} · {entry.region_label} · {entry.grade.badge} {entry.grade.label}</Text>
                   </View>
                   <Text style={styles.pts}>{entry.patriotism_points.toLocaleString()}</Text>
@@ -75,7 +74,7 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
         </Text>
 
         <View style={{ marginTop: spacing.lg, alignItems: 'center' }}>
-          <Button label="Rudi Dashibodi" variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
+          <Button label={t('admin.backDashboard')} variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
         </View>
       </ScrollView>
     </SafeAreaView>

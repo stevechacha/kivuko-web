@@ -7,6 +7,7 @@ import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import TopNav from '../components/TopNav';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 import { api } from '../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JudgeTour'>;
@@ -22,6 +23,7 @@ type TourStep = {
 
 export default function JudgeTourScreen({ navigation }: Props) {
   const { participant, missionId } = useSession();
+  const { t } = useLocale();
   const [progressStep, setProgressStep] = useState(0);
 
   useEffect(() => {
@@ -35,64 +37,64 @@ export default function JudgeTourScreen({ navigation }: Props) {
   const steps: TourStep[] = [
     {
       id: 1,
-      title: 'Usajili wa Mzalendo',
-      desc: 'Jisajili Bara au Visiwani — taarifa halisi kutoka API.',
+      title: t('judgeTour.s1Title'),
+      desc: t('judgeTour.s1Desc'),
       route: 'Onboarding',
       time: '0:20',
       done: !!participant,
     },
     {
       id: 2,
-      title: 'Dashibodi ya Kitaifa',
-      desc: 'Milango minne + safari ya Dhamira 5.',
+      title: t('judgeTour.s2Title'),
+      desc: t('judgeTour.s2Desc'),
       route: 'HubDashboard',
       time: '0:40',
       done: !!participant,
     },
     {
       id: 3,
-      title: 'Uoanishaji wa Kivuko',
-      desc: 'Injini inaoanisha Bara ↔ Visiwani sekunde chache.',
+      title: t('judgeTour.s3Title'),
+      desc: t('judgeTour.s3Desc'),
       route: 'Matching',
       time: '1:00',
       done: !!missionId,
     },
     {
       id: 4,
-      title: 'Chat ya WhatsApp + Jaribio',
-      desc: 'Mazungumzo halisi na jaribio la 1964.',
+      title: t('judgeTour.s4Title'),
+      desc: t('judgeTour.s4Desc'),
       route: 'MissionChat',
       time: '1:25',
       done: progressStep >= 1,
     },
     {
       id: 5,
-      title: 'Utamaduni & Maono',
-      desc: 'Dhamira 2 na 3 — ubadilishanaji wa utamaduni.',
+      title: t('judgeTour.s5Title'),
+      desc: t('judgeTour.s5Desc'),
       route: 'CultureMission',
       time: '2:00',
       done: progressStep >= 3,
     },
     {
       id: 6,
-      title: 'Cheti cha Balozi + QR',
-      desc: 'Cheti kinachothibitishwa kwa CV.',
+      title: t('judgeTour.s6Title'),
+      desc: t('judgeTour.s6Desc'),
       route: 'Certificate',
       time: '2:20',
       done: progressStep >= 4,
     },
     {
       id: 7,
-      title: 'Ramani Hai ya Muungano',
-      desc: 'Miunganiko ya dhahabu Bara–Visiwani + sauti za wazee.',
+      title: t('judgeTour.s7Title'),
+      desc: t('judgeTour.s7Desc'),
       route: 'UnionMap',
       time: '2:45',
       done: progressStep >= 5,
     },
     {
       id: 8,
-      title: 'Gala, Historia, WhatsApp',
-      desc: 'Top 10 vijana, mstari wa historia, bot ya WhatsApp.',
+      title: t('judgeTour.s8Title'),
+      desc: t('judgeTour.s8Desc'),
       route: 'GalaLeaderboard',
       time: '3:00',
       done: false,
@@ -107,17 +109,14 @@ export default function JudgeTourScreen({ navigation }: Props) {
       <TopNav currentStep={0} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
-          <Text style={styles.badge}>🎬 ONYESHO LA WAAMUZI</Text>
-          <Text style={styles.title}>Safari ya Dakika 3 — Mwanzo hadi Mwisho</Text>
-          <Text style={styles.sub}>
-            Fuata hatua hizi kwa mpangilio. Kila hatua inaonyesha muda wa video na inaunganisha moja kwa moja na
-            skrini halisi ya mfumo.
-          </Text>
+          <Text style={styles.badge}>{t('judgeTour.badge')}</Text>
+          <Text style={styles.title}>{t('judgeTour.title')}</Text>
+          <Text style={styles.sub}>{t('judgeTour.sub')}</Text>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${(completedCount / steps.length) * 100}%` }]} />
           </View>
           <Text style={styles.progressText}>
-            {completedCount}/{steps.length} hatua zimekamilika
+            {t('judgeTour.progress', { done: completedCount, total: steps.length })}
           </Text>
         </View>
 
@@ -143,19 +142,15 @@ export default function JudgeTourScreen({ navigation }: Props) {
 
         <View style={styles.ctaBlock}>
           <Button
-            label={`▶ Endelea: ${nextStep.title} →`}
+            label={t('judgeTour.continue', { step: nextStep.title })}
             onPress={() => navigation.navigate(nextStep.route as never)}
           />
-          <Button label="Rudi Nyumbani" variant="ghost" onPress={() => navigation.navigate('Landing')} />
+          <Button label={t('common.home')} variant="ghost" onPress={() => navigation.navigate('Landing')} />
         </View>
 
         <View style={styles.pitchBox}>
-          <Text style={styles.pitchLabel}>ONE-LINE PITCH (kwa waamuzi)</Text>
-          <Text style={styles.pitchText}>
-            "Kivuko la Muungano Hub inaoanisha vijana wa Bara na Visiwani, inawapeleka kwenye Dhamira 5,
-            inawapa cheti cha QR kinachothibitishwa, na inaonyesha umoja kwenye Ramani Hai — kupitia wavuti,
-            WhatsApp, na USSD."
-          </Text>
+          <Text style={styles.pitchLabel}>{t('judgeTour.pitchLabel')}</Text>
+          <Text style={styles.pitchText}>{t('judgeTour.pitch')}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

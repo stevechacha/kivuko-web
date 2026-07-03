@@ -3,18 +3,12 @@
 // can flag another user's content). Matches the safety design described in
 // Chapter Four of the proposal: visible Report action in every chat, no
 // direct contact between reporter/reported, moderator review afterwards.
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Modal, View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { colors, radius, spacing } from '../theme/colors';
+import { useLocale } from '../context/LocaleContext';
 
 export type ReportReasonId = 'abusive_language' | 'contact_request' | 'inappropriate_content' | 'other';
-
-const REASONS: { id: ReportReasonId; label: string }[] = [
-  { id: 'abusive_language', label: 'Lugha ya matusi au chuki' },
-  { id: 'contact_request', label: 'Kuomba namba ya simu au mawasiliano nje ya jukwaa' },
-  { id: 'inappropriate_content', label: 'Maudhui yasiyofaa au ya kutisha' },
-  { id: 'other', label: 'Sababu nyingine' },
-];
 
 type Props = {
   visible: boolean;
@@ -24,9 +18,21 @@ type Props = {
 };
 
 export default function ReportModal({ visible, peerName, onClose, onSubmit }: Props) {
+  const { t } = useLocale();
   const [selected, setSelected] = useState<ReportReasonId | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+
+  const peerFirst = peerName.split(' ')[0];
+  const reasons = useMemo(
+    () => [
+      { id: 'abusive_language' as const, label: t('report.abusive') },
+      { id: 'contact_request' as const, label: t('report.contact') },
+      { id: 'inappropriate_content' as const, label: t('report.inappropriate') },
+      { id: 'other' as const, label: t('report.other') },
+    ],
+    [t],
+  );
 
   const reset = () => {
     setSelected(null);
@@ -60,23 +66,19 @@ export default function ReportModal({ visible, peerName, onClose, onSubmit }: Pr
               <View style={styles.doneIcon}>
                 <Text style={{ fontSize: 22, color: colors.white }}>✓</Text>
               </View>
-              <Text style={styles.doneTitle}>Ripoti Imetumwa</Text>
-              <Text style={styles.doneBody}>
-                Asante. Timu ya usalama itapitia ndani ya saa 24. {peerName.split(' ')[0]} hataarifiwa kuwa umeripoti.
-              </Text>
+              <Text style={styles.doneTitle}>{t('report.doneTitle')}</Text>
+              <Text style={styles.doneBody}>{t('report.doneBody', { peer: peerFirst })}</Text>
               <Pressable style={styles.doneBtn} onPress={handleClose}>
-                <Text style={styles.doneBtnText}>Funga</Text>
+                <Text style={styles.doneBtnText}>{t('common.close')}</Text>
               </Pressable>
             </View>
           ) : (
             <>
-              <Text style={styles.title}>Ripoti Mazungumzo Haya</Text>
-              <Text style={styles.subtitle}>
-                Msimamizi ataangalia ndani ya saa 24. {peerName.split(' ')[0]} hataarifiwa kuwa umeripoti.
-              </Text>
+              <Text style={styles.title}>{t('report.title')}</Text>
+              <Text style={styles.subtitle}>{t('report.subtitle', { peer: peerFirst })}</Text>
 
               <View style={styles.reasonList}>
-                {REASONS.map((r) => (
+                {reasons.map((r) => (
                   <Pressable
                     key={r.id}
                     style={styles.reasonRow}
@@ -98,11 +100,11 @@ export default function ReportModal({ visible, peerName, onClose, onSubmit }: Pr
                   onPress={handleSubmit}
                   disabled={!selected}
                 >
-                  <Text style={styles.submitBtnText}>Wasilisha Ripoti</Text>
+                  <Text style={styles.submitBtnText}>{t('report.submit')}</Text>
                 </Pressable>
               )}
               <Pressable style={styles.cancelBtn} onPress={handleClose}>
-                <Text style={styles.cancelBtnText}>Ghairi</Text>
+                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
               </Pressable>
             </>
           )}

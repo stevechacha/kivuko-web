@@ -24,14 +24,16 @@ import OmnichannelScreen from './src/screens/OmnichannelScreen';
 import JudgeTourScreen from './src/screens/JudgeTourScreen';
 import ModeratorFlaggedContentScreen from './src/screens/ModeratorFlaggedContentScreen';
 import { SessionProvider } from './src/context/SessionContext';
+import { LocaleProvider } from './src/context/LocaleContext';
 import { linking } from './src/navigation/linking';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <SessionProvider>
-      <NavigationContainer linking={linking}>
+    <LocaleProvider>
+      <SessionProvider>
+        <NavigationContainer linking={linking}>
         <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
@@ -54,6 +56,7 @@ export default function App() {
           <Stack.Screen name="ModeratorFlaggedContent" component={ModeratorFlaggedContentScreen} />
         </Stack.Navigator>
       </NavigationContainer>
-    </SessionProvider>
+      </SessionProvider>
+    </LocaleProvider>
   );
 }

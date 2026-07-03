@@ -16,6 +16,7 @@ import TopNav from '../components/TopNav';
 import Button from '../components/Button';
 import MissionJourneyTracker from '../components/MissionJourneyTracker';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'HubDashboard'>;
 
@@ -33,6 +34,7 @@ type Portal = {
 
 export default function HubDashboardScreen({ navigation }: Props) {
   const { participant, missionId } = useSession();
+  const { t } = useLocale();
   const points = participant?.patriotism_points ?? 0;
   const firstName = participant?.name?.split(' ')[0] ?? 'Mzalendo';
   const [streakDays, setStreakDays] = useState(1);
@@ -62,12 +64,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
     {
       id: 'quiz',
       icon: '🎮',
-      badge: 'Zawadi 🎁',
+      badge: t('hub.portal1Badge'),
       badgeColor: '#FEE2E2',
-      title: '1. Chemsha Bongo ya Muungano',
-      description:
-        'Jibu maswali ya haraka kuhusu jiografia, mila na historia ya Tanganyika na Zanzibar. Kamilisha dhamira upate vocha ya hewa na pointi za Uzalendo!',
-      cta: missionId ? 'Endelea Dhamira →' : 'Anza Kucheza Sasa',
+      title: t('hub.portal1Title'),
+      description: t('hub.portal1Desc'),
+      cta: missionId ? t('hub.portal1CtaResume') : t('hub.portal1CtaPlay'),
       accent: '#F59E0B',
       onPress: () => {
         if (missionId) {
@@ -80,36 +81,33 @@ export default function HubDashboardScreen({ navigation }: Props) {
     {
       id: 'peer',
       icon: '🤝',
-      badge: 'Fursa 💼',
+      badge: t('hub.portal2Badge'),
       badgeColor: '#E6F6FC',
-      title: '2. Kutana na Pacha (Bara & Visiwani)',
-      description:
-        'Mfumo unakuunganisha na pacha wako kutoka upande wa pili. Pigeni stori, kamilisheni dhamira ya pamoja, na jenga kivuko cha kweli cha umoja.',
-      cta: 'Fungua Twin Portal',
+      title: t('hub.portal2Title'),
+      description: t('hub.portal2Desc'),
+      cta: t('hub.portal2Cta'),
       accent: colors.blue,
       onPress: () => navigation.navigate('Matching'),
     },
     {
       id: 'academy',
       icon: '📚',
-      badge: 'Academy',
+      badge: t('hub.portal3Badge'),
       badgeColor: '#E6F3ED',
-      title: '3. Maktuba ya Muungano & Makumbusho',
-      description:
-        'Makumbusho ya Taifa mkononi mwako — sauti, video, na nyaraka za Mwalimu Nyerere, Abeid Karume, na historia ya JWTZ.',
-      cta: 'Ingia Multimedia Academy',
+      title: t('hub.portal3Title'),
+      description: t('hub.portal3Desc'),
+      cta: t('hub.portal3Cta'),
       accent: colors.green,
       onPress: () => navigation.navigate('Academy', { tab: 'union' }),
     },
     {
       id: 'patriot',
       icon: '🛡️',
-      badge: 'Ulinzi 🛡️',
+      badge: t('hub.portal4Badge'),
       badgeColor: '#FEE2E2',
-      title: '4. Uzalendo na Historia ya Jeshi',
-      description:
-        'Maktaba ya ndani ya Uzalendo, nembo za taifa, na historia ya Jeshi la Wananchi wa Tanzania tangu 1964.',
-      cta: 'Fungua Maktaba ya Uzalendo',
+      title: t('hub.portal4Title'),
+      description: t('hub.portal4Desc'),
+      cta: t('hub.portal4Cta'),
       accent: '#4B5320',
       onPress: () => navigation.navigate('Academy', { tab: 'patriot' }),
     },
@@ -120,19 +118,16 @@ export default function HubDashboardScreen({ navigation }: Props) {
       <TopNav currentStep={0} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.heroBanner}>
-          <Text style={styles.heroBadge}>Lango Kuu la Kitaifa 🇹🇿</Text>
-          <Text style={styles.heroTitle}>Karibu, {firstName}! 👋</Text>
-          <Text style={styles.heroSub}>
-            Mifumo minne, jukwaa moja la kidijitali. Jipime akili, vuna maokoto, ungana na pacha wako,
-            na tembelea makumbusho ya kihistoria sasa hivi!
-          </Text>
+          <Text style={styles.heroBadge}>{t('hub.heroBadge')}</Text>
+          <Text style={styles.heroTitle}>{t('hub.greeting', { name: firstName })}</Text>
+          <Text style={styles.heroSub}>{t('hub.sub')}</Text>
           <View style={styles.pointsRow}>
-            <Text style={styles.pointsLabel}>Pointi za Uzalendo</Text>
-            <Text style={styles.pointsValue}>{points.toLocaleString()} Pts</Text>
+            <Text style={styles.pointsLabel}>{t('hub.points')}</Text>
+            <Text style={styles.pointsValue}>{points.toLocaleString()} {t('common.pts')}</Text>
           </View>
           {streakDays >= 2 && (
             <View style={styles.streakBadge}>
-              <Text style={styles.streakText}>🔥 Siku {streakDays} mfululizo — Endelea hivyo!</Text>
+              <Text style={styles.streakText}>{t('hub.streak', { days: streakDays })}</Text>
             </View>
           )}
         </View>
@@ -150,7 +145,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
           }}
         />
 
-        <Text style={styles.sectionLabel}>Gusa Mlango Kupenya</Text>
+        <Text style={styles.sectionLabel}>{t('hub.sectionLabel')}</Text>
 
         <View style={styles.grid}>
           {portals.map((p) => (
@@ -173,12 +168,12 @@ export default function HubDashboardScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.quickRow}>
-          <Button label="Mstari wa Historia 1961—2026" variant="secondary" onPress={() => navigation.navigate('UnionTimeline')} />
-          <Button label="Gala ya Top 10 Vijana" variant="secondary" onPress={() => navigation.navigate('GalaLeaderboard')} />
-          <Button label="WhatsApp & USSD" variant="ghost" onPress={() => navigation.navigate('Omnichannel')} />
-          <Button label="🎬 Onyesho la Waamuzi" variant="ghost" onPress={() => navigation.navigate('JudgeTour')} />
-          <Button label="Ramani Hai ya Muungano" variant="ghost" onPress={() => navigation.navigate('UnionMap')} />
-          <Button label="Paneli ya Usimamizi" variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />
+          <Button label={t('hub.quickTimeline')} variant="secondary" onPress={() => navigation.navigate('UnionTimeline')} />
+          <Button label={t('hub.quickGala')} variant="secondary" onPress={() => navigation.navigate('GalaLeaderboard')} />
+          <Button label={t('hub.quickOmnichannel')} variant="ghost" onPress={() => navigation.navigate('Omnichannel')} />
+          <Button label={t('hub.quickJudgeTour')} variant="ghost" onPress={() => navigation.navigate('JudgeTour')} />
+          <Button label={t('hub.quickMap')} variant="ghost" onPress={() => navigation.navigate('UnionMap')} />
+          <Button label={t('hub.quickAdmin')} variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />
         </View>
       </ScrollView>
     </SafeAreaView>
