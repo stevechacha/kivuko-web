@@ -1,6 +1,6 @@
 // screens/UnionMapScreen.tsx
 // Step 5 of 5 — The Interactive "Live Union Map" & Admin Dashboard
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import Svg, { Rect, Ellipse, Path, Circle, Text as SvgText } from 'react-native-svg';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -49,21 +49,48 @@ export default function UnionMapScreen({ navigation }: Props) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activity, setActivity] = useState<LiveImpact['activity']>([]);
 
+  const loadMapData = useCallback(async () => {
+    const [mapResult, audioResult, impactResult] = await Promise.allSettled([
+      api.getMapStats(),
+      api.getAudioArchive(),
+      api.getLiveImpact(),
+    ]);
+
+    if (mapResult.status === 'fulfilled') {
+      setStats({
+        pairs: String(mapResult.value.pairs_today),
+        regions: String(mapResult.value.regions_active),
+      });
+      setConnections(mapResult.value.connections);
+    }
+
+    if (audioResult.status === 'fulfilled') {
+      setAudioArchive(audioResult.value);
+    }
+
+    if (impactResult.status === 'fulfilled') {
+      setActivity(impactResult.value.activity);
+    }
+
+    const allFailed =
+      mapResult.status === 'rejected' &&
+      audioResult.status === 'rejected' &&
+      impactResult.status === 'rejected';
+
+    if (allFailed) {
+      const reason = mapResult.reason;
+      setLoadError(reason instanceof Error ? reason.message : 'Imeshindwa kupakia ramani.');
+      return false;
+    }
+
+    setLoadError(null);
+    return true;
+  }, []);
+
   useEffect(() => {
     const load = async () => {
       try {
-        const [mapStats, audio, impact] = await Promise.all([
-          api.getMapStats(),
-          api.getAudioArchive(),
-          api.getLiveImpact(),
-        ]);
-        setActivity(impact.activity);
-        setStats({
-          pairs: String(mapStats.pairs_today),
-          regions: String(mapStats.regions_active),
-        });
-        setConnections(mapStats.connections);
-        setAudioArchive(audio);
+        await loadMapData();
         if (participant?.session_token) {
           try {
             const progress = await api.getMissionProgress(participant.session_token);
@@ -85,7 +112,7 @@ export default function UnionMapScreen({ navigation }: Props) {
       }
     };
     load();
-  }, []);
+  }, [loadMapData, participant?.session_token, updateParticipant]);
 
   const handlePlay = (item: ElderAudio) => {
     if (playingId === item.id) {
@@ -117,7 +144,19 @@ export default function UnionMapScreen({ navigation }: Props) {
         {loading ? (
           <ActivityIndicator color={colors.green} style={{ marginTop: spacing.xl }} />
         ) : loadError ? (
-          <Text style={styles.errorText}>{loadError}</Text>
+          <View style={styles.errorWrap}>
+            <Text style={styles.errorText}>{loadError}</Text>
+            <View style={{ marginTop: spacing.md }}>
+              <Button
+                label="Jaribu Tena"
+                variant="ghost"
+                onPress={() => {
+                  setLoading(true);
+                  loadMapData().finally(() => setLoading(false));
+                }}
+              />
+            </View>
+          </View>
         ) : (
           <>
             <View style={styles.mapCard}>
@@ -227,5 +266,6 @@ const styles = StyleSheet.create({
   archivePlay: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.blue, alignItems: 'center', justifyContent: 'center' },
   archiveName: { fontSize: 13.5, fontWeight: '700', color: colors.dark },
   archiveMeta: { fontSize: 11, color: colors.textMuted },
-  errorText: { color: colors.danger, fontSize: 14, marginTop: spacing.lg, textAlign: 'center' },
+  errorText: { color: colors.danger, fontSize: 14, textAlign: 'center' },
+  errorWrap: { marginTop: spacing.lg, alignItems: 'center', paddingHorizontal: spacing.md },
 });
