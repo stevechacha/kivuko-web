@@ -54,6 +54,7 @@ const swTree = {
     body:
       'Mwongozo wa hatua 9 kwa dakika 3 — na one-line pitch tayari kwa waamuzi. Imewekwa tayari kwa video ya mashindano.',
     cta: '▶ Anza Onyesho la Waamuzi',
+    admin: '🔐 Paneli ya Usimamizi',
   },
   liveImpact: {
     liveLabel: 'MUUNGANO HAI — TAKWIMU ZA MOJA KWA MOJA',
@@ -350,11 +351,13 @@ const swTree = {
     pendingStatus: 'Inasubiri',
     pinEyebrow: 'Ufikiaji wa Wasimamizi',
     pinTitle: 'Ingia kwenye Paneli ya Usimamizi',
-    pinSub: 'Weka msimbo wa waamuzi / msimamizi kufungua dashibodi ya ukaguzi na ripoti.',
+    pinSub: 'Weka msimbo wa waamuzi / msimamizi kufungua dashibodi ya ukaguzi na ripoti. Huhitaji kuingia kama kijana.',
     pinPlaceholder: 'Msimbo wa usimamizi',
     pinEnter: 'Ingia',
     pinWrong: 'Msimbo si sahihi. Jaribu tena.',
     pinHint: 'Waamuzi wa demo: msimbo ni {pin}',
+    pinNoLogin: 'Huhitaji kuingia kama kijana — msimbo wa waamuzi tu.',
+    keyRequired: 'Ufunguo wa API haufanani. Weka ADMIN_DASHBOARD_KEY=MUUNGANO2026 kwenye Railway (API), au acha tupu.',
   },
   moderator: {
     title: 'Maudhui Yaliyoripotiwa',
@@ -440,6 +443,7 @@ const enTree = {
     body:
       'A 9-step, 3-minute walkthrough with a one-line pitch ready for judges. Built for competition video recording.',
     cta: '▶ Start Judge Tour',
+    admin: '🔐 Admin Panel',
   },
   liveImpact: {
     liveLabel: 'LIVE UNION — REAL-TIME STATS',
@@ -736,11 +740,13 @@ const enTree = {
     pendingStatus: 'Pending',
     pinEyebrow: 'Moderator Access',
     pinTitle: 'Sign in to Admin Panel',
-    pinSub: 'Enter the judge/moderator code to open the review dashboard and reports queue.',
+    pinSub: 'Enter the judge/moderator code to open the review dashboard. No youth account login required.',
     pinPlaceholder: 'Admin code',
     pinEnter: 'Enter',
     pinWrong: 'Incorrect code. Try again.',
     pinHint: 'Demo judges: code is {pin}',
+    pinNoLogin: 'No youth login needed — judge code only.',
+    keyRequired: 'API key mismatch. Set ADMIN_DASHBOARD_KEY=MUUNGANO2026 on Railway (API), or leave it empty.',
   },
   moderator: {
     title: 'Flagged Content',

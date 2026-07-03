@@ -3,24 +3,7 @@ import { View, Text, TextInput, StyleSheet, Platform, Pressable } from 'react-na
 import { colors, radius, spacing } from '../theme/colors';
 import Button from './Button';
 import { useLocale } from '../context/LocaleContext';
-
-const DEFAULT_PIN = 'MUUNGANO2026';
-
-function getAdminPin(): string {
-  const fromEnv = process.env.EXPO_PUBLIC_ADMIN_PIN?.trim();
-  return fromEnv || DEFAULT_PIN;
-}
-
-export function isAdminUnlocked(): boolean {
-  if (Platform.OS !== 'web' || typeof sessionStorage === 'undefined') return true;
-  return sessionStorage.getItem('kivuko_admin_unlock') === '1';
-}
-
-export function setAdminUnlocked(): void {
-  if (Platform.OS === 'web' && typeof sessionStorage !== 'undefined') {
-    sessionStorage.setItem('kivuko_admin_unlock', '1');
-  }
-}
+import { getConfiguredAdminPin, setAdminSession } from '../utils/adminAccess';
 
 interface Props {
   onUnlocked: () => void;
@@ -33,8 +16,9 @@ export default function AdminPinGate({ onUnlocked, onCancel }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const tryUnlock = () => {
-    if (pin.trim().toUpperCase() === getAdminPin().toUpperCase()) {
-      setAdminUnlocked();
+    const normalized = pin.trim().toUpperCase();
+    if (normalized === getConfiguredAdminPin().toUpperCase()) {
+      setAdminSession(normalized);
       setError(null);
       onUnlocked();
       return;
@@ -70,7 +54,8 @@ export default function AdminPinGate({ onUnlocked, onCancel }: Props) {
         </Pressable>
       </View>
 
-      <Text style={styles.hint}>{t('admin.pinHint', { pin: DEFAULT_PIN })}</Text>
+      <Text style={styles.hint}>{t('admin.pinHint', { pin: getConfiguredAdminPin() })}</Text>
+      <Text style={styles.note}>{t('admin.pinNoLogin')}</Text>
     </View>
   );
 }
@@ -114,5 +99,13 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 16,
+  },
+  note: {
+    marginTop: 10,
+    fontSize: 11,
+    color: colors.greenDeep,
+    textAlign: 'center',
+    lineHeight: 16,
+    fontWeight: '600',
   },
 });

@@ -15,10 +15,11 @@ import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import LanguageToggle from '../components/LanguageToggle';
 import { useLocale } from '../context/LocaleContext';
-import { api, type AdminDashboard, type LeaderboardEntry, type ReportedItem } from '../api/client';
+import { api, ApiError, type AdminDashboard, type LeaderboardEntry, type ReportedItem } from '../api/client';
 import { useAppBack } from '../navigation/useAppBack';
 import TopNav from '../components/TopNav';
-import AdminPinGate, { isAdminUnlocked } from '../components/AdminPinGate';
+import AdminPinGate from '../components/AdminPinGate';
+import { isAdminUnlocked } from '../utils/adminAccess';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
 
@@ -41,6 +42,9 @@ export default function AdminDashboardScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!unlocked) return;
+    setLoading(true);
+    setError(null);
     Promise.all([
       api.getAdminDashboard(),
       api.getReportedContent('pending').catch(() => [] as ReportedItem[]),
@@ -51,9 +55,17 @@ export default function AdminDashboardScreen({ navigation }: Props) {
         setPendingReports(reports);
         setGalaShortlist(leaders);
       })
-      .catch((e) => setError(e instanceof Error ? e.message : t('admin.loadError')))
+      .catch((e) => {
+        const msg =
+          e instanceof ApiError && e.status === 403
+            ? t('admin.keyRequired')
+            : e instanceof Error
+              ? e.message
+              : t('admin.loadError');
+        setError(msg);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [unlocked, t]);
 
   if (!unlocked) {
     return (

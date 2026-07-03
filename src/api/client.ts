@@ -1,4 +1,5 @@
 import { API_BASE_URL, API_V1 } from '../config/api';
+import { getAdminApiKey } from '../utils/adminAccess';
 
 export class ApiError extends Error {
   status: number;
@@ -15,6 +16,7 @@ async function request<T>(
   path: string,
   options: RequestInit = {},
   token?: string | null,
+  adminKey?: string | null,
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -22,6 +24,10 @@ async function request<T>(
   };
   if (token) {
     headers['X-Session-Token'] = token;
+  }
+  const key = adminKey ?? (path.startsWith('/admin') ? getAdminApiKey() : null);
+  if (key) {
+    headers['X-Admin-Key'] = key;
   }
 
   const controller = new AbortController();
@@ -297,10 +303,8 @@ export const api = {
     return request<AcademyArticle[]>(`/academy/articles${q}`);
   },
 
-  getAdminDashboard(adminKey?: string) {
-    const headers: Record<string, string> = {};
-    if (adminKey) headers['X-Admin-Key'] = adminKey;
-    return request<AdminDashboard>('/admin/dashboard', { headers });
+  getAdminDashboard() {
+    return request<AdminDashboard>('/admin/dashboard');
   },
 
   register(data: {

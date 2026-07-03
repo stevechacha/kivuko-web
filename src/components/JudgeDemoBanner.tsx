@@ -16,7 +16,14 @@ export default function JudgeDemoBanner({ navigation }: { navigation: Nav }) {
       <Text style={styles.badge}>{t('judgeBanner.badge')}</Text>
       <Text style={styles.title}>{t('judgeBanner.title')}</Text>
       <Text style={styles.body}>{t('judgeBanner.body')}</Text>
-      <Button label={t('judgeBanner.cta')} onPress={() => navigation.navigate('JudgeTour')} />
+      <View style={styles.actions}>
+        <Button label={t('judgeBanner.cta')} onPress={() => navigation.navigate('JudgeTour')} />
+        <Button
+          label={t('judgeBanner.admin')}
+          variant="ghost"
+          onPress={() => navigation.navigate('AdminDashboard')}
+        />
+      </View>
     </View>
   );
 }
@@ -39,4 +46,5 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 16, fontWeight: '800', color: colors.white, marginTop: 8 },
   body: { fontSize: 12, color: '#CBD5E1', marginTop: 6, lineHeight: 18 },
+  actions: { marginTop: 12, gap: 8 },
 });

@@ -8,7 +8,9 @@ RUN npm ci
 COPY . .
 
 ARG EXPO_PUBLIC_API_URL=https://kivuko-api-production.up.railway.app
+ARG EXPO_PUBLIC_ADMIN_API_KEY=MUUNGANO2026
 ENV EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+ENV EXPO_PUBLIC_ADMIN_API_KEY=$EXPO_PUBLIC_ADMIN_API_KEY
 
 RUN npm run build && test -f dist/index.html
 
