@@ -21,14 +21,14 @@ import Button from '../components/Button';
 import TopNav from '../components/TopNav';
 import { api, type ChatMessage, type QuizQuestion, type QuizSubmitResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionChat'>;
 
-export default function MissionChatScreen({ route, navigation }: Props) {
-  const { userName: routeUserName, missionId: routeMissionId } = route.params ?? {};
-  const { participant, missionId: sessionMissionId, updateParticipant } = useSession();
-  const missionId = routeMissionId || sessionMissionId;
-  const userName = routeUserName || participant?.name || 'Mzalendo';
+export default function MissionChatScreen({ navigation }: Props) {
+  useCleanWebUrl();
+  const { participant, missionId, updateParticipant } = useSession();
+  const userName = participant?.name || 'Mzalendo';
   const { width } = useWindowDimensions();
   const isWide = width >= 760;
   const chatScrollRef = useRef<ScrollView>(null);

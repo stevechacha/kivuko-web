@@ -59,7 +59,7 @@ export default function VisionMissionScreen({ navigation }: Props) {
             <View style={{ marginTop: 16 }}>
               <Button
                 label="Pata Cheti Chako →"
-                onPress={() => navigation.navigate('Certificate', { missionId: sessionMissionId ?? undefined })}
+                onPress={() => navigation.navigate('Certificate')}
               />
             </View>
           </View>

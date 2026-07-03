@@ -1,13 +1,14 @@
 // navigation/types.ts
+// Route params are intentionally minimal — mission/user state is in SessionContext.
 export type RootStackParamList = {
   Landing: undefined;
   Onboarding: undefined;
   HubDashboard: undefined;
-  Matching: { name?: string; region?: 'bara' | 'visiwani' };
-  MissionChat: { peerId?: string; userName?: string; missionId?: string };
+  Matching: undefined;
+  MissionChat: undefined;
   CultureMission: undefined;
   VisionMission: undefined;
-  Certificate: { userName?: string; missionId?: string; verifyUrl?: string; certCode?: string };
+  Certificate: undefined;
   UnionMap: undefined;
   Academy: { tab?: 'army' | 'union' | 'patriot' };
   VerifyCertificate: { certCode: string };

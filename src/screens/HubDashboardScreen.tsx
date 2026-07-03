@@ -49,7 +49,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
       accent: '#F59E0B',
       onPress: () => {
         if (missionId) {
-          navigation.navigate('MissionChat', { missionId });
+          navigation.navigate('MissionChat');
         } else {
           navigation.navigate('ChemshaBongo');
         }
@@ -65,11 +65,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
         'Mfumo unakuunganisha na pacha wako kutoka upande wa pili. Pigeni stori, kamilisheni dhamira ya pamoja, na jenga kivuko cha kweli cha umoja.',
       cta: 'Fungua Twin Portal',
       accent: colors.blue,
-      onPress: () =>
-        navigation.navigate('Matching', {
-          name: participant?.name,
-          region: participant?.region,
-        }),
+      onPress: () => navigation.navigate('Matching'),
     },
     {
       id: 'academy',
@@ -81,7 +77,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
         'Makumbusho ya Taifa mkononi mwako — sauti, video, na nyaraka za Mwalimu Nyerere, Abeid Karume, na historia ya JWTZ.',
       cta: 'Ingia Multimedia Academy',
       accent: colors.green,
-      onPress: () => navigation.navigate('Academy', {}),
+      onPress: () => navigation.navigate('Academy', { tab: 'union' }),
     },
     {
       id: 'patriot',
@@ -118,11 +114,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
           onStepPress={(step, status) => {
             if (status === 'locked') return;
             if (step === 1) {
-              if (missionId) navigation.navigate('MissionChat', { missionId });
-              else navigation.navigate('Matching', { name: participant?.name, region: participant?.region });
+              if (missionId) navigation.navigate('MissionChat');
+              else navigation.navigate('Matching');
             } else if (step === 2) navigation.navigate('CultureMission');
             else if (step === 3) navigation.navigate('VisionMission');
-            else if (step === 4) navigation.navigate('Certificate', { missionId: missionId ?? undefined });
+            else if (step === 4) navigation.navigate('Certificate');
             else if (step === 5) navigation.navigate('UnionMap');
           }}
         />

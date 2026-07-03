@@ -9,14 +9,14 @@ import Button from '../components/Button';
 import ScreenHeader from '../components/ScreenHeader';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Certificate'>;
 
-export default function CertificateScreen({ route, navigation }: Props) {
-  const { userName: routeUserName, missionId: routeMissionId } = route.params ?? {};
-  const { participant, missionId: sessionMissionId } = useSession();
-  const missionId = routeMissionId || sessionMissionId;
-  const userName = routeUserName || participant?.name || 'Mzalendo';
+export default function CertificateScreen({ navigation }: Props) {
+  useCleanWebUrl();
+  const { participant, missionId } = useSession();
+  const userName = participant?.name || 'Mzalendo';
   const [generated, setGenerated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [certCode, setCertCode] = useState('');

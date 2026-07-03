@@ -27,13 +27,7 @@ export default function ContinueSessionBanner({
         {missionId ? (
           <Button
             label="Endelea Dhamira →"
-            onPress={() =>
-              navigation.navigate('MissionChat', {
-                peerId: 'session',
-                userName: participant.name,
-                missionId,
-              })
-            }
+            onPress={() => navigation.navigate('MissionChat')}
           />
         ) : (
           <Button

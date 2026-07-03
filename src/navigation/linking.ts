@@ -8,6 +8,7 @@ function getWebPrefix(): string {
   return 'https://kivuko-web-production.up.railway.app';
 }
 
+/** Clean path-only URLs — session data lives in sessionStorage, not the address bar. */
 export const linking: LinkingOptions<RootStackParamList> = {
   prefixes: [getWebPrefix()],
   config: {
@@ -15,49 +16,25 @@ export const linking: LinkingOptions<RootStackParamList> = {
       Landing: '',
       Onboarding: 'usajili',
       HubDashboard: 'dashibodi',
-      Matching: {
-        path: 'uoanishaji',
-        parse: {
-          name: String,
-          region: (value: string) => (value === 'visiwani' ? 'visiwani' : 'bara'),
-        },
-      },
-      MissionChat: {
-        path: 'dhamira',
-        parse: {
-          peerId: String,
-          userName: String,
-          missionId: String,
-        },
-      },
-      Certificate: {
-        path: 'cheti',
-        parse: {
-          userName: String,
-          missionId: String,
-          verifyUrl: String,
-          certCode: String,
-        },
-      },
+      Matching: 'uoanishaji',
+      MissionChat: 'dhamira',
+      CultureMission: 'utamaduni',
+      VisionMission: 'maono',
+      Certificate: 'cheti',
       UnionMap: 'ramani',
       Academy: {
-        path: 'maktaba',
+        path: 'maktaba/:tab?',
         parse: {
           tab: (value: string) =>
             value === 'army' || value === 'patriot' ? value : 'union',
         },
       },
-      VerifyCertificate: {
-        path: 'thibitisha/:certCode',
-        parse: { certCode: String },
-      },
+      VerifyCertificate: 'thibitisha/:certCode',
       AdminDashboard: 'admin',
       ChemshaBongo: 'chemsha-bongo',
       UnionTimeline: 'historia',
       GalaLeaderboard: 'gala',
       Omnichannel: 'njia-zote',
-      CultureMission: 'utamaduni',
-      VisionMission: 'maono',
     },
   },
 };

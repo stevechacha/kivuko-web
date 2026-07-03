@@ -9,6 +9,7 @@ import Button from '../components/Button';
 import TopNav from '../components/TopNav';
 import { api, type MatchResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Matching'>;
 
@@ -18,11 +19,11 @@ const FALLBACK_STATUS = [
   'Inathibitisha muunganiko wa kivuko…',
 ];
 
-export default function MatchingScreen({ route, navigation }: Props) {
-  const { name: routeName, region: routeRegion } = route.params ?? {};
+export default function MatchingScreen({ navigation }: Props) {
+  useCleanWebUrl();
   const { participant, setMission } = useSession();
-  const name = routeName || participant?.name || 'Mzalendo';
-  const userRegion = routeRegion || participant?.region || 'bara';
+  const name = participant?.name || 'Mzalendo';
+  const userRegion = participant?.region || 'bara';
   const [matched, setMatched] = useState(false);
   const [statusIndex, setStatusIndex] = useState(0);
   const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);
@@ -132,13 +133,7 @@ export default function MatchingScreen({ route, navigation }: Props) {
               <Button
                 label="Ingia Chumba cha Dhamira →"
                 variant="secondary"
-                onPress={() =>
-                  navigation.navigate('MissionChat', {
-                    peerId: peer.id,
-                    userName: name,
-                    missionId: matchResult!.mission_id,
-                  })
-                }
+                onPress={() => navigation.navigate('MissionChat')}
               />
             </View>
           </View>
