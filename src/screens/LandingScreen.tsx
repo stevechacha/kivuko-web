@@ -22,6 +22,8 @@ import ContinueSessionBanner from '../components/ContinueSessionBanner';
 import JudgeDemoBanner from '../components/JudgeDemoBanner';
 import LiveImpactTicker from '../components/LiveImpactTicker';
 import LiveActivityFeed from '../components/LiveActivityFeed';
+import PlatformStatusChip from '../components/PlatformStatusChip';
+import MarketTrustBar from '../components/MarketTrustBar';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { api, type ElderAudio, type LiveImpact } from '../api/client';
@@ -99,7 +101,9 @@ export default function LandingScreen({ navigation }: Props) {
             </View>
             <ContinueSessionBanner navigation={navigation} />
             <LiveImpactTicker data={impact} />
+            <PlatformStatusChip />
             {impact?.activity?.length ? <LiveActivityFeed items={impact.activity} /> : null}
+            <MarketTrustBar />
             <JudgeDemoBanner navigation={navigation} />
             <Pressable
               style={styles.audioWidget}

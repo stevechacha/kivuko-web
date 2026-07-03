@@ -16,9 +16,12 @@ import { colors, radius, spacing } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import Button from '../components/Button';
 import MissionJourneyTracker from '../components/MissionJourneyTracker';
+import InviteFriendCard from '../components/InviteFriendCard';
+import AchievementBadges from '../components/AchievementBadges';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { readVisitState } from '../utils/visitTracking';
+import { api } from '../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'HubDashboard'>;
 
@@ -41,11 +44,17 @@ export default function HubDashboardScreen({ navigation }: Props) {
   const firstName = participant?.name?.split(' ')[0] ?? 'Mzalendo';
   const [streakDays, setStreakDays] = useState(1);
   const [visits, setVisits] = useState(readVisitState);
+  const [progressSteps, setProgressSteps] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       setVisits(readVisitState());
-    }, []),
+      if (participant?.session_token) {
+        api.getMissionProgress(participant.session_token)
+          .then((p) => setProgressSteps(p.completed_count))
+          .catch(() => {});
+      }
+    }, [participant?.session_token]),
   );
 
   useEffect(() => {
@@ -152,6 +161,13 @@ export default function HubDashboardScreen({ navigation }: Props) {
             else if (step === 4) navigation.navigate('Certificate');
             else if (step === 5) navigation.navigate('UnionMap');
           }}
+        />
+
+        <InviteFriendCard />
+        <AchievementBadges
+          points={points}
+          missionSteps={progressSteps}
+          hasCertificate={progressSteps >= 4}
         />
 
         <Text style={styles.sectionLabel}>{t('hub.sectionLabel')}</Text>

@@ -10,6 +10,7 @@ import { api, type LeaderboardEntry } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { useAppBack } from '../navigation/useAppBack';
+import { markVisited } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GalaLeaderboard'>;
 
@@ -22,6 +23,7 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
   const [regionFilter, setRegionFilter] = useState<'all' | 'bara' | 'visiwani'>('all');
 
   useEffect(() => {
+    markVisited('gala');
     setLoading(true);
     const region = regionFilter === 'all' ? undefined : regionFilter;
     api.getLeaderboard(10, region).then(setLeaders).finally(() => setLoading(false));

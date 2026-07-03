@@ -21,6 +21,7 @@ import { useLocale } from '../context/LocaleContext';
 import { api, type ReportedItem } from '../api/client';
 import { useAppBack } from '../navigation/useAppBack';
 import { isAdminUnlocked } from '../utils/adminAccess';
+import { markVisited } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ModeratorFlaggedContent'>;
 
@@ -43,6 +44,7 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
   const [actingId, setActingId] = useState<string | null>(null);
 
   useEffect(() => {
+    markVisited('moderator');
     if (!isAdminUnlocked()) {
       navigation.replace('AdminDashboard');
     }

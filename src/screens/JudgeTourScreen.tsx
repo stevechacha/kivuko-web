@@ -10,6 +10,7 @@ import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { api } from '../api/client';
 import { useAppBack } from '../navigation/useAppBack';
+import { hasVisited } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JudgeTour'>;
 
@@ -75,7 +76,7 @@ export default function JudgeTourScreen({ navigation }: Props) {
       desc: t('judgeTour.s5bDesc'),
       route: 'ModeratorFlaggedContent',
       time: '1:45',
-      done: false,
+      done: hasVisited('moderator'),
     },
     {
       id: 6,
@@ -107,12 +108,13 @@ export default function JudgeTourScreen({ navigation }: Props) {
       desc: t('judgeTour.s8Desc'),
       route: 'GalaLeaderboard',
       time: '3:10',
-      done: false,
+      done: hasVisited('gala'),
     },
   ];
 
   const nextStep = steps.find((s) => !s.done) ?? steps[steps.length - 1];
   const completedCount = steps.filter((s) => s.done).length;
+  const tourComplete = completedCount === steps.length;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -151,9 +153,15 @@ export default function JudgeTourScreen({ navigation }: Props) {
         ))}
 
         <View style={styles.ctaBlock}>
+          {tourComplete ? (
+            <View style={styles.completeBox}>
+              <Text style={styles.completeTitle}>{t('judgeTour.completeTitle')}</Text>
+              <Text style={styles.completeBody}>{t('judgeTour.completeBody')}</Text>
+            </View>
+          ) : null}
           <Button
-            label={t('judgeTour.continue', { step: nextStep.title })}
-            onPress={() => navigation.navigate(nextStep.route as never)}
+            label={tourComplete ? t('judgeTour.replay') : t('judgeTour.continue', { step: nextStep.title })}
+            onPress={() => navigation.navigate((tourComplete ? 'Landing' : nextStep.route) as never)}
           />
           <Button label={t('common.home')} variant="ghost" onPress={() => navigation.navigate('Landing')} />
         </View>
@@ -218,6 +226,16 @@ const styles = StyleSheet.create({
   stepDesc: { fontSize: 12, color: colors.textMuted, marginTop: 3, lineHeight: 17 },
   chevron: { fontSize: 22, color: colors.textMuted, fontWeight: '300' },
   ctaBlock: { marginTop: spacing.lg, gap: 4 },
+  completeBox: {
+    backgroundColor: '#E6F6ED',
+    borderRadius: radius.md,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.green,
+    marginBottom: 8,
+  },
+  completeTitle: { fontSize: 16, fontWeight: '800', color: colors.greenDeep, textAlign: 'center' },
+  completeBody: { fontSize: 12, color: colors.textMuted, marginTop: 6, textAlign: 'center', lineHeight: 18 },
   pitchBox: {
     marginTop: spacing.xl,
     backgroundColor: '#FBF6E3',

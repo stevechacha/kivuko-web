@@ -35,6 +35,8 @@ export default function AdminDashboardScreen({ navigation }: Props) {
   const [pendingStories, setPendingStories] = useState<OralStory[]>([]);
   const [galaShortlist, setGalaShortlist] = useState<LeaderboardEntry[]>([]);
   const [actingStoryId, setActingStoryId] = useState<string | null>(null);
+  const [actingReportId, setActingReportId] = useState<string | null>(null);
+  const [galaTogglingId, setGalaTogglingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +48,7 @@ export default function AdminDashboardScreen({ navigation }: Props) {
       api.getAdminDashboard(),
       api.getReportedContent('pending').catch(() => [] as ReportedItem[]),
       api.getAdminStories('pending').catch(() => [] as OralStory[]),
-      api.getLeaderboard(10).catch(() => [] as LeaderboardEntry[]),
+      api.getLeaderboard(10, undefined, true).catch(() => [] as LeaderboardEntry[]),
     ])
       .then(([dash, reports, stories, leaders]) => {
         setStats(dash);
@@ -75,6 +77,32 @@ export default function AdminDashboardScreen({ navigation }: Props) {
       setPendingStories((prev) => prev.filter((s) => s.id !== storyId));
     } finally {
       setActingStoryId(null);
+    }
+  };
+
+  const resolveReport = async (reportId: string, action: 'dismiss' | 'warn' | 'suspend') => {
+    setActingReportId(reportId);
+    try {
+      await api.resolveReport(reportId, action);
+      setPendingReports((prev) => prev.filter((r) => r.id !== reportId));
+    } finally {
+      setActingReportId(null);
+    }
+  };
+
+  const toggleGala = async (entry: LeaderboardEntry) => {
+    if (!entry.participant_id) return;
+    setGalaTogglingId(entry.participant_id);
+    try {
+      const nominated = !entry.gala_nominated;
+      await api.toggleGalaNominee(entry.participant_id, nominated);
+      setGalaShortlist((prev) =>
+        prev.map((e) =>
+          e.participant_id === entry.participant_id ? { ...e, gala_nominated: nominated } : e,
+        ),
+      );
+    } finally {
+      setGalaTogglingId(null);
     }
   };
 
@@ -131,6 +159,19 @@ export default function AdminDashboardScreen({ navigation }: Props) {
           <>
             {tab === 'stats' && stats && (
               <>
+                <View style={[styles.pulseCard, stats.platform_ready ? styles.pulseReady : styles.pulseWait]}>
+                  <Text style={styles.pulseTitle}>
+                    {stats.platform_ready ? t('admin.platformReady') : t('admin.platformSync')}
+                  </Text>
+                  <Text style={styles.pulseMeta}>
+                    {t('admin.pulseMeta', {
+                      signups: stats.signups_today,
+                      reports: stats.pending_reports,
+                      stories: stats.pending_stories,
+                      quiz: stats.quiz_questions,
+                    })}
+                  </Text>
+                </View>
                 <View style={styles.statGrid}>
                   <StatCard label={t('admin.statMembers')} value={stats.total_participants} />
                   <StatCard label={t('admin.statMatches')} value={stats.active_matches} />
@@ -163,6 +204,17 @@ export default function AdminDashboardScreen({ navigation }: Props) {
                       <Text style={styles.flagTitle}>{r.reported_name} · {r.mission_title}</Text>
                       <Text style={styles.flagMeta}>{r.reported_at_label} · {r.reason}</Text>
                       {r.excerpt ? <Text style={styles.flagExcerpt}>"{r.excerpt}"</Text> : null}
+                      <View style={styles.storyActions}>
+                        <Pressable disabled={actingReportId === r.id} onPress={() => resolveReport(r.id, 'dismiss')}>
+                          <Text style={styles.storyActionMuted}>{t('moderator.dismissLabel')}</Text>
+                        </Pressable>
+                        <Pressable disabled={actingReportId === r.id} onPress={() => resolveReport(r.id, 'warn')}>
+                          <Text style={styles.storyAction}>{t('moderator.warnUser')}</Text>
+                        </Pressable>
+                        <Pressable disabled={actingReportId === r.id} onPress={() => resolveReport(r.id, 'suspend')}>
+                          <Text style={[styles.storyAction, { color: colors.danger }]}>{t('moderator.suspendAccount')}</Text>
+                        </Pressable>
+                      </View>
                     </View>
                   ))
                 )}
@@ -212,14 +264,19 @@ export default function AdminDashboardScreen({ navigation }: Props) {
               <>
                 <Text style={styles.sectionHint}>{t('admin.galaShortlist')}</Text>
                 {galaShortlist.map((e) => (
-                  <View key={e.rank} style={styles.galaRow}>
+                  <Pressable
+                    key={e.rank}
+                    style={styles.galaRow}
+                    onPress={() => toggleGala(e)}
+                    disabled={galaTogglingId === e.participant_id}
+                  >
                     <Text style={styles.galaRank}>{e.rank}</Text>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.galaName}>{e.name}</Text>
                       <Text style={styles.galaMeta}>{e.region_label} · {e.patriotism_points} pts</Text>
                     </View>
-                    <Text style={styles.galaCheck}>☐</Text>
-                  </View>
+                    <Text style={styles.galaCheck}>{e.gala_nominated ? '☑' : '☐'}</Text>
+                  </Pressable>
                 ))}
               </>
             )}
@@ -281,6 +338,11 @@ const styles = StyleSheet.create({
   tabTextActive: { color: colors.white },
   scroll: { padding: spacing.lg, paddingBottom: 60, maxWidth: 900, width: '100%', alignSelf: 'center' },
   sectionHint: { fontSize: 12, color: colors.textMuted, marginBottom: spacing.md, lineHeight: 18 },
+  pulseCard: { borderRadius: radius.md, padding: 14, marginBottom: spacing.md, borderWidth: 1 },
+  pulseReady: { backgroundColor: '#E6F6ED', borderColor: colors.green },
+  pulseWait: { backgroundColor: '#FEF3C7', borderColor: colors.gold },
+  pulseTitle: { fontSize: 13, fontWeight: '800', color: colors.dark },
+  pulseMeta: { fontSize: 11, color: colors.textMuted, marginTop: 4, lineHeight: 16 },
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statCard: {
     flexBasis: '30%',

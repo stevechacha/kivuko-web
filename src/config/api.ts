@@ -14,3 +14,16 @@ function resolveApiBaseUrl(): string {
 
 export const API_BASE_URL = resolveApiBaseUrl();
 export const API_V1 = `${API_BASE_URL}/api/v1`;
+
+const PRODUCTION_WEB = 'https://kivuko-web-production.up.railway.app';
+
+export function resolveAppBaseUrl(): string {
+  const fromEnv = process.env.EXPO_PUBLIC_APP_URL?.replace(/\/$/, '');
+  if (fromEnv) return fromEnv;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  return PRODUCTION_WEB;
+}
+
+export const PUBLIC_APP_URL = resolveAppBaseUrl();

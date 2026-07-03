@@ -4,6 +4,8 @@ const KEYS = {
   academy: 'kivuko_visited_academy',
   patriot: 'kivuko_visited_patriot',
   omnichannel: 'kivuko_visited_omnichannel',
+  moderator: 'kivuko_visited_moderator',
+  gala: 'kivuko_visited_gala',
 } as const;
 
 export type VisitKey = keyof typeof KEYS;
@@ -27,5 +29,7 @@ export function readVisitState(): Record<VisitKey, boolean> {
     academy: hasVisited('academy'),
     patriot: hasVisited('patriot'),
     omnichannel: hasVisited('omnichannel'),
+    moderator: hasVisited('moderator'),
+    gala: hasVisited('gala'),
   };
 }

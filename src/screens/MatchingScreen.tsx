@@ -30,6 +30,7 @@ export default function MatchingScreen({ navigation }: Props) {
   const [statusIndex, setStatusIndex] = useState(0);
   const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [demoLoading, setDemoLoading] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
   const pulse = useRef(new Animated.Value(0.4)).current;
 
@@ -82,6 +83,24 @@ export default function MatchingScreen({ navigation }: Props) {
     };
   }, [participant?.session_token]);
 
+  const runDemoMatch = async () => {
+    if (!participant?.session_token) return;
+    setDemoLoading(true);
+    setError(null);
+    setWaiting(false);
+    try {
+      const result = await api.match(participant.session_token, true);
+      setMatchResult(result);
+      setMission(result.mission_id, result.match_id, result.peer);
+      setMatched(true);
+      setCelebrate(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('matching.errMatch'));
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   const peer = matchResult?.peer;
   const fallbackStatus = FALLBACK_STATUS_KEYS.map((k) => t(k));
   const statusMessages = matchResult?.status_messages ?? fallbackStatus;
@@ -118,13 +137,18 @@ export default function MatchingScreen({ navigation }: Props) {
             <Text style={styles.waitingTitle}>{t('matching.waitingTitle')}</Text>
             <Text style={styles.muted}>{error}</Text>
             <Text style={styles.muted}>{t('matching.waitingBody')}</Text>
-            <View style={{ marginTop: spacing.md }}>
+            <View style={{ marginTop: spacing.md, gap: 8, alignItems: 'center' }}>
+              <Button
+                label={demoLoading ? '…' : t('matching.demoTwin')}
+                onPress={runDemoMatch}
+                disabled={demoLoading}
+              />
               <Button
                 label={t('matching.retry')}
+                variant="ghost"
                 onPress={() => {
                   setError(null);
                   setWaiting(false);
-                  setStatusIndex(0);
                   navigation.replace('Matching');
                 }}
               />
@@ -165,6 +189,9 @@ export default function MatchingScreen({ navigation }: Props) {
             </View>
 
             <Text style={styles.muted}>{t('matching.matchedNote')}</Text>
+            {matchResult?.demo_twin ? (
+              <Text style={styles.demoNote}>{t('matching.demoTwinNote')}</Text>
+            ) : null}
 
             <View style={{ marginTop: spacing.lg }}>
               <Button
@@ -206,6 +233,7 @@ const styles = StyleSheet.create({
   avatarTag: { fontSize: 11, fontWeight: '700', marginTop: 8, textTransform: 'uppercase' },
   bridgeMini: { width: 48, height: 2, backgroundColor: colors.gold, opacity: 0.7 },
   muted: { fontSize: 13.5, color: colors.textMuted, textAlign: 'center', maxWidth: 300 },
+  demoNote: { fontSize: 11, color: colors.gold, fontWeight: '700', marginTop: 8, textAlign: 'center' },
   errorWrap: { alignItems: 'center', gap: 12 },
   waitingTitle: { fontSize: 18, fontWeight: '700', color: colors.dark, textAlign: 'center' },
   errorText: { color: colors.danger, textAlign: 'center', fontSize: 14 },

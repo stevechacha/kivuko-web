@@ -119,11 +119,13 @@ export interface TimelineEvent {
 
 export interface LeaderboardEntry {
   rank: number;
+  participant_id?: string;
   name: string;
   home_area: string;
   region_label: string;
   patriotism_points: number;
   grade: UzalendoGrade;
+  gala_nominated?: boolean;
 }
 
 export interface ChemshaBongoResult {
@@ -157,6 +159,7 @@ export interface MatchResponse {
   mission_id: string;
   peer: Peer;
   status_messages: string[];
+  demo_twin?: boolean;
 }
 
 export interface ChatMessage {
@@ -282,6 +285,22 @@ export interface AdminDashboard {
   bara_participants: number;
   visiwani_participants: number;
   recent_connections: MapConnection[];
+  pending_reports: number;
+  pending_stories: number;
+  signups_today: number;
+  gala_nominees: number;
+  quiz_questions: number;
+  platform_ready: boolean;
+}
+
+export interface PlatformStatus {
+  api_online: boolean;
+  youth_registered: number;
+  seed_peers_ready: boolean;
+  quiz_questions: number;
+  pending_reports: number;
+  demo_ready: boolean;
+  message: string;
 }
 
 export interface OralStory {
@@ -347,10 +366,10 @@ export const api = {
     });
   },
 
-  match(token: string) {
+  match(token: string, demoMatch = false) {
     return request<MatchResponse>(
       '/matching/match',
-      { method: 'POST', body: '{}' },
+      { method: 'POST', body: JSON.stringify({ demo_match: demoMatch }) },
       token,
     );
   },
@@ -418,9 +437,21 @@ export const api = {
     return request<TimelineEvent[]>('/timeline/events');
   },
 
-  getLeaderboard(limit = 10, region?: 'bara' | 'visiwani') {
+  getLeaderboard(limit = 10, region?: 'bara' | 'visiwani', includeGala = false) {
     const regionQ = region ? `&region=${region}` : '';
-    return request<LeaderboardEntry[]>(`/leaderboard/youth?limit=${limit}${regionQ}`);
+    const galaQ = includeGala ? '&include_gala=1' : '';
+    return request<LeaderboardEntry[]>(`/leaderboard/youth?limit=${limit}${regionQ}${galaQ}`);
+  },
+
+  getPlatformStatus() {
+    return request<PlatformStatus>('/platform/status');
+  },
+
+  toggleGalaNominee(participantId: string, nominated: boolean) {
+    return request<{ participant_id: string; nominated: boolean }>(
+      `/admin/gala/${participantId}`,
+      { method: 'POST', body: JSON.stringify({ nominated }) },
+    );
   },
 
   reportMission(missionId: string, reason: ReportReasonId, token: string) {
