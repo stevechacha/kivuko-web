@@ -15,7 +15,7 @@ import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import LanguageToggle from '../components/LanguageToggle';
 import { useLocale } from '../context/LocaleContext';
-import { api, ApiError, type AdminDashboard, type LeaderboardEntry, type OralStory, type ReportedItem } from '../api/client';
+import { api, ApiError, type AdminDashboard, type ElderStory, type LeaderboardEntry, type OralStory, type ReportedItem, type RewardDisbursement } from '../api/client';
 import { useAppBack } from '../navigation/useAppBack';
 import TopNav from '../components/TopNav';
 import AdminPinGate from '../components/AdminPinGate';
@@ -23,7 +23,7 @@ import { isAdminUnlocked } from '../utils/adminAccess';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
 
-type AdminTab = 'stats' | 'flagged' | 'stories' | 'gala';
+type AdminTab = 'stats' | 'flagged' | 'stories' | 'gala' | 'elders' | 'rewards';
 
 export default function AdminDashboardScreen({ navigation }: Props) {
   const { t } = useLocale();
@@ -34,7 +34,11 @@ export default function AdminDashboardScreen({ navigation }: Props) {
   const [pendingReports, setPendingReports] = useState<ReportedItem[]>([]);
   const [pendingStories, setPendingStories] = useState<OralStory[]>([]);
   const [galaShortlist, setGalaShortlist] = useState<LeaderboardEntry[]>([]);
+  const [pendingElders, setPendingElders] = useState<ElderStory[]>([]);
+  const [pendingRewards, setPendingRewards] = useState<RewardDisbursement[]>([]);
   const [actingStoryId, setActingStoryId] = useState<string | null>(null);
+  const [actingElderId, setActingElderId] = useState<string | null>(null);
+  const [actingRewardId, setActingRewardId] = useState<string | null>(null);
   const [actingReportId, setActingReportId] = useState<string | null>(null);
   const [galaTogglingId, setGalaTogglingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,12 +53,16 @@ export default function AdminDashboardScreen({ navigation }: Props) {
       api.getReportedContent('pending').catch(() => [] as ReportedItem[]),
       api.getAdminStories('pending').catch(() => [] as OralStory[]),
       api.getLeaderboard(10, undefined, true).catch(() => [] as LeaderboardEntry[]),
+      api.getAdminElders('pending').catch(() => [] as ElderStory[]),
+      api.getAdminRewards('pending').catch(() => [] as RewardDisbursement[]),
     ])
-      .then(([dash, reports, stories, leaders]) => {
+      .then(([dash, reports, stories, leaders, elders, rewards]) => {
         setStats(dash);
         setPendingReports(reports);
         setPendingStories(stories);
         setGalaShortlist(leaders);
+        setPendingElders(elders);
+        setPendingRewards(rewards);
       })
       .catch((e) => {
         const msg =
@@ -106,6 +114,26 @@ export default function AdminDashboardScreen({ navigation }: Props) {
     }
   };
 
+  const resolveElder = async (storyId: string, action: 'approve' | 'reject') => {
+    setActingElderId(storyId);
+    try {
+      await api.resolveElderStory(storyId, action);
+      setPendingElders((prev) => prev.filter((s) => s.id !== storyId));
+    } finally {
+      setActingElderId(null);
+    }
+  };
+
+  const disburseReward = async (rewardId: string) => {
+    setActingRewardId(rewardId);
+    try {
+      await api.disburseReward(rewardId, 'send');
+      setPendingRewards((prev) => prev.filter((r) => r.id !== rewardId));
+    } finally {
+      setActingRewardId(null);
+    }
+  };
+
   if (!unlocked) {
     return (
       <SafeAreaView style={styles.safe}>
@@ -138,6 +166,8 @@ export default function AdminDashboardScreen({ navigation }: Props) {
             ['flagged', `${t('admin.tabReports')}${pendingReports.length ? ` (${pendingReports.length})` : ''}`],
             ['stories', `${t('admin.tabStories')}${pendingStories.length ? ` (${pendingStories.length})` : ''}`],
             ['gala', t('admin.tabGala')],
+            ['elders', `${t('admin.tabElders')}${pendingElders.length ? ` (${pendingElders.length})` : ''}`],
+            ['rewards', `${t('admin.tabRewards')}${pendingRewards.length ? ` (${pendingRewards.length})` : ''}`],
           ] as const
         ).map(([id, label]) => (
           <Pressable
@@ -278,6 +308,48 @@ export default function AdminDashboardScreen({ navigation }: Props) {
                     <Text style={styles.galaCheck}>{e.gala_nominated ? '☑' : '☐'}</Text>
                   </Pressable>
                 ))}
+              </>
+            )}
+
+            {tab === 'elders' && (
+              <>
+                {pendingElders.length === 0 ? (
+                  <Text style={styles.empty}>{t('admin.noPendingStories')}</Text>
+                ) : (
+                  pendingElders.map((s) => (
+                    <View key={s.id} style={styles.flagCard}>
+                      <Text style={styles.flagTitle}>{s.title}</Text>
+                      <Text style={styles.flagMeta}>{s.contributor_name} · {s.home_area}</Text>
+                      <Text style={styles.flagExcerpt} numberOfLines={4}>{s.body}</Text>
+                      <View style={styles.storyActions}>
+                        <Pressable disabled={actingElderId === s.id} onPress={() => resolveElder(s.id, 'approve')}>
+                          <Text style={styles.storyAction}>{t('admin.approve')}</Text>
+                        </Pressable>
+                        <Pressable disabled={actingElderId === s.id} onPress={() => resolveElder(s.id, 'reject')}>
+                          <Text style={styles.storyActionMuted}>{t('admin.reject')}</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))
+                )}
+              </>
+            )}
+
+            {tab === 'rewards' && (
+              <>
+                {pendingRewards.length === 0 ? (
+                  <Text style={styles.empty}>{t('admin.noReports')}</Text>
+                ) : (
+                  pendingRewards.map((r) => (
+                    <View key={r.id} style={styles.flagCard}>
+                      <Text style={styles.flagTitle}>{r.participant_name} · TZS {r.amount_tzs.toLocaleString()}</Text>
+                      <Text style={styles.flagMeta}>{r.reward_type} · {r.source} · {r.created_at_label}</Text>
+                      <Pressable disabled={actingRewardId === r.id} onPress={() => disburseReward(r.id)}>
+                        <Text style={styles.storyAction}>✓ Disburse (sandbox)</Text>
+                      </Pressable>
+                    </View>
+                  ))
+                )}
               </>
             )}
           </>

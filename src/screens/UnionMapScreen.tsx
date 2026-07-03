@@ -1,7 +1,7 @@
 // screens/UnionMapScreen.tsx
 // Step 5 of 5 — The Interactive "Live Union Map" & Admin Dashboard
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, ActivityIndicator, Platform } from 'react-native';
 import Svg, { Rect, Ellipse, Path, Circle, Text as SvgText } from 'react-native-svg';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -14,6 +14,11 @@ import LiveActivityFeed from '../components/LiveActivityFeed';
 import { useSession } from '../context/SessionContext';
 import { playAudioUrl, stopActiveAudio } from '../utils/audio';
 import { useAppBack } from '../navigation/useAppBack';
+
+let UnionLeafletMap: React.ComponentType<{ connections: MapConnection[]; height?: number }> | null = null;
+if (Platform.OS === 'web') {
+  UnionLeafletMap = require('../components/UnionLeafletMap.web').default;
+}
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UnionMap'>;
 
@@ -168,6 +173,9 @@ export default function UnionMapScreen({ navigation }: Props) {
                 </View>
               </View>
 
+              {UnionLeafletMap ? (
+                <UnionLeafletMap connections={connections} height={320} />
+              ) : (
               <Svg viewBox="0 0 500 420" width="100%" height={280}>
                 <Rect x={0} y={0} width={500} height={420} rx={12} fill="#F0F5F4" />
                 <Path
@@ -202,6 +210,7 @@ export default function UnionMapScreen({ navigation }: Props) {
                   );
                 })}
               </Svg>
+              )}
             </View>
 
             {activity.length > 0 && <LiveActivityFeed items={activity} />}

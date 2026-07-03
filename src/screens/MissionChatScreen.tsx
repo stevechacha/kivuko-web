@@ -24,10 +24,12 @@ import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 import { useAppBack } from '../navigation/useAppBack';
 import TopNav from '../components/TopNav';
+import { useMissionChatSocket } from '../hooks/useMissionChatSocket';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionChat'>;
 
 const POLL_MS = 1200;
+const USE_WS = Platform.OS === 'web';
 
 export default function MissionChatScreen({ navigation }: Props) {
   useCleanWebUrl();
@@ -54,6 +56,22 @@ export default function MissionChatScreen({ navigation }: Props) {
 
   const messageCountRef = useRef(0);
   const awaitingReplyRef = useRef(false);
+
+  const { connected: wsConnected } = useMissionChatSocket({
+    missionId,
+    token: participant?.session_token,
+    enabled: USE_WS && !!missionId,
+    onMessage: (msg) => {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
+      if (msg.from_role === 'peer') {
+        awaitingReplyRef.current = false;
+        setPeerTyping(false);
+      }
+    },
+  });
 
   const refreshChat = useCallback(async () => {
     if (!missionId || !participant?.session_token) return;
@@ -111,13 +129,13 @@ export default function MissionChatScreen({ navigation }: Props) {
 
     const poll = setInterval(() => {
       refreshChat().catch(() => {});
-    }, POLL_MS);
+    }, wsConnected ? 2500 : POLL_MS);
 
     return () => {
       cancelled = true;
       clearInterval(poll);
     };
-  }, [missionId, matchId, participant?.session_token, refreshChat, sessionPeer, setMission]);
+  }, [missionId, matchId, participant?.session_token, refreshChat, sessionPeer, setMission, wsConnected]);
 
   const sendMessage = async (text: string) => {
     if (!missionId || !participant?.session_token || sending) return;

@@ -38,6 +38,11 @@ export const linking: LinkingOptions<RootStackParamList> = {
       Omnichannel: 'njia-zote',
       JudgeTour: 'onyesho',
       ModeratorFlaggedContent: 'admin/ripoti',
+      ElderContribution: 'wazee',
+      CertificateGallery: 'vyeti',
+      PartnerDashboard: 'washirika',
+      RadioPartner: 'redio',
+      GalaCeremony: 'gala-moja',
     },
   },
 };

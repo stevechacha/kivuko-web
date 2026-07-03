@@ -219,6 +219,7 @@ export interface ReportedItem {
   excerpt?: string;
   reported_at_label: string;
   status: 'pending' | 'resolved';
+  auto_flagged?: boolean;
 }
 
 export interface MapConnection {
@@ -291,6 +292,85 @@ export interface AdminDashboard {
   gala_nominees: number;
   quiz_questions: number;
   platform_ready: boolean;
+  pending_elders?: number;
+  pending_rewards?: number;
+}
+
+export interface Institution {
+  code: string;
+  name: string;
+  home_area: string;
+  region: 'bara' | 'visiwani';
+}
+
+export interface ElderStory {
+  id: string;
+  contributor_name: string;
+  title: string;
+  body: string;
+  home_area: string;
+  region: string;
+  region_label: string;
+  audio_url?: string;
+  video_url?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  radio_nominated?: boolean;
+  created_at_label: string;
+}
+
+export interface ElderRadioEntry {
+  rank: number;
+  story_id: string;
+  contributor_name: string;
+  title: string;
+  home_area: string;
+  region_label: string;
+  audio_url?: string;
+}
+
+export interface PartnerDashboard {
+  youth_registered: number;
+  pairs_today: number;
+  certificates_issued: number;
+  completed_missions: number;
+  bara_youth: number;
+  visiwani_youth: number;
+  regions_active: number;
+  institutions: { code: string; name: string; home_area: string; region: string; youth_count: number }[];
+  pending_elder_stories: number;
+  rewards_pending_tzs: number;
+}
+
+export interface RadioPartnerData {
+  station_name: string;
+  segment_title: string;
+  elder_nominees: ElderRadioEntry[];
+  youth_gala_nominees: { rank: number; name: string; home_area: string; region_label: string; patriotism_points: number }[];
+  approved_elder_stories: number;
+  broadcast_ready: boolean;
+}
+
+export interface GalaCeremony {
+  event_title: string;
+  live_mode: boolean;
+  youth_finalists: (LeaderboardEntry & { gala_nominated?: boolean })[];
+  elder_finalists: ElderRadioEntry[];
+  total_certificates: number;
+  total_connections: number;
+  average_patriotism_score: number;
+  ceremony_message: string;
+}
+
+export interface RewardDisbursement {
+  id: string;
+  participant_name: string;
+  participant_phone: string;
+  amount_tzs: number;
+  reward_type: 'airtime' | 'mpesa';
+  status: 'pending' | 'processing' | 'sent' | 'failed';
+  source: string;
+  reference: string;
+  created_at_label: string;
 }
 
 export interface PlatformStatus {
@@ -351,6 +431,7 @@ export const api = {
     college: string;
     home_area: string;
     region: 'bara' | 'visiwani';
+    institution_code?: string;
     accepted_terms: boolean;
   }) {
     return request<RegisterResponse>('/users/register', {
@@ -504,6 +585,89 @@ export const api = {
     return request<UssdResponse>('/channels/ussd/session', {
       method: 'POST',
       body: JSON.stringify({ text, session_id: sessionId ?? undefined }),
+    });
+  },
+
+  getInstitutions(code?: string) {
+    const q = code ? `?code=${encodeURIComponent(code)}` : '';
+    return request<Institution[]>(`/institutions${q}`);
+  },
+
+  submitElderStory(data: {
+    title: string;
+    body: string;
+    contributor_name?: string;
+    audio_url?: string;
+    video_url?: string;
+  }, token: string) {
+    return request<ElderStory>('/elders/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, token);
+  },
+
+  getElderStories() {
+    return request<ElderStory[]>('/elders/stories');
+  },
+
+  getElderRadioTop10() {
+    return request<ElderRadioEntry[]>('/elders/radio-top10');
+  },
+
+  getMyCertificates(token: string) {
+    return request<Certificate[]>('/certificates/mine', {}, token);
+  },
+
+  certificatePdfUrl(certCode: string, token: string) {
+    return `${API_V1}/certificates/${encodeURIComponent(certCode)}/pdf`;
+  },
+
+  async downloadCertificatePdf(certCode: string, token: string) {
+    const res = await fetch(`${API_V1}/certificates/${encodeURIComponent(certCode)}/pdf`, {
+      headers: { 'X-Session-Token': token },
+    });
+    if (!res.ok) throw new ApiError('PDF download failed', res.status);
+    return res.blob();
+  },
+
+  getPartnerDashboard() {
+    return request<PartnerDashboard>('/partner/dashboard');
+  },
+
+  getRadioPartner() {
+    return request<RadioPartnerData>('/partner/radio');
+  },
+
+  getGalaCeremony() {
+    return request<GalaCeremony>('/gala/ceremony');
+  },
+
+  getAdminElders(status: 'pending' | 'approved' | 'rejected' = 'pending') {
+    return request<ElderStory[]>(`/admin/elders?status=${status}`);
+  },
+
+  resolveElderStory(storyId: string, action: 'approve' | 'reject') {
+    return request<ElderStory>(`/admin/elders/${storyId}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
+  },
+
+  toggleElderRadio(storyId: string, nominated: boolean) {
+    return request<ElderStory>(`/admin/elders/${storyId}/radio`, {
+      method: 'POST',
+      body: JSON.stringify({ nominated }),
+    });
+  },
+
+  getAdminRewards(status = 'pending') {
+    return request<RewardDisbursement[]>(`/admin/rewards?status=${status}`);
+  },
+
+  disburseReward(rewardId: string, action: 'send' | 'processing' | 'fail') {
+    return request<RewardDisbursement>(`/admin/rewards/${rewardId}/disburse`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
     });
   },
 };

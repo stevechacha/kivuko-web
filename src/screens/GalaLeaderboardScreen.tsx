@@ -77,7 +77,8 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
           Wazee 10 bora pia wanatangazwa kwenye redio ya taifa — hakuna hadithi isiyosikika.
         </Text>
 
-        <View style={{ marginTop: spacing.lg, alignItems: 'center' }}>
+        <View style={{ marginTop: spacing.lg, alignItems: 'center', gap: 8 }}>
+          <Button label={t('ceremony.leaderboard')} onPress={() => navigation.navigate('GalaCeremony')} />
           <Button label={t('admin.backDashboard')} variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
         </View>
       </ScrollView>

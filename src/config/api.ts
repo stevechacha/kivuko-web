@@ -15,6 +15,11 @@ function resolveApiBaseUrl(): string {
 export const API_BASE_URL = resolveApiBaseUrl();
 export const API_V1 = `${API_BASE_URL}/api/v1`;
 
+export function resolveWsBaseUrl(): string {
+  const base = API_BASE_URL.replace(/^http/, 'ws');
+  return base;
+}
+
 const PRODUCTION_WEB = 'https://kivuko-web-production.up.railway.app';
 
 export function resolveAppBaseUrl(): string {

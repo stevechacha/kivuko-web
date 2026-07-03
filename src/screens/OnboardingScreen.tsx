@@ -33,6 +33,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [college, setCollege] = useState('');
+  const [institutionCode, setInstitutionCode] = useState('');
   const [region, setRegion] = useState('');
   const [side, setSide] = useState<'bara' | 'visiwani'>('bara');
   const [submitted, setSubmitted] = useState(false);
@@ -67,6 +68,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
         college: college.trim(),
         home_area: region.trim(),
         region: side,
+        institution_code: institutionCode.trim() || undefined,
         accepted_terms: acceptedTerms,
       });
       applySession(res);
@@ -153,6 +155,13 @@ export default function OnboardingScreen({ navigation, route }: Props) {
                   onChangeText={setCollege}
                   placeholder={t('onboarding.phCollege')}
                 />
+                <Field
+                  label={t('onboarding.institutionCode')}
+                  value={institutionCode}
+                  onChangeText={setInstitutionCode}
+                  placeholder="UDSM2026"
+                />
+                <Text style={styles.hint}>{t('onboarding.institutionHint')}</Text>
               </>
             )}
             <Field
@@ -342,6 +351,7 @@ const styles = StyleSheet.create({
   formBody: { marginTop: 24 },
   field: { marginBottom: 18 },
   fieldLabel: { fontSize: 13, fontWeight: '700', color: '#2C3E50', marginBottom: 7 },
+  hint: { fontSize: 11, color: colors.textMuted, marginTop: -6, marginBottom: 10 },
   input: {
     borderWidth: 1.5,
     borderColor: colors.line,

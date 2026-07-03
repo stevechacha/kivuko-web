@@ -20,4 +20,9 @@ export type RootStackParamList = {
   Omnichannel: undefined;
   JudgeTour: undefined;
   ModeratorFlaggedContent: undefined;
+  ElderContribution: undefined;
+  CertificateGallery: undefined;
+  PartnerDashboard: undefined;
+  RadioPartner: undefined;
+  GalaCeremony: undefined;
 };

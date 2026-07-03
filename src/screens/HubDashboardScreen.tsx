@@ -206,6 +206,36 @@ export default function HubDashboardScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('GalaLeaderboard')}
           />
           <Button
+            label={t('hub.quickCeremony')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('GalaCeremony')}
+          />
+          <Button
+            label={t('hub.quickGallery')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('CertificateGallery')}
+          />
+          <Button
+            label={t('hub.quickElder')}
+            variant="ghost"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('ElderContribution')}
+          />
+          <Button
+            label={t('hub.quickPartner')}
+            variant="ghost"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('PartnerDashboard')}
+          />
+          <Button
+            label={t('hub.quickRadio')}
+            variant="ghost"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('RadioPartner')}
+          />
+          <Button
             label={visits.omnichannel ? t('hub.quickOmnichannelResume') : t('hub.quickOmnichannel')}
             variant="ghost"
             style={styles.quickBtn}

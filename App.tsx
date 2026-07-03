@@ -23,6 +23,11 @@ import GalaLeaderboardScreen from './src/screens/GalaLeaderboardScreen';
 import OmnichannelScreen from './src/screens/OmnichannelScreen';
 import JudgeTourScreen from './src/screens/JudgeTourScreen';
 import ModeratorFlaggedContentScreen from './src/screens/ModeratorFlaggedContentScreen';
+import ElderContributionScreen from './src/screens/ElderContributionScreen';
+import CertificateGalleryScreen from './src/screens/CertificateGalleryScreen';
+import PartnerDashboardScreen from './src/screens/PartnerDashboardScreen';
+import RadioPartnerScreen from './src/screens/RadioPartnerScreen';
+import GalaCeremonyScreen from './src/screens/GalaCeremonyScreen';
 import { SessionProvider } from './src/context/SessionContext';
 import { LocaleProvider } from './src/context/LocaleContext';
 import { linking } from './src/navigation/linking';
@@ -54,6 +59,11 @@ export default function App() {
           <Stack.Screen name="Omnichannel" component={OmnichannelScreen} />
           <Stack.Screen name="JudgeTour" component={JudgeTourScreen} />
           <Stack.Screen name="ModeratorFlaggedContent" component={ModeratorFlaggedContentScreen} />
+          <Stack.Screen name="ElderContribution" component={ElderContributionScreen} />
+          <Stack.Screen name="CertificateGallery" component={CertificateGalleryScreen} />
+          <Stack.Screen name="PartnerDashboard" component={PartnerDashboardScreen} />
+          <Stack.Screen name="RadioPartner" component={RadioPartnerScreen} />
+          <Stack.Screen name="GalaCeremony" component={GalaCeremonyScreen} />
         </Stack.Navigator>
       </NavigationContainer>
       </SessionProvider>
