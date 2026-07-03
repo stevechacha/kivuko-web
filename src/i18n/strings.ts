@@ -358,6 +358,7 @@ const swTree = {
     pinHint: 'Waamuzi wa demo: msimbo ni {pin}',
     pinNoLogin: 'Huhitaji kuingia kama kijana — msimbo wa waamuzi tu.',
     keyRequired: 'Ufunguo wa API haufanani. Weka ADMIN_DASHBOARD_KEY=MUUNGANO2026 kwenye Railway (API), au acha tupu.',
+    apiUnreachable: 'Imeshindwa kuunganisha na API. Hakikisha API iko hai na ADMIN_DASHBOARD_KEY inafanana na msimbo wa waamuzi.',
   },
   moderator: {
     title: 'Maudhui Yaliyoripotiwa',
@@ -747,9 +748,9 @@ const enTree = {
     pinHint: 'Demo judges: code is {pin}',
     pinNoLogin: 'No youth login needed — judge code only.',
     keyRequired: 'API key mismatch. Set ADMIN_DASHBOARD_KEY=MUUNGANO2026 on Railway (API), or leave it empty.',
+    apiUnreachable: 'Could not connect to API. Ensure the API service is running and ADMIN_DASHBOARD_KEY matches the judge PIN.',
   },
   moderator: {
-    title: 'Flagged Content',
     navTitle: 'FLAGGED CONTENT',
     back: '‹ Back',
     tabPending: 'Pending',

@@ -59,9 +59,11 @@ export default function AdminDashboardScreen({ navigation }: Props) {
         const msg =
           e instanceof ApiError && e.status === 403
             ? t('admin.keyRequired')
-            : e instanceof Error
-              ? e.message
-              : t('admin.loadError');
+            : e instanceof ApiError && e.status === 0
+              ? t('admin.apiUnreachable')
+              : e instanceof Error
+                ? e.message
+                : t('admin.loadError');
         setError(msg);
       })
       .finally(() => setLoading(false));
