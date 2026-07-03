@@ -51,7 +51,7 @@ export default function MatchingScreen({ navigation }: Props) {
       try {
         const result = await api.match(participant.session_token);
         setMatchResult(result);
-        setMission(result.mission_id, result.match_id);
+        setMission(result.mission_id, result.match_id, result.peer);
         setTimeout(() => {
           clearInterval(stepTimer);
           loop.stop();

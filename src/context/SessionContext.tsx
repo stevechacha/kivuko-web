@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Platform } from 'react-native';
-import { api, type Participant, type SessionResponse } from '../api/client';
+import { api, type Participant, type Peer, type SessionResponse } from '../api/client';
 
 const STORAGE_KEY = 'kivuko_session';
 
@@ -8,16 +8,18 @@ interface StoredSession {
   participant: Participant | null;
   missionId: string | null;
   matchId: string | null;
+  peer: Peer | null;
 }
 
 interface SessionState {
   participant: Participant | null;
   missionId: string | null;
   matchId: string | null;
+  peer: Peer | null;
   setParticipant: (p: Participant | null) => void;
   applySession: (session: SessionResponse) => void;
   updateParticipant: (patch: Partial<Participant>) => void;
-  setMission: (missionId: string, matchId: string) => void;
+  setMission: (missionId: string, matchId: string, peer?: Peer | null) => void;
   clearSession: () => void;
   hydrated: boolean;
   refreshing: boolean;
@@ -27,14 +29,15 @@ const SessionContext = createContext<SessionState | null>(null);
 
 function loadStored(): StoredSession {
   if (Platform.OS !== 'web' || typeof sessionStorage === 'undefined') {
-    return { participant: null, missionId: null, matchId: null };
+    return { participant: null, missionId: null, matchId: null, peer: null };
   }
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return { participant: null, missionId: null, matchId: null };
-    return JSON.parse(raw) as StoredSession;
+    if (!raw) return { participant: null, missionId: null, matchId: null, peer: null };
+    const parsed = JSON.parse(raw) as StoredSession;
+    return { ...parsed, peer: parsed.peer ?? null };
   } catch {
-    return { participant: null, missionId: null, matchId: null };
+    return { participant: null, missionId: null, matchId: null, peer: null };
   }
 }
 
@@ -52,6 +55,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [participant, setParticipantState] = useState<Participant | null>(initial.participant);
   const [missionId, setMissionId] = useState<string | null>(initial.missionId);
   const [matchId, setMatchId] = useState<string | null>(initial.matchId);
+  const [peer, setPeer] = useState<Peer | null>(initial.peer);
   const [hydrated, setHydrated] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -66,10 +70,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setParticipantState(session.participant);
       setMissionId(nextMissionId);
       setMatchId(nextMatchId);
-      persist({
-        participant: session.participant,
-        missionId: nextMissionId,
-        matchId: nextMatchId,
+      setPeer((prevPeer) => {
+        persist({
+          participant: session.participant,
+          missionId: nextMissionId,
+          matchId: nextMatchId,
+          peer: prevPeer,
+        });
+        return prevPeer;
       });
     },
     [persist],
@@ -96,7 +104,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           setParticipantState(null);
           setMissionId(null);
           setMatchId(null);
-          persist({ participant: null, missionId: null, matchId: null });
+          setPeer(null);
+          persist({ participant: null, missionId: null, matchId: null, peer: null });
         }
       } finally {
         if (!cancelled) {
@@ -118,12 +127,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (!p) {
         setMissionId(null);
         setMatchId(null);
-        persist({ participant: null, missionId: null, matchId: null });
+        setPeer(null);
+        persist({ participant: null, missionId: null, matchId: null, peer: null });
         return;
       }
       setMissionId(null);
       setMatchId(null);
-      persist({ participant: p, missionId: null, matchId: null });
+      setPeer(null);
+      persist({ participant: p, missionId: null, matchId: null, peer: null });
     },
     [persist],
   );
@@ -133,27 +144,34 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setParticipantState((prev) => {
         if (!prev) return prev;
         const next = { ...prev, ...patch };
-        persist({ participant: next, missionId, matchId });
+        persist({ participant: next, missionId, matchId, peer });
         return next;
       });
     },
-    [matchId, missionId, persist],
+    [matchId, missionId, peer, persist],
   );
 
   const setMission = useCallback(
-    (mid: string, rid: string) => {
+    (mid: string, rid: string, nextPeer?: Peer | null) => {
       setMissionId(mid);
       setMatchId(rid);
-      persist({ participant, missionId: mid, matchId: rid });
+      if (nextPeer !== undefined) setPeer(nextPeer);
+      persist({
+        participant,
+        missionId: mid,
+        matchId: rid,
+        peer: nextPeer !== undefined ? nextPeer : peer,
+      });
     },
-    [participant, persist],
+    [participant, peer, persist],
   );
 
   const clearSession = useCallback(() => {
     setParticipantState(null);
     setMissionId(null);
     setMatchId(null);
-    persist({ participant: null, missionId: null, matchId: null });
+    setPeer(null);
+    persist({ participant: null, missionId: null, matchId: null, peer: null });
   }, [persist]);
 
   const value = useMemo<SessionState>(
@@ -161,6 +179,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       participant,
       missionId,
       matchId,
+      peer,
       setParticipant,
       applySession,
       updateParticipant,
@@ -173,6 +192,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       participant,
       missionId,
       matchId,
+      peer,
       setParticipant,
       applySession,
       updateParticipant,

@@ -150,6 +150,12 @@ export interface ChatMessage {
   created_at?: string;
 }
 
+export interface ChatThread {
+  peer: Peer;
+  mission_title: string;
+  messages: ChatMessage[];
+}
+
 export interface QuizQuestion {
   id: string;
   question: string;
@@ -286,15 +292,22 @@ export const api = {
   },
 
   getChat(missionId: string, token: string) {
-    return request<ChatMessage[]>(`/missions/${missionId}/chat`, {}, token);
+    return request<ChatThread>(`/missions/${missionId}/chat`, {}, token);
   },
 
   sendMessage(missionId: string, text: string, token: string) {
-    return request<{ sent: ChatMessage; reply: ChatMessage }>(
+    return request<{ sent: ChatMessage }>(
       `/missions/${missionId}/chat`,
       { method: 'POST', body: JSON.stringify({ text }) },
       token,
     );
+  },
+
+  whatsappBot(text: string) {
+    return request<{ reply: string; channel: string }>('/channels/whatsapp/chat', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    });
   },
 
   getQuizQuestions() {

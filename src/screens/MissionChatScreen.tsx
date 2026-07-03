@@ -1,16 +1,13 @@
-// screens/MissionChatScreen.tsx
-// Step 3 of 5 — Joint Mission & Live Chat (design: screen-mission)
-import React, { useEffect, useRef, useState } from 'react';
+// MissionChatScreen — WhatsApp-style joint mission chat + quiz
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
-  Pressable,
-  ScrollView,
   Modal,
   SafeAreaView,
-  Platform,
+  ScrollView,
+  Pressable,
   ActivityIndicator,
   useWindowDimensions,
 } from 'react-native';
@@ -18,30 +15,52 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
-import TopNav from '../components/TopNav';
-import { api, type ChatMessage, type QuizQuestion, type QuizSubmitResponse } from '../api/client';
+import WhatsAppChat from '../components/WhatsAppChat';
+import { api, type ChatMessage, type Peer, type QuizQuestion, type QuizSubmitResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionChat'>;
 
+const POLL_MS = 1200;
+
 export default function MissionChatScreen({ navigation }: Props) {
   useCleanWebUrl();
-  const { participant, missionId, updateParticipant } = useSession();
+  const { participant, missionId, matchId, peer: sessionPeer, updateParticipant, setMission } = useSession();
   const userName = participant?.name || 'Mzalendo';
   const { width } = useWindowDimensions();
-  const isWide = width >= 760;
-  const chatScrollRef = useRef<ScrollView>(null);
+  const isWide = width >= 900;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [peer, setPeer] = useState<Peer | null>(sessionPeer);
+  const [missionTitle, setMissionTitle] = useState('Jaribio la Historia ya Muungano');
   const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [draft, setDraft] = useState('');
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [rewardVisible, setRewardVisible] = useState(false);
+  const [quizModalVisible, setQuizModalVisible] = useState(false);
   const [sending, setSending] = useState(false);
+  const [peerTyping, setPeerTyping] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(null);
+
+  const messageCountRef = useRef(0);
+  const awaitingReplyRef = useRef(false);
+
+  const refreshChat = useCallback(async () => {
+    if (!missionId || !participant?.session_token) return;
+    const thread = await api.getChat(missionId, participant.session_token);
+    setPeer(thread.peer);
+    setMissionTitle(thread.mission_title);
+    setMessages(thread.messages);
+
+    const peerCount = thread.messages.filter((m) => m.from_role === 'peer').length;
+    if (awaitingReplyRef.current && peerCount > messageCountRef.current) {
+      awaitingReplyRef.current = false;
+      setPeerTyping(false);
+    }
+    messageCountRef.current = peerCount;
+  }, [missionId, participant?.session_token]);
 
   useEffect(() => {
     if (!missionId) {
@@ -49,41 +68,62 @@ export default function MissionChatScreen({ navigation }: Props) {
       setLoading(false);
       return;
     }
+    if (!participant?.session_token) {
+      setLoadError('Kipindi kimeisha. Tafadhali ingia tena ili kuendelea.');
+      setLoading(false);
+      return;
+    }
 
+    let cancelled = false;
     const load = async () => {
       setLoadError(null);
       try {
-        const [chat, questions] = await Promise.all([
-          participant?.session_token
-            ? api.getChat(missionId, participant.session_token)
-            : Promise.resolve([]),
+        const [thread, questions] = await Promise.all([
+          api.getChat(missionId, participant.session_token),
           api.getQuizQuestions(),
         ]);
-        setMessages(chat);
-        setQuiz(questions);
-        if (!participant?.session_token) {
-          setLoadError('Kipindi kimeisha. Tafadhali jisajili tena ili kuendelea.');
+        if (cancelled) return;
+        setPeer(thread.peer);
+        if (matchId && (!sessionPeer || sessionPeer.id !== thread.peer.id)) {
+          setMission(missionId, matchId, thread.peer);
         }
+        setMissionTitle(thread.mission_title);
+        setMessages(thread.messages);
+        setQuiz(questions);
+        messageCountRef.current = thread.messages.filter((m) => m.from_role === 'peer').length;
       } catch (e) {
-        setLoadError(e instanceof Error ? e.message : 'Imeshindwa kupakia dhamira.');
+        if (!cancelled) {
+          setLoadError(e instanceof Error ? e.message : 'Imeshindwa kupakia dhamira.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     load();
-  }, [missionId, participant?.session_token]);
 
-  useEffect(() => {
-    chatScrollRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
+    const poll = setInterval(() => {
+      refreshChat().catch(() => {});
+    }, POLL_MS);
 
-  const sendMessage = async () => {
-    if (!missionId || !draft.trim() || !participant?.session_token || sending) return;
+    return () => {
+      cancelled = true;
+      clearInterval(poll);
+    };
+  }, [missionId, matchId, participant?.session_token, refreshChat, sessionPeer, setMission]);
+
+  const sendMessage = async (text: string) => {
+    if (!missionId || !participant?.session_token || sending) return;
     setSending(true);
+    setPeerTyping(true);
+    awaitingReplyRef.current = true;
     try {
-      const res = await api.sendMessage(missionId, draft, participant.session_token);
-      setMessages((prev) => [...prev, res.sent, res.reply]);
-      setDraft('');
+      const res = await api.sendMessage(missionId, text, participant.session_token);
+      setMessages((prev) => [...prev, res.sent]);
+      setTimeout(() => refreshChat().catch(() => {}), 800);
+    } catch (e) {
+      setPeerTyping(false);
+      awaitingReplyRef.current = false;
+      setLoadError(e instanceof Error ? e.message : 'Imeshindwa kutuma ujumbe.');
     } finally {
       setSending(false);
     }
@@ -102,7 +142,8 @@ export default function MissionChatScreen({ navigation }: Props) {
           updateParticipant({
             patriotism_points: (participant.patriotism_points || 0) + result.patriotism_points,
           });
-          setTimeout(() => setRewardVisible(true), 500);
+          setQuizModalVisible(false);
+          setTimeout(() => setRewardVisible(true), 400);
         }
       } catch (e) {
         setLoadError(e instanceof Error ? e.message : 'Imeshindwa kuwasilisha majibu.');
@@ -110,10 +151,16 @@ export default function MissionChatScreen({ navigation }: Props) {
     }
   };
 
+  const quizProgress = quiz.length ? Object.keys(answers).length / quiz.length : 0;
+  const peerName = peer?.name || 'Rafiki wa Kivuko';
+  const peerInitials = peer?.initials || 'RK';
+  const peerRegion = peer?.region_label || 'Muungano';
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.safe, styles.centered]}>
         <ActivityIndicator color={colors.green} size="large" />
+        <Text style={styles.loadingText}>Inapakia mazungumzo…</Text>
       </SafeAreaView>
     );
   }
@@ -121,118 +168,73 @@ export default function MissionChatScreen({ navigation }: Props) {
   if (!missionId || loadError) {
     return (
       <SafeAreaView style={styles.safe}>
-        <TopNav currentStep={3} />
-        <View style={[styles.page, styles.centered, { flex: 1, paddingTop: 40 }]}>
+        <View style={[styles.centered, { flex: 1, padding: spacing.lg }]}>
           <Text style={styles.errorText}>{loadError || 'Dhamira haipatikani.'}</Text>
           <View style={{ marginTop: 16 }}>
-            <Button label="Rudi kwenye Usajili" onPress={() => navigation.navigate('Onboarding')} />
+            <Button label="Rudi Nyumbani" onPress={() => navigation.navigate('Landing')} />
           </View>
         </View>
       </SafeAreaView>
     );
   }
 
+  const quizHeaderBtn = (
+    <Pressable style={styles.quizHeaderBtn} onPress={() => setQuizModalVisible(true)}>
+      <Text style={styles.quizHeaderBtnText}>📝 Jaribio</Text>
+      {quizProgress > 0 && quizProgress < 1 && (
+        <View style={styles.quizDot} />
+      )}
+    </Pressable>
+  );
+
   return (
     <SafeAreaView style={styles.safe}>
-      <TopNav currentStep={3} />
-      <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.stepEyebrow}>Hatua 3 ya 5 — Dhamira ya Pamoja</Text>
-
-        <View style={styles.card}>
-          <View style={styles.missionHead}>
-            <View>
-              <Text style={styles.missionEyebrow}>Dhamira 1</Text>
-              <Text style={styles.missionTitle}>Jaribio la Historia ya Muungano</Text>
-            </View>
-            <View style={styles.pointsBadge}>
-              <Text style={styles.pointsBadgeText}>Pointi 50 zinasubiri</Text>
-            </View>
-          </View>
-
-          <View style={[styles.chatLayout, isWide && styles.chatLayoutWide]}>
-            {/* Chat column — messages + input stay together */}
-            <View style={[styles.chatCol, isWide && styles.chatColWide]}>
-              <ScrollView
-                ref={chatScrollRef}
-                style={[styles.chatMsgs, isWide ? styles.chatMsgsWide : styles.chatMsgsNarrow]}
-                contentContainerStyle={styles.chatMsgsContent}
-                keyboardShouldPersistTaps="handled"
-              >
-                {messages.map((item) => (
-                  <ChatBubble key={item.id} message={item} />
-                ))}
-              </ScrollView>
-              <View style={styles.inputRow}>
-                <TextInput
-                  value={draft}
-                  onChangeText={setDraft}
-                  placeholder="Andika ujumbe…"
-                  placeholderTextColor="#9AA5A3"
-                  style={styles.input}
-                  onSubmitEditing={sendMessage}
-                />
-                <Pressable style={styles.sendBtn} onPress={sendMessage} disabled={sending}>
-                  <Text style={{ color: colors.white, fontSize: 16 }}>➤</Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {/* Quiz column — scrolls independently */}
-            <ScrollView
-              style={[
-                styles.quizCol,
-                isWide ? styles.quizColWide : styles.quizColNarrow,
-              ]}
-              contentContainerStyle={styles.quizColContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              {quiz.map((item, qi) => (
-                <View key={item.id} style={styles.quizBlock}>
-                  <Text style={styles.quizQuestion}>
-                    {qi + 1}. {item.question}
-                  </Text>
-                  {item.options.map((opt, oi) => {
-                    const answered = answers[item.id];
-                    const locked = answered !== undefined;
-                    const isCorrect = oi === item.correct_index;
-                    const isChosenWrong = answered === oi && oi !== item.correct_index;
-                    const showState = locked;
-                    return (
-                      <Pressable
-                        key={oi}
-                        onPress={() => answerQuestion(item.id, oi)}
-                        disabled={locked}
-                        style={[
-                          styles.qOption,
-                          showState && isCorrect && styles.qOptionCorrect,
-                          showState && isChosenWrong && styles.qOptionWrong,
-                          locked && styles.qOptionLocked,
-                        ]}
-                      >
-                        <View
-                          style={[
-                            styles.qMark,
-                            showState && isCorrect && styles.qMarkCorrect,
-                            showState && isChosenWrong && styles.qMarkWrong,
-                          ]}
-                        >
-                          {showState && isCorrect && <Text style={styles.qMarkText}>✓</Text>}
-                          {showState && isChosenWrong && <Text style={styles.qMarkText}>✕</Text>}
-                        </View>
-                        <Text style={styles.qOptionText}>{opt}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ))}
-            </ScrollView>
-          </View>
+      <View style={[styles.shell, isWide && styles.shellWide]}>
+        <View style={[styles.chatPane, isWide && styles.chatPaneWide]}>
+          <WhatsAppChat
+            messages={messages}
+            peerName={peerName}
+            peerInitials={peerInitials}
+            peerRegionLabel={peerRegion}
+            peerHomeArea={peer?.home_area}
+            headerSubtitle={`${missionTitle} · mtandaoni`}
+            placeholder="Andika ujumbe…"
+            sending={sending}
+            peerTyping={peerTyping}
+            onSend={sendMessage}
+            onBack={() => navigation.goBack()}
+            headerAction={quizHeaderBtn}
+          />
         </View>
 
-        <View style={styles.footerRow}>
-          <Button label="Rudi Nyuma" variant="ghost" onPress={() => navigation.goBack()} />
-        </View>
-      </ScrollView>
+        {isWide && (
+          <View style={styles.quizPane}>
+            <QuizPanel
+              quiz={quiz}
+              answers={answers}
+              onAnswer={answerQuestion}
+              missionTitle={missionTitle}
+            />
+          </View>
+        )}
+      </View>
+
+      <Modal visible={quizModalVisible && !isWide} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.quizModal}>
+          <View style={styles.quizModalHead}>
+            <Text style={styles.quizModalTitle}>Dhamira 1 — Jaribio</Text>
+            <Pressable onPress={() => setQuizModalVisible(false)}>
+              <Text style={styles.quizModalClose}>Funga</Text>
+            </Pressable>
+          </View>
+          <QuizPanel
+            quiz={quiz}
+            answers={answers}
+            onAnswer={answerQuestion}
+            missionTitle={missionTitle}
+          />
+        </SafeAreaView>
+      </Modal>
 
       <Modal visible={rewardVisible} transparent animationType="fade">
         <View style={styles.overlay}>
@@ -242,7 +244,7 @@ export default function MissionChatScreen({ navigation }: Props) {
             </View>
             <Text style={styles.rewardTitle}>Mmefanikiwa! Dhamira Imekamilika</Text>
             <Text style={styles.rewardBody}>
-              {userName} na rafiki yake wamemaliza Jaribio la Historia ya Muungano pamoja.
+              {userName} na {peerName.split(' ')[0]} wamemaliza jaribio la Muungano pamoja.
             </Text>
             <View style={styles.rewardPillRow}>
               <View style={styles.rewardPill}>
@@ -272,213 +274,107 @@ export default function MissionChatScreen({ navigation }: Props) {
   );
 }
 
-function ChatBubble({ message }: { message: ChatMessage }) {
-  if (message.from_role === 'system') {
-    return (
-      <View style={styles.systemBubbleWrap}>
-        <Text style={styles.systemBubbleText}>{message.text}</Text>
-      </View>
-    );
-  }
-  const mine = message.from_role === 'me';
+function QuizPanel({
+  quiz,
+  answers,
+  onAnswer,
+  missionTitle,
+}: {
+  quiz: QuizQuestion[];
+  answers: Record<string, number>;
+  onAnswer: (qid: string, idx: number) => void;
+  missionTitle: string;
+}) {
   return (
-    <View style={[styles.bubble, mine ? styles.bubbleMe : styles.bubblePeer]}>
-      <Text style={[styles.bubbleText, mine && styles.bubbleTextMe]}>{message.text}</Text>
-    </View>
+    <ScrollView contentContainerStyle={styles.quizScroll} keyboardShouldPersistTaps="handled">
+      <Text style={styles.quizEyebrow}>Dhamira 1</Text>
+      <Text style={styles.quizTitle}>{missionTitle}</Text>
+      <Text style={styles.quizHint}>Jibu maswali huku ukichati na pacha wako — kama WhatsApp halisi.</Text>
+      {quiz.map((item, qi) => (
+        <View key={item.id} style={styles.quizBlock}>
+          <Text style={styles.quizQuestion}>
+            {qi + 1}. {item.question}
+          </Text>
+          {item.options.map((opt, oi) => {
+            const answered = answers[item.id];
+            const locked = answered !== undefined;
+            const isCorrect = oi === item.correct_index;
+            const isChosenWrong = answered === oi && oi !== item.correct_index;
+            return (
+              <Pressable
+                key={oi}
+                onPress={() => onAnswer(item.id, oi)}
+                disabled={locked}
+                style={[
+                  styles.qOption,
+                  locked && isCorrect && styles.qOptionCorrect,
+                  locked && isChosenWrong && styles.qOptionWrong,
+                ]}
+              >
+                <Text style={styles.qOptionText}>{opt}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
+  safe: { flex: 1, backgroundColor: '#ECE5DD' },
   centered: { alignItems: 'center', justifyContent: 'center' },
-  page: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: 60,
-    maxWidth: 1080,
-    width: '100%',
-    alignSelf: 'center',
+  loadingText: { marginTop: 12, color: colors.textMuted, fontSize: 14 },
+  shell: { flex: 1 },
+  shellWide: { flexDirection: 'row', maxWidth: 1200, alignSelf: 'center', width: '100%' },
+  chatPane: { flex: 1 },
+  chatPaneWide: { flex: 1.15, borderRightWidth: 1, borderRightColor: colors.line },
+  quizPane: { flex: 1, backgroundColor: colors.white, maxWidth: 420 },
+  quizHeaderBtn: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 4,
   },
-  stepEyebrow: {
-    fontSize: 12.5,
-    letterSpacing: 1.8,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-    color: colors.greenDeep,
-    marginTop: 20,
-    marginBottom: 8,
+  quizHeaderBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  quizDot: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.gold,
   },
-  card: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-  },
-  missionHead: {
+  quizModal: { flex: 1, backgroundColor: colors.white },
+  quizModalHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 22,
-    backgroundColor: colors.white,
+    padding: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
   },
-  missionEyebrow: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.greenDeep,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  missionTitle: { fontSize: 18, fontWeight: '700', color: colors.dark },
-  pointsBadge: {
-    backgroundColor: colors.gold,
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  pointsBadgeText: { fontSize: 11, fontWeight: '800', color: '#5C4400' },
-  chatLayout: {
-    backgroundColor: colors.white,
-    borderBottomLeftRadius: radius.lg,
-    borderBottomRightRadius: radius.lg,
-  },
-  chatLayoutWide: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-  },
-  chatCol: {
-    backgroundColor: colors.white,
-  },
-  chatColWide: {
-    flex: 1.2,
-    borderRightWidth: 1,
-    borderRightColor: colors.line,
-  },
-  chatMsgs: {
-    backgroundColor: colors.white,
-  },
-  chatMsgsWide: {
-    height: 440,
-  },
-  chatMsgsNarrow: {
-    maxHeight: 300,
-  },
-  chatMsgsContent: {
-    padding: 20,
-    gap: 10,
-    flexGrow: 1,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    padding: 12,
-    gap: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    backgroundColor: colors.white,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: colors.line,
-    borderRadius: radius.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 14,
-    backgroundColor: colors.white,
-    color: colors.dark,
-  },
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.blue,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bubble: {
-    maxWidth: '76%',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-  },
-  bubbleMe: {
-    alignSelf: 'flex-end',
-    backgroundColor: colors.green,
-    borderBottomRightRadius: 4,
-  },
-  bubblePeer: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#EAF2F7',
-    borderWidth: 1,
-    borderColor: '#D6E6EE',
-    borderBottomLeftRadius: 4,
-  },
-  bubbleText: { fontSize: 14, lineHeight: 20, color: colors.dark },
-  bubbleTextMe: { color: colors.white },
-  systemBubbleWrap: {
-    alignSelf: 'center',
-    backgroundColor: '#FBF6E3',
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  systemBubbleText: { fontSize: 12, color: '#7A5E00' },
-  quizCol: {
-    backgroundColor: colors.white,
-  },
-  quizColWide: {
-    flex: 1,
-    maxHeight: 440,
-  },
-  quizColNarrow: {
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    maxHeight: undefined,
-  },
-  quizColContent: {
-    padding: 20,
-  },
-  quizBlock: { marginBottom: 22 },
-  quizQuestion: {
-    fontWeight: '700',
-    fontSize: 14.5,
-    color: colors.dark,
-    marginBottom: 10,
-    lineHeight: 20,
-  },
+  quizModalTitle: { fontSize: 16, fontWeight: '800', color: colors.dark },
+  quizModalClose: { color: colors.green, fontWeight: '700' },
+  quizScroll: { padding: spacing.lg, paddingBottom: 40 },
+  quizEyebrow: { fontSize: 11, fontWeight: '800', color: colors.greenDeep, textTransform: 'uppercase' },
+  quizTitle: { fontSize: 18, fontWeight: '700', color: colors.dark, marginTop: 4 },
+  quizHint: { fontSize: 13, color: colors.textMuted, marginTop: 6, marginBottom: 16, lineHeight: 19 },
+  quizBlock: { marginBottom: 20 },
+  quizQuestion: { fontWeight: '700', fontSize: 14, color: colors.dark, marginBottom: 8, lineHeight: 20 },
   qOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
     borderWidth: 1.5,
     borderColor: colors.line,
     borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    padding: 12,
     marginBottom: 8,
     backgroundColor: colors.white,
   },
   qOptionCorrect: { borderColor: colors.green, backgroundColor: '#F0FAF8' },
   qOptionWrong: { borderColor: colors.danger, backgroundColor: '#FDF0EE' },
-  qOptionLocked: { opacity: 1 },
-  qMark: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: colors.line,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  qMarkCorrect: { backgroundColor: colors.green, borderColor: colors.green },
-  qMarkWrong: { backgroundColor: colors.danger, borderColor: colors.danger },
-  qMarkText: { color: colors.white, fontSize: 10, fontWeight: '700' },
-  qOptionText: { fontSize: 13.5, color: colors.dark, flex: 1, lineHeight: 19 },
-  footerRow: { marginTop: 22, flexDirection: 'row' },
+  qOptionText: { fontSize: 13.5, color: colors.dark, lineHeight: 19 },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(26,26,26,0.55)',
@@ -505,20 +401,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   rewardTitle: { fontSize: 20, fontWeight: '700', textAlign: 'center', color: colors.dark },
-  rewardBody: {
-    fontSize: 14,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
-  },
-  rewardPillRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 18,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
+  rewardBody: { fontSize: 14, color: colors.textMuted, textAlign: 'center', marginTop: 8, lineHeight: 20 },
+  rewardPillRow: { flexDirection: 'row', gap: 12, marginTop: 18, flexWrap: 'wrap', justifyContent: 'center' },
   rewardPill: {
     backgroundColor: '#FBF6E3',
     borderWidth: 1,
