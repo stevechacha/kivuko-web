@@ -1,6 +1,6 @@
 // screens/OnboardingScreen.tsx
 // Registration (usajili) and login (ingia) — live API, no pre-filled demo data
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import TopNav from '../components/TopNav';
-import { api, ApiError } from '../api/client';
+import { api, ApiError, type Institution } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { useAppBack } from '../navigation/useAppBack';
@@ -41,6 +41,12 @@ export default function OnboardingScreen({ navigation, route }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+
+  useEffect(() => {
+    if (mode !== 'register') return;
+    api.getInstitutions().then(setInstitutions).catch(() => {});
+  }, [mode]);
 
   const finishSession = (message?: string) => {
     setSuccessMessage(message ?? (mode === 'login' ? t('onboarding.loginSuccess') : t('onboarding.welcome')));
@@ -162,6 +168,30 @@ export default function OnboardingScreen({ navigation, route }: Props) {
                   placeholder="UDSM2026"
                 />
                 <Text style={styles.hint}>{t('onboarding.institutionHint')}</Text>
+                {institutions.length > 0 ? (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.instScroll}>
+                    {institutions.map((inst) => (
+                      <Pressable
+                        key={inst.code}
+                        style={[
+                          styles.instChip,
+                          institutionCode === inst.code && styles.instChipActive,
+                        ]}
+                        onPress={() => setInstitutionCode(inst.code)}
+                      >
+                        <Text
+                          style={[
+                            styles.instChipText,
+                            institutionCode === inst.code && styles.instChipTextActive,
+                          ]}
+                        >
+                          {inst.code}
+                        </Text>
+                        <Text style={styles.instChipSub}>{inst.name}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                ) : null}
               </>
             )}
             <Field
@@ -400,4 +430,19 @@ const styles = StyleSheet.create({
   consentBoxChecked: { backgroundColor: colors.green, borderColor: colors.green },
   consentTick: { color: colors.white, fontSize: 12, fontWeight: '800' },
   consentText: { flex: 1, fontSize: 12, color: colors.textMuted, lineHeight: 18 },
+  instScroll: { marginBottom: 12, maxHeight: 72 },
+  instChip: {
+    marginRight: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    minWidth: 100,
+  },
+  instChipActive: { borderColor: colors.green, backgroundColor: '#F0FAF8' },
+  instChipText: { fontSize: 12, fontWeight: '800', color: colors.dark },
+  instChipTextActive: { color: colors.greenDeep },
+  instChipSub: { fontSize: 9, color: colors.textMuted, marginTop: 2, maxWidth: 120 },
 });

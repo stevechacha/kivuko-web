@@ -29,6 +29,9 @@ import CertificateGalleryScreen from './src/screens/CertificateGalleryScreen';
 import PartnerDashboardScreen from './src/screens/PartnerDashboardScreen';
 import RadioPartnerScreen from './src/screens/RadioPartnerScreen';
 import GalaCeremonyScreen from './src/screens/GalaCeremonyScreen';
+import OralHistoryArchiveScreen from './src/screens/OralHistoryArchiveScreen';
+import MyRewardsScreen from './src/screens/MyRewardsScreen';
+import NationalImpactScreen from './src/screens/NationalImpactScreen';
 import { SessionProvider } from './src/context/SessionContext';
 import { LocaleProvider } from './src/context/LocaleContext';
 import { linking } from './src/navigation/linking';
@@ -62,6 +65,9 @@ export default function App() {
           <Stack.Screen name="ModeratorFlaggedContent" component={ModeratorFlaggedContentScreen} />
           <Stack.Screen name="ElderContribution" component={ElderContributionScreen} />
           <Stack.Screen name="ElderRadio" component={ElderRadioScreen} />
+          <Stack.Screen name="OralHistoryArchive" component={OralHistoryArchiveScreen} />
+          <Stack.Screen name="MyRewards" component={MyRewardsScreen} />
+          <Stack.Screen name="NationalImpact" component={NationalImpactScreen} />
           <Stack.Screen name="CertificateGallery" component={CertificateGalleryScreen} />
           <Stack.Screen name="PartnerDashboard" component={PartnerDashboardScreen} />
           <Stack.Screen name="RadioPartner" component={RadioPartnerScreen} />

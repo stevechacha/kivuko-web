@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Pressable,
+  Platform,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -23,16 +24,31 @@ import { playAudioUrl, stopActiveAudio } from '../utils/audio';
 type Props = NativeStackScreenProps<RootStackParamList, 'ElderRadio'>;
 
 export default function ElderRadioScreen({ navigation }: Props) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const goBack = useAppBack(navigation);
   const [nominees, setNominees] = useState<ElderRadioEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [scriptCopied, setScriptCopied] = useState(false);
 
   useEffect(() => {
     markVisited('elder');
     api.getElderRadioTop10().then(setNominees).finally(() => setLoading(false));
   }, []);
+
+  const copyBroadcastScript = async () => {
+    try {
+      const script = await api.getRadioBroadcastScript();
+      const text = locale === 'en' ? script.script_en : script.script_sw;
+      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+      }
+      setScriptCopied(true);
+      setTimeout(() => setScriptCopied(false), 2500);
+    } catch {
+      setScriptCopied(false);
+    }
+  };
 
   const playClip = (entry: ElderRadioEntry) => {
     if (!entry.audio_url) return;
@@ -81,8 +97,13 @@ export default function ElderRadioScreen({ navigation }: Props) {
         )}
 
         <View style={styles.actions}>
+          <Button
+            label={scriptCopied ? t('radio.scriptCopied') : t('radio.copyScript')}
+            variant="secondary"
+            onPress={copyBroadcastScript}
+          />
           <Button label={t('elder.submit')} onPress={() => navigation.navigate('ElderContribution')} />
-          <Button label={t('pitch.partnerTitle')} variant="ghost" onPress={() => navigation.navigate('PartnerDashboard')} />
+          <Button label={t('archive.title')} variant="ghost" onPress={() => navigation.navigate('OralHistoryArchive')} />
         </View>
       </ScrollView>
     </SafeAreaView>

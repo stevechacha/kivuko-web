@@ -9,6 +9,9 @@ const KEYS = {
   elder: 'kivuko_visited_elder',
   gallery: 'kivuko_visited_gallery',
   partner: 'kivuko_visited_partner',
+  archive: 'kivuko_visited_archive',
+  rewards: 'kivuko_visited_rewards',
+  impact: 'kivuko_visited_impact',
 } as const;
 
 export type VisitKey = keyof typeof KEYS;
@@ -37,5 +40,8 @@ export function readVisitState(): Record<VisitKey, boolean> {
     elder: hasVisited('elder'),
     gallery: hasVisited('gallery'),
     partner: hasVisited('partner'),
+    archive: hasVisited('archive'),
+    rewards: hasVisited('rewards'),
+    impact: hasVisited('impact'),
   };
 }

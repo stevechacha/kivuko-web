@@ -19,6 +19,7 @@ import MissionJourneyTracker from '../components/MissionJourneyTracker';
 import InviteFriendCard from '../components/InviteFriendCard';
 import WinningPitchPillars from '../components/WinningPitchPillars';
 import AchievementBadges from '../components/AchievementBadges';
+import TwinPeerCard from '../components/TwinPeerCard';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { readVisitState } from '../utils/visitTracking';
@@ -39,7 +40,7 @@ type Portal = {
 };
 
 export default function HubDashboardScreen({ navigation }: Props) {
-  const { participant, missionId } = useSession();
+  const { participant, missionId, peer } = useSession();
   const { t } = useLocale();
   const points = participant?.patriotism_points ?? 0;
   const firstName = participant?.name?.split(' ')[0] ?? 'Mzalendo';
@@ -165,6 +166,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
         />
 
         <InviteFriendCard />
+        {peer && missionId ? <TwinPeerCard peer={peer} navigation={navigation} /> : null}
         <WinningPitchPillars navigation={navigation} />
         <AchievementBadges
           points={points}
@@ -195,6 +197,24 @@ export default function HubDashboardScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.quickGrid}>
+          <Button
+            label={t('hub.quickArchive')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('OralHistoryArchive')}
+          />
+          <Button
+            label={t('hub.quickRewards')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('MyRewards')}
+          />
+          <Button
+            label={t('hub.quickImpact')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('NationalImpact')}
+          />
           <Button
             label={t('hub.quickTimeline')}
             variant="secondary"

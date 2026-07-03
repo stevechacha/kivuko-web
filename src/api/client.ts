@@ -386,6 +386,30 @@ export interface PlatformStatus {
   message: string;
 }
 
+export interface UserReward {
+  id: string;
+  amount_tzs: number;
+  reward_type: 'airtime' | 'mpesa';
+  status: 'pending' | 'processing' | 'sent' | 'failed';
+  source: string;
+  created_at_label: string;
+}
+
+export interface MyRewardsSummary {
+  rewards: UserReward[];
+  pending_total_tzs: number;
+  sent_total_tzs: number;
+}
+
+export interface RadioBroadcastScript {
+  station_name: string;
+  segment_title: string;
+  broadcast_ready: boolean;
+  script_sw: string;
+  script_en: string;
+  nominees: ElderRadioEntry[];
+}
+
 export interface OralStory {
   id: string;
   title: string;
@@ -615,6 +639,18 @@ export const api = {
 
   getElderRadioTop10() {
     return request<ElderRadioEntry[]>('/elders/radio-top10');
+  },
+
+  getRadioBroadcastScript() {
+    return request<RadioBroadcastScript>('/partner/radio-script');
+  },
+
+  getOralStoriesArchive() {
+    return request<OralStory[]>('/stories/archive');
+  },
+
+  getMyRewards(token: string) {
+    return request<MyRewardsSummary>('/users/me/rewards', {}, token);
   },
 
   getMyCertificates(token: string) {

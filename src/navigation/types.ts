@@ -22,6 +22,9 @@ export type RootStackParamList = {
   ModeratorFlaggedContent: undefined;
   ElderContribution: undefined;
   ElderRadio: undefined;
+  OralHistoryArchive: undefined;
+  MyRewards: undefined;
+  NationalImpact: undefined;
   CertificateGallery: undefined;
   PartnerDashboard: undefined;
   RadioPartner: undefined;
