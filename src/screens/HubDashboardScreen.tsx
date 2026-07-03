@@ -149,6 +149,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
           <Button label="Mstari wa Historia 1961—2026" variant="secondary" onPress={() => navigation.navigate('UnionTimeline')} />
           <Button label="Gala ya Top 10 Vijana" variant="secondary" onPress={() => navigation.navigate('GalaLeaderboard')} />
           <Button label="WhatsApp & USSD" variant="ghost" onPress={() => navigation.navigate('Omnichannel')} />
+          <Button label="🎬 Onyesho la Waamuzi" variant="ghost" onPress={() => navigation.navigate('JudgeTour')} />
           <Button label="Ramani Hai ya Muungano" variant="ghost" onPress={() => navigation.navigate('UnionMap')} />
           <Button label="Paneli ya Usimamizi" variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />
         </View>

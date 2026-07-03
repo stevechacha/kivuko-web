@@ -18,4 +18,5 @@ export type RootStackParamList = {
   UnionTimeline: undefined;
   GalaLeaderboard: undefined;
   Omnichannel: undefined;
+  JudgeTour: undefined;
 };

@@ -7,6 +7,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import TopNav from '../components/TopNav';
+import CelebrationOverlay from '../components/CelebrationOverlay';
 import { api, type MatchResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
@@ -28,6 +29,7 @@ export default function MatchingScreen({ navigation }: Props) {
   const [statusIndex, setStatusIndex] = useState(0);
   const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [celebrate, setCelebrate] = useState(false);
   const pulse = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export default function MatchingScreen({ navigation }: Props) {
           clearInterval(stepTimer);
           loop.stop();
           setMatched(true);
+          setCelebrate(true);
         }, 2400);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Uoanishaji umeshindwa.');
@@ -78,6 +81,12 @@ export default function MatchingScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <CelebrationOverlay
+        visible={celebrate}
+        title="Kivuko Limeunganishwa!"
+        subtitle={peer ? `${peer.name.split(' ')[0]} kutoka ${peer.region_label} — mshirika wako wa dhamira.` : undefined}
+        onDone={() => setCelebrate(false)}
+      />
       <TopNav currentStep={2} />
       <View style={styles.content}>
         <Text style={styles.eyebrow}>Hatua 2 ya 5 — Kiungo cha Kivuko</Text>

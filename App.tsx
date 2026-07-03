@@ -21,6 +21,7 @@ import ChemshaBongoScreen from './src/screens/ChemshaBongoScreen';
 import UnionTimelineScreen from './src/screens/UnionTimelineScreen';
 import GalaLeaderboardScreen from './src/screens/GalaLeaderboardScreen';
 import OmnichannelScreen from './src/screens/OmnichannelScreen';
+import JudgeTourScreen from './src/screens/JudgeTourScreen';
 import { SessionProvider } from './src/context/SessionContext';
 import { linking } from './src/navigation/linking';
 
@@ -48,6 +49,7 @@ export default function App() {
           <Stack.Screen name="UnionTimeline" component={UnionTimelineScreen} />
           <Stack.Screen name="GalaLeaderboard" component={GalaLeaderboardScreen} />
           <Stack.Screen name="Omnichannel" component={OmnichannelScreen} />
+          <Stack.Screen name="JudgeTour" component={JudgeTourScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SessionProvider>

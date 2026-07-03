@@ -1,12 +1,13 @@
 // screens/CertificateScreen.tsx
 // Step 4 of 5 — The Verifiable CV Certificate (QR Code)
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, Image, Platform, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import ScreenHeader from '../components/ScreenHeader';
+import CelebrationOverlay from '../components/CelebrationOverlay';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
@@ -24,6 +25,8 @@ export default function CertificateScreen({ navigation }: Props) {
   const [verifyUrl, setVerifyUrl] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [celebrate, setCelebrate] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleGenerate = async () => {
     if (!missionId) {
@@ -43,6 +46,7 @@ export default function CertificateScreen({ navigation }: Props) {
       setVerifyUrl(cert.verify_url);
       setQrDataUrl(cert.qr_data_url ?? '');
       setGenerated(true);
+      setCelebrate(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Imeshindwa kutengeneza cheti.');
     } finally {
@@ -50,8 +54,31 @@ export default function CertificateScreen({ navigation }: Props) {
     }
   };
 
+  const copyVerifyLink = () => {
+    if (!verifyUrl) return;
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(verifyUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      return;
+    }
+    Alert.alert('Kiungo cha Uthibitishaji', verifyUrl);
+  };
+
+  const openVerify = () => {
+    if (verifyUrl && Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.open(verifyUrl, '_blank');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
+      <CelebrationOverlay
+        visible={celebrate}
+        title="Balozi wa Muungano!"
+        subtitle={`${userName} — cheti chako kinaweza kuwekwa kwenye CV papo hapo.`}
+        onDone={() => setCelebrate(false)}
+      />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ScreenHeader stepLabel="Hatua 4 ya 5 — Cheti Kinachothibitishwa" title="" />
 
@@ -105,10 +132,16 @@ export default function CertificateScreen({ navigation }: Props) {
               </View>
             </View>
 
-            <View style={{ marginTop: spacing.xl, alignItems: 'center' }}>
+            <View style={{ marginTop: spacing.xl, alignItems: 'center', gap: 8 }}>
+              <Button label="Thibitisha Cheti (Fungua QR) →" onPress={openVerify} />
+              <Button
+                label={copied ? 'Kiungo Kimekopishwa ✓' : 'Nakili Kiungo cha CV'}
+                variant="secondary"
+                onPress={copyVerifyLink}
+              />
               <Button
                 label="Angalia Ramani Hai ya Muungano →"
-                variant="secondary"
+                variant="ghost"
                 onPress={() => navigation.navigate('UnionMap')}
               />
             </View>

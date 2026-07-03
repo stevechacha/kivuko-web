@@ -36,6 +36,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
       UnionTimeline: 'historia',
       GalaLeaderboard: 'gala',
       Omnichannel: 'njia-zote',
+      JudgeTour: 'onyesho',
     },
   },
 };

@@ -186,6 +186,17 @@ export interface MapConnection {
   to_region: string;
 }
 
+export interface LiveImpact {
+  youth_connected: number;
+  pairs_today: number;
+  certificates_issued: number;
+  regions_active: number;
+  live_connections: number;
+  bara_youth: number;
+  visiwani_youth: number;
+  activity: { id: string; icon: string; text: string; subtitle?: string }[];
+}
+
 export interface MapStats {
   pairs_today: number;
   regions_active: number;
@@ -332,6 +343,10 @@ export const api = {
 
   getMapStats() {
     return request<MapStats>('/map/stats');
+  },
+
+  getLiveImpact() {
+    return request<LiveImpact>('/impact/live');
   },
 
   getAudioArchive() {

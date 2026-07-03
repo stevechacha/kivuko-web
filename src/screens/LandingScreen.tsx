@@ -20,8 +20,10 @@ import PatrioticHeroPanel from '../components/PatrioticHeroPanel';
 import Button from '../components/Button';
 import ContinueSessionBanner from '../components/ContinueSessionBanner';
 import JudgeDemoBanner from '../components/JudgeDemoBanner';
+import LiveImpactTicker from '../components/LiveImpactTicker';
+import LiveActivityFeed from '../components/LiveActivityFeed';
 import { useSession } from '../context/SessionContext';
-import { api, type ElderAudio } from '../api/client';
+import { api, type ElderAudio, type LiveImpact } from '../api/client';
 import { API_BASE_URL } from '../config/api';
 import { playAudioUrl, stopActiveAudio } from '../utils/audio';
 
@@ -39,11 +41,16 @@ export default function LandingScreen({ navigation }: Props) {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [featuredAudio, setFeaturedAudio] = useState<ElderAudio>(FEATURED_AUDIO);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
+  const [impact, setImpact] = useState<LiveImpact | null>(null);
   const { width } = useWindowDimensions();
   const isWide = width >= 820;
 
   useEffect(() => {
     api.health().then(() => setApiOnline(true)).catch(() => setApiOnline(false));
+    api.getLiveImpact().then(setImpact).catch(() => {});
+    const poll = setInterval(() => {
+      api.getLiveImpact().then(setImpact).catch(() => {});
+    }, 15000);
     api.getAudioArchive()
       .then((items) => {
         if (items[0]) setFeaturedAudio(items[0]);
@@ -51,6 +58,7 @@ export default function LandingScreen({ navigation }: Props) {
       .catch(() => {
         // keep default featured clip label
       });
+    return () => clearInterval(poll);
   }, []);
 
   const toggleAudio = () => {
@@ -99,6 +107,8 @@ export default function LandingScreen({ navigation }: Props) {
               />
             </View>
             <ContinueSessionBanner navigation={navigation} />
+            <LiveImpactTicker data={impact} />
+            {impact?.activity?.length ? <LiveActivityFeed items={impact.activity} /> : null}
             <JudgeDemoBanner navigation={navigation} />
             <Pressable style={styles.audioWidget} onPress={toggleAudio}>
               <View style={styles.audioPlay}>

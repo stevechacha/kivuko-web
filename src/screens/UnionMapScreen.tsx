@@ -9,7 +9,8 @@ import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import TopNav from '../components/TopNav';
 import ScreenHeader from '../components/ScreenHeader';
-import { api, type ElderAudio, type MapConnection } from '../api/client';
+import { api, type ElderAudio, type MapConnection, type LiveImpact } from '../api/client';
+import LiveActivityFeed from '../components/LiveActivityFeed';
 import { useSession } from '../context/SessionContext';
 import { playAudioUrl, stopActiveAudio } from '../utils/audio';
 
@@ -44,11 +45,17 @@ export default function UnionMapScreen({ navigation }: Props) {
   const [audioArchive, setAudioArchive] = useState<ElderAudio[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [activity, setActivity] = useState<LiveImpact['activity']>([]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [mapStats, audio] = await Promise.all([api.getMapStats(), api.getAudioArchive()]);
+        const [mapStats, audio, impact] = await Promise.all([
+          api.getMapStats(),
+          api.getAudioArchive(),
+          api.getLiveImpact(),
+        ]);
+        setActivity(impact.activity);
         setStats({
           pairs: String(mapStats.pairs_today),
           regions: String(mapStats.regions_active),
@@ -155,6 +162,8 @@ export default function UnionMapScreen({ navigation }: Props) {
                 })}
               </Svg>
             </View>
+
+            {activity.length > 0 && <LiveActivityFeed items={activity} />}
 
             <View style={styles.sideCard}>
               <Text style={styles.sideCardTitle}>Hifadhi ya Sauti za Wazee</Text>

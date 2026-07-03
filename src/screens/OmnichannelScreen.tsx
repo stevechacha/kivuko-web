@@ -6,6 +6,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import Button from '../components/Button';
+import UssdSimulator from '../components/UssdSimulator';
 import WhatsAppChat from '../components/WhatsAppChat';
 import { api, type ChatMessage } from '../api/client';
 
@@ -152,20 +153,14 @@ export default function OmnichannelScreen({ navigation }: Props) {
             <View style={{ flex: 1 }}>
               <Text style={styles.cardTitle}>USSD *150*64#</Text>
               <View style={[styles.statusPill, { backgroundColor: `${colors.gold}33` }]}>
-                <Text style={[styles.statusText, { color: '#7A5E00' }]}>Inakuja Hivi Karibuni</Text>
+                <Text style={[styles.statusText, { color: '#7A5E00' }]}>Demo Hai — Jaribu Sasa</Text>
               </View>
             </View>
           </View>
           <Text style={styles.cardDesc}>
-            Vijana wenye simu za kawaida wanapata maswali ya uzalendo bila intaneti.
+            Simu za kawaida — bonyeza vitufe hapa chini kama *150*64# halisi. Hakuna intaneti inahitajika.
           </Text>
-          {['Karibu Kivuko la Muungano', '1. Chemsha Bongo', '2. Sauti za Wazee', '3. Pointi zangu'].map(
-            (line, i) => (
-              <Text key={i} style={styles.ussdLine}>
-                {line}
-              </Text>
-            ),
-          )}
+          <UssdSimulator />
         </View>
 
         <View style={{ marginTop: spacing.lg, alignItems: 'center' }}>
