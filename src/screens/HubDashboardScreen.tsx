@@ -1,5 +1,5 @@
 // HubDashboardScreen — Main portal after registration (4 gateways from improvement designs)
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Platform,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
@@ -41,9 +42,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
   const [streakDays, setStreakDays] = useState(1);
   const [visits, setVisits] = useState(readVisitState);
 
-  useEffect(() => {
-    setVisits(readVisitState());
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setVisits(readVisitState());
+    }, []),
+  );
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof sessionStorage === 'undefined') return;

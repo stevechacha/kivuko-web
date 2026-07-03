@@ -50,7 +50,7 @@ const swTree = {
     badge: '🎬 ONYESHO LA WAAMUZI',
     title: 'Anza Safari ya Mwanzo hadi Mwisho',
     body:
-      'Mwongozo wa hatua 8 kwa dakika 3 — na one-line pitch tayari kwa waamuzi. Imewekwa tayari kwa video ya mashindano.',
+      'Mwongozo wa hatua 9 kwa dakika 3 — na one-line pitch tayari kwa waamuzi. Imewekwa tayari kwa video ya mashindano.',
     cta: '▶ Anza Onyesho la Waamuzi',
   },
   liveImpact: {
@@ -114,6 +114,8 @@ const swTree = {
     s3Desc: 'Injini inaoanisha Bara ↔ Visiwani sekunde chache.',
     s4Title: 'Chat ya WhatsApp + Jaribio',
     s4Desc: 'Mazungumzo halisi na jaribio la 1964.',
+    s5bTitle: 'Usalama: Ripoti & Msimamizi',
+    s5bDesc: 'Bonyeza 🚩 kwenye chat → foleni ya msimamizi inasasishwa.',
     s5Title: 'Utamaduni & Maono',
     s5Desc: 'Dhamira 2 na 3 — ubadilishanaji wa utamaduni.',
     s6Title: 'Cheti cha Balozi + QR',
@@ -392,7 +394,7 @@ const enTree = {
     badge: '🎬 JUDGE DEMO',
     title: 'Start-to-Finish Guided Tour',
     body:
-      'An 8-step, 3-minute walkthrough with a one-line pitch ready for judges. Built for competition video recording.',
+      'A 9-step, 3-minute walkthrough with a one-line pitch ready for judges. Built for competition video recording.',
     cta: '▶ Start Judge Tour',
   },
   liveImpact: {
@@ -456,6 +458,8 @@ const enTree = {
     s3Desc: 'Engine pairs Mainland ↔ Islands in seconds.',
     s4Title: 'WhatsApp Chat + Quiz',
     s4Desc: 'Real chat flow and 1964 history quiz.',
+    s5bTitle: 'Safety: Report & Moderator',
+    s5bDesc: 'Tap 🚩 in chat → moderator queue updates live.',
     s5Title: 'Culture & Vision',
     s5Desc: 'Missions 2 & 3 — cultural exchange.',
     s6Title: 'Ambassador Certificate + QR',
