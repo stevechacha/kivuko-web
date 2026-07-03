@@ -78,6 +78,9 @@ export default function OnboardingScreen({ navigation, route }: Props) {
         accepted_terms: acceptedTerms,
       });
       applySession(res);
+      if (Platform.OS === 'web' && typeof sessionStorage !== 'undefined' && institutionCode.trim()) {
+        sessionStorage.setItem('kivuko_institution', institutionCode.trim().toUpperCase());
+      }
       finishSession(res.message);
     } catch (e) {
       if (e instanceof ApiError && e.loginRequired) {

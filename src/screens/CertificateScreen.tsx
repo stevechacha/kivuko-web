@@ -9,6 +9,7 @@ import Button from '../components/Button';
 import TopNav from '../components/TopNav';
 import ScreenHeader from '../components/ScreenHeader';
 import CelebrationOverlay from '../components/CelebrationOverlay';
+import PeerRatingCard from '../components/PeerRatingCard';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
@@ -170,7 +171,9 @@ export default function CertificateScreen({ navigation }: Props) {
               </View>
             </View>
 
-            <View style={{ marginTop: spacing.xl, alignItems: 'center', gap: 8 }}>
+            <PeerRatingCard />
+
+            <View style={{ marginTop: spacing.md, alignItems: 'center', gap: 8 }}>
               <Button label={t('certificate.verify')} onPress={openVerify} />
               <Button
                 label={copied ? t('certificate.copied') : t('certificate.copy')}

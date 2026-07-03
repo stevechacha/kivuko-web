@@ -1,6 +1,6 @@
 // GalaCeremonyScreen — live ceremony mode with youth + elder finalists
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator, Platform } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
@@ -9,6 +9,11 @@ import Button from '../components/Button';
 import { api, type GalaCeremony } from '../api/client';
 import { useLocale } from '../context/LocaleContext';
 import { useAppBack } from '../navigation/useAppBack';
+
+let GalaLiveEmbed: React.ComponentType<{ url: string; height?: number }> = () => null;
+if (Platform.OS === 'web') {
+  GalaLiveEmbed = require('../components/GalaLiveEmbed.web').default;
+}
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GalaCeremony'>;
 
@@ -32,6 +37,8 @@ export default function GalaCeremonyScreen({ navigation }: Props) {
         </View>
         <Text style={styles.title}>{data?.event_title ?? t('ceremony.title')}</Text>
         <Text style={styles.message}>{data?.ceremony_message}</Text>
+
+        {data?.live_stream_url ? <GalaLiveEmbed url={data.live_stream_url} /> : null}
 
         {loading || !data ? (
           <ActivityIndicator color={colors.gold} style={{ marginTop: 30 }} />

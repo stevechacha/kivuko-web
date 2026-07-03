@@ -18,6 +18,7 @@ import Button from '../components/Button';
 import { api, type QuizQuestion } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useAppBack } from '../navigation/useAppBack';
+import { cacheQuizOffline } from '../utils/pwa';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChemshaBongo'>;
 
@@ -36,7 +37,13 @@ export default function ChemshaBongoScreen({ navigation }: Props) {
   const answered = useRef(false);
 
   useEffect(() => {
-    api.getQuizQuestions().then(setQuestions).finally(() => setLoading(false));
+    api
+      .getQuizQuestions()
+      .then((qs) => {
+        setQuestions(qs);
+        cacheQuizOffline(JSON.stringify(qs));
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {

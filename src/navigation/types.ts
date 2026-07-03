@@ -22,6 +22,8 @@ export type RootStackParamList = {
   ModeratorFlaggedContent: undefined;
   ElderContribution: undefined;
   ElderRadio: undefined;
+  InstitutionDashboard: { code: string };
+  AiTutor: undefined;
   OralHistoryArchive: undefined;
   MyRewards: undefined;
   NationalImpact: undefined;

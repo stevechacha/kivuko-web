@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DIST = path.join(__dirname, 'dist');
+const PWA = path.join(__dirname, 'pwa');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -12,6 +13,12 @@ const MIME = {
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.webmanifest': 'application/manifest+json',
+};
+
+const PWA_ROUTES = {
+  '/manifest.json': 'manifest.json',
+  '/sw.js': 'sw.js',
 };
 
 function sendFile(res, filePath) {
@@ -30,6 +37,11 @@ function sendFile(res, filePath) {
 
 const server = http.createServer((req, res) => {
   const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+
+  if (PWA_ROUTES[urlPath]) {
+    return sendFile(res, path.join(PWA, PWA_ROUTES[urlPath]));
+  }
+
   let filePath = path.join(DIST, urlPath === '/' ? 'index.html' : urlPath);
 
   if (!filePath.startsWith(DIST)) {

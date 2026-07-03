@@ -32,6 +32,8 @@ import GalaCeremonyScreen from './src/screens/GalaCeremonyScreen';
 import OralHistoryArchiveScreen from './src/screens/OralHistoryArchiveScreen';
 import MyRewardsScreen from './src/screens/MyRewardsScreen';
 import NationalImpactScreen from './src/screens/NationalImpactScreen';
+import InstitutionDashboardScreen from './src/screens/InstitutionDashboardScreen';
+import AiTutorScreen from './src/screens/AiTutorScreen';
 import { SessionProvider } from './src/context/SessionContext';
 import { LocaleProvider } from './src/context/LocaleContext';
 import { linking } from './src/navigation/linking';
@@ -68,6 +70,8 @@ export default function App() {
           <Stack.Screen name="OralHistoryArchive" component={OralHistoryArchiveScreen} />
           <Stack.Screen name="MyRewards" component={MyRewardsScreen} />
           <Stack.Screen name="NationalImpact" component={NationalImpactScreen} />
+          <Stack.Screen name="InstitutionDashboard" component={InstitutionDashboardScreen} />
+          <Stack.Screen name="AiTutor" component={AiTutorScreen} />
           <Stack.Screen name="CertificateGallery" component={CertificateGalleryScreen} />
           <Stack.Screen name="PartnerDashboard" component={PartnerDashboardScreen} />
           <Stack.Screen name="RadioPartner" component={RadioPartnerScreen} />

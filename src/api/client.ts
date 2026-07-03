@@ -356,6 +356,7 @@ export interface RadioPartnerData {
 export interface GalaCeremony {
   event_title: string;
   live_mode: boolean;
+  live_stream_url?: string;
   youth_finalists: (LeaderboardEntry & { gala_nominated?: boolean })[];
   elder_finalists: ElderRadioEntry[];
   total_certificates: number;
@@ -408,6 +409,54 @@ export interface RadioBroadcastScript {
   script_sw: string;
   script_en: string;
   nominees: ElderRadioEntry[];
+}
+
+export interface PlatformBranding {
+  ministry_mode: boolean;
+  program_name: string;
+  program_name_en: string;
+  tagline_sw: string;
+  tagline_en: string;
+  ussd_shortcode: string;
+  sms_shortcode: string;
+  sms_keyword: string;
+  live_stream_url: string;
+  whatsapp_display: string;
+  telco_configured: boolean;
+  auto_disburse_rewards: boolean;
+}
+
+export interface InstitutionLeader {
+  rank: number;
+  name: string;
+  home_area: string;
+  region_label: string;
+  patriotism_points: number;
+  grade: string;
+}
+
+export interface InstitutionStats {
+  code: string;
+  name: string;
+  home_area: string;
+  region: string;
+  region_label: string;
+  youth_count: number;
+  pairs_active: number;
+  certificates: number;
+  leaderboard: InstitutionLeader[];
+}
+
+export interface PeerRatingResult {
+  id: string;
+  stars: number;
+  comment: string;
+  peer_trust_avg?: number | null;
+}
+
+export interface AiTutorReply {
+  reply: string;
+  suggestions: string[];
 }
 
 export interface OralStory {
@@ -708,5 +757,33 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ action }),
     });
+  },
+
+  getPlatformBranding(ministry = false) {
+    const q = ministry ? '?ministry=1' : '';
+    return request<PlatformBranding>(`/platform/branding${q}`);
+  },
+
+  getInstitutionStats(code: string) {
+    return request<InstitutionStats>(`/institutions/${encodeURIComponent(code)}/stats`);
+  },
+
+  submitPeerRating(missionId: string, stars: number, comment: string, token: string) {
+    return request<PeerRatingResult>(
+      `/missions/${missionId}/peer-rating`,
+      { method: 'POST', body: JSON.stringify({ stars, comment }) },
+      token,
+    );
+  },
+
+  askAiTutor(message: string) {
+    return request<AiTutorReply>('/channels/ai-tutor', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+  },
+
+  partnerReportPdfUrl() {
+    return `${API_V1}/partner/report/pdf`;
   },
 };

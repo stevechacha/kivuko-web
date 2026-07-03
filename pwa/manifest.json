@@ -1,0 +1,25 @@
+{
+  "name": "Kivuko la Muungano Hub",
+  "short_name": "Kivuko",
+  "description": "Daraja la kidijitali linalounganisha vijana wa Bara na Visiwani",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B3D2E",
+  "theme_color": "#0B3D2E",
+  "orientation": "portrait",
+  "lang": "sw",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

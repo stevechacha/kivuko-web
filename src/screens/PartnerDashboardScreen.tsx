@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Pressable,
+  Platform,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -19,7 +20,7 @@ import AdminPinGate from '../components/AdminPinGate';
 import { api, type CertificateVerifyResponse, type PartnerDashboard } from '../api/client';
 import { useLocale } from '../context/LocaleContext';
 import { useAppBack } from '../navigation/useAppBack';
-import { isAdminUnlocked } from '../utils/adminAccess';
+import { isAdminUnlocked, getAdminApiKey } from '../utils/adminAccess';
 import { markVisited } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PartnerDashboard'>;
@@ -33,6 +34,28 @@ export default function PartnerDashboardScreen({ navigation }: Props) {
   const [certCode, setCertCode] = useState('');
   const [verifyResult, setVerifyResult] = useState<CertificateVerifyResponse | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const downloadReportPdf = async () => {
+    const key = getAdminApiKey();
+    if (!key) return;
+    setPdfLoading(true);
+    try {
+      const res = await fetch(api.partnerReportPdfUrl(), { headers: { 'X-Admin-Key': key } });
+      if (!res.ok) throw new Error('PDF failed');
+      const blob = await res.blob();
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'muungano-partner-report.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!unlocked) return;
@@ -129,13 +152,22 @@ export default function PartnerDashboardScreen({ navigation }: Props) {
             </View>
             <Text style={styles.section}>{t('partner.institutions')}</Text>
             {data.institutions.map((inst) => (
-              <View key={inst.code} style={styles.row}>
+              <Pressable
+                key={inst.code}
+                style={styles.row}
+                onPress={() => navigation.navigate('InstitutionDashboard', { code: inst.code })}
+              >
                 <Text style={styles.rowTitle}>{inst.name}</Text>
                 <Text style={styles.rowMeta}>
                   {inst.code} · {inst.home_area} · {inst.youth_count} {t('partner.youthShort')}
                 </Text>
-              </View>
+              </Pressable>
             ))}
+            <Button
+              label={pdfLoading ? t('common.loading') : t('partner.exportPdf')}
+              variant="secondary"
+              onPress={downloadReportPdf}
+            />
           </>
         )}
       </ScrollView>

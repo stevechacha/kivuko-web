@@ -43,9 +43,15 @@ export default function OmnichannelScreen({ navigation }: Props) {
   const [sessionId, setSessionId] = useState<string | undefined>();
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
   const [botPoints, setBotPoints] = useState(0);
+  const [ussdCode, setUssdCode] = useState('*149*88#');
+  const [smsHint, setSmsHint] = useState('MUUNGANO → 15064');
 
   useEffect(() => {
     markVisited('omnichannel');
+    api.getPlatformBranding().then((b) => {
+      if (b.ussd_shortcode) setUssdCode(b.ussd_shortcode);
+      setSmsHint(`${b.sms_keyword} → ${b.sms_shortcode}`);
+    }).catch(() => {});
   }, []);
 
   const applyBotResponse = useCallback((res: Awaited<ReturnType<typeof api.whatsappBot>>) => {
@@ -188,6 +194,8 @@ export default function OmnichannelScreen({ navigation }: Props) {
             </View>
           </View>
           <Text style={styles.cardDesc}>{t('omnichannel.ussdDesc')}</Text>
+          <Text style={styles.shortcode}>{ussdCode}</Text>
+          <Text style={styles.smsHint}>{t('omnichannel.smsHint', { hint: smsHint })}</Text>
           <UssdSimulator />
         </View>
 
@@ -283,5 +291,20 @@ const styles = StyleSheet.create({
     padding: 6,
     marginTop: 4,
     borderRadius: 4,
+  },
+  shortcode: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.dark,
+    textAlign: 'center',
+    marginTop: 10,
+    letterSpacing: 1,
+  },
+  smsHint: {
+    fontSize: 12,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 8,
   },
 });

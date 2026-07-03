@@ -28,6 +28,7 @@ export default function ElderContributionScreen({ navigation }: Props) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +42,12 @@ export default function ElderContributionScreen({ navigation }: Props) {
     setError(null);
     try {
       await api.submitElderStory(
-        { title: title.trim(), body: body.trim(), audio_url: audioUrl.trim() },
+        {
+          title: title.trim(),
+          body: body.trim(),
+          audio_url: audioUrl.trim(),
+          video_url: videoUrl.trim(),
+        },
         participant.session_token,
       );
       setDone(true);
@@ -80,6 +86,8 @@ export default function ElderContributionScreen({ navigation }: Props) {
             />
             <Text style={styles.label}>{t('elder.fieldAudio')}</Text>
             <TextInput style={styles.input} value={audioUrl} onChangeText={setAudioUrl} placeholder="https://..." />
+            <Text style={styles.label}>{t('elder.fieldVideo')}</Text>
+            <TextInput style={styles.input} value={videoUrl} onChangeText={setVideoUrl} placeholder="https://youtube.com/..." />
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <Button label={loading ? t('common.loading') : t('elder.submit')} onPress={submit} disabled={loading} />
           </>

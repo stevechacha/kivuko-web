@@ -13,6 +13,7 @@ import { api, type ElderAudio, type MapConnection, type LiveImpact } from '../ap
 import LiveActivityFeed from '../components/LiveActivityFeed';
 import { useSession } from '../context/SessionContext';
 import { playAudioUrl, stopActiveAudio } from '../utils/audio';
+import { speakKiswahili, stopSpeech } from '../utils/speech';
 import { useAppBack } from '../navigation/useAppBack';
 
 let UnionLeafletMap: React.ComponentType<{ connections: MapConnection[]; height?: number }> | null = null;
@@ -122,9 +123,12 @@ export default function UnionMapScreen({ navigation }: Props) {
   const handlePlay = (item: ElderAudio) => {
     if (playingId === item.id) {
       stopActiveAudio();
+      stopSpeech();
       setPlayingId(null);
       return;
     }
+
+    speakKiswahili(item.name, item.id);
 
     if (item.audio_url && playAudioUrl(item.audio_url)) {
       setPlayingId(item.id);

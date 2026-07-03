@@ -25,6 +25,8 @@ import LiveActivityFeed from '../components/LiveActivityFeed';
 import PlatformStatusChip from '../components/PlatformStatusChip';
 import MarketTrustBar from '../components/MarketTrustBar';
 import WinningPitchPillars from '../components/WinningPitchPillars';
+import MinistryBrandingBanner from '../components/MinistryBrandingBanner';
+import PwaInstallBanner from '../components/PwaInstallBanner';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { api, type ElderAudio, type LiveImpact } from '../api/client';
@@ -85,6 +87,8 @@ export default function LandingScreen({ navigation }: Props) {
               <Text style={styles.accent}>{t('landing.h1Accent')}</Text>
             </Text>
             <Text style={styles.lead}>{t('landing.lead')}</Text>
+            <MinistryBrandingBanner />
+            <PwaInstallBanner />
             <View style={styles.ctaRow}>
               {participant ? (
                 <Button label={t('common.openDashboard')} onPress={() => navigation.navigate('HubDashboard')} />

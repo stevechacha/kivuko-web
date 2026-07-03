@@ -8,7 +8,11 @@
     "platforms": ["ios", "android", "web"],
     "web": {
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "name": "Kivuko la Muungano Hub",
+      "shortName": "Kivuko",
+      "themeColor": "#0B3D2E",
+      "backgroundColor": "#0B3D2E"
     }
   }
 }

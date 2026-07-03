@@ -41,6 +41,8 @@ export const linking: LinkingOptions<RootStackParamList> = {
       ElderContribution: 'wazee',
       ElderRadio: 'redio-wazee',
       OralHistoryArchive: 'hifadhi',
+      InstitutionDashboard: 'chuo/:code',
+      AiTutor: 'mwalimu-ai',
       MyRewards: 'zawadi',
       NationalImpact: 'athari',
       CertificateGallery: 'vyeti',

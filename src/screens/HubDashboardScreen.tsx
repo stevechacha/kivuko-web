@@ -216,6 +216,12 @@ export default function HubDashboardScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('NationalImpact')}
           />
           <Button
+            label={t('hub.quickAiTutor')}
+            variant="secondary"
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('AiTutor')}
+          />
+          <Button
             label={t('hub.quickTimeline')}
             variant="secondary"
             style={styles.quickBtn}
