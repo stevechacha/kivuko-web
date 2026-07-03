@@ -6,9 +6,11 @@ import { useSession } from '../context/SessionContext';
 import { colors, radius } from '../theme/colors';
 import Button from './Button';
 
-type Nav = NativeStackNavigationProp<RootStackParamList>;
-
-export default function ContinueSessionBanner({ navigation }: { navigation: Nav }) {
+export default function ContinueSessionBanner({
+  navigation,
+}: {
+  navigation: Pick<NativeStackNavigationProp<RootStackParamList>, 'navigate'>;
+}) {
   const { participant, missionId } = useSession();
 
   if (!participant) return null;
@@ -35,13 +37,8 @@ export default function ContinueSessionBanner({ navigation }: { navigation: Nav 
           />
         ) : (
           <Button
-            label="Endelea Uoanishaji →"
-            onPress={() =>
-              navigation.navigate('Matching', {
-                name: participant.name,
-                region: participant.region,
-              })
-            }
+            label="Fungua Dashibodi →"
+            onPress={() => navigation.navigate('HubDashboard')}
           />
         )}
       </View>

@@ -14,6 +14,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Landing: '',
       Onboarding: 'usajili',
+      HubDashboard: 'dashibodi',
       Matching: {
         path: 'uoanishaji',
         parse: {
@@ -39,6 +40,18 @@ export const linking: LinkingOptions<RootStackParamList> = {
         },
       },
       UnionMap: 'ramani',
+      Academy: {
+        path: 'maktaba',
+        parse: {
+          tab: (value: string) =>
+            value === 'army' || value === 'patriot' ? value : 'union',
+        },
+      },
+      VerifyCertificate: {
+        path: 'thibitisha/:certCode',
+        parse: { certCode: String },
+      },
+      AdminDashboard: 'admin',
     },
   },
 };

@@ -16,8 +16,10 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, radius } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import BridgeIllustration from '../components/BridgeIllustration';
+import PatrioticHeroPanel from '../components/PatrioticHeroPanel';
 import Button from '../components/Button';
 import ContinueSessionBanner from '../components/ContinueSessionBanner';
+import { useSession } from '../context/SessionContext';
 import { api, type ElderAudio } from '../api/client';
 import { API_BASE_URL } from '../config/api';
 import { playAudioUrl, stopActiveAudio } from '../utils/audio';
@@ -32,6 +34,7 @@ const FEATURED_AUDIO: ElderAudio = {
 };
 
 export default function LandingScreen({ navigation }: Props) {
+  const { participant } = useSession();
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [featuredAudio, setFeaturedAudio] = useState<ElderAudio>(FEATURED_AUDIO);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
@@ -80,7 +83,11 @@ export default function LandingScreen({ navigation }: Props) {
               ya taifa — huku kila hatua ikijengeka kuwa uzoefu wa kweli, si somo la kukariri.
             </Text>
             <View style={styles.ctaRow}>
-              <Button label="Anza Safari →" onPress={() => navigation.navigate('Onboarding')} />
+              {participant ? (
+                <Button label="Fungua Dashibodi →" onPress={() => navigation.navigate('HubDashboard')} />
+              ) : (
+                <Button label="Anza Safari →" onPress={() => navigation.navigate('Onboarding')} />
+              )}
               <Button
                 label="Angalia Ramani ya Muungano"
                 variant="ghost"
@@ -108,7 +115,11 @@ export default function LandingScreen({ navigation }: Props) {
             </Pressable>
           </View>
           <View style={[styles.bridgeWrap, isWide && { flex: 0.9 }]}>
-            <BridgeIllustration width={Math.min(width - 48, 420)} height={340} />
+            {isWide ? (
+              <PatrioticHeroPanel />
+            ) : (
+              <BridgeIllustration width={Math.min(width - 48, 420)} height={340} />
+            )}
           </View>
         </View>
         <Text style={styles.footer}>

@@ -110,6 +110,7 @@ export interface Certificate {
   user_name: string;
   verify_url: string;
   issued_date: string;
+  qr_data_url?: string;
 }
 
 export interface MapConnection {
@@ -140,7 +141,31 @@ export interface HealthResponse {
 export interface CertificateVerifyResponse {
   valid: boolean;
   certificate?: Certificate;
+  verify_url?: string;
+  qr_data_url?: string;
   detail?: string;
+}
+
+export interface AcademyArticle {
+  id: string;
+  category: 'army' | 'union' | 'patriot';
+  title: string;
+  summary: string;
+  body: string;
+  badge_label: string;
+}
+
+export interface AdminDashboard {
+  total_participants: number;
+  seed_peers: number;
+  active_matches: number;
+  completed_missions: number;
+  certificates_issued: number;
+  pairs_today: number;
+  regions_active: number;
+  bara_participants: number;
+  visiwani_participants: number;
+  recent_connections: MapConnection[];
 }
 
 export const api = {
@@ -155,6 +180,22 @@ export const api = {
   verifyCertificate(certCode: string) {
     return request<CertificateVerifyResponse>(`/certificates/verify/${encodeURIComponent(certCode)}`);
   },
+
+  getMe(token: string) {
+    return request<Participant>('/users/me', {}, token);
+  },
+
+  getAcademyArticles(category?: string) {
+    const q = category ? `?category=${encodeURIComponent(category)}` : '';
+    return request<AcademyArticle[]>(`/academy/articles${q}`);
+  },
+
+  getAdminDashboard(adminKey?: string) {
+    const headers: Record<string, string> = {};
+    if (adminKey) headers['X-Admin-Key'] = adminKey;
+    return request<AdminDashboard>('/admin/dashboard', { headers });
+  },
+
   register(data: {
     name: string;
     phone: string;

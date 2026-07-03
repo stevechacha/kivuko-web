@@ -1,20 +1,26 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, Pressable } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, spacing } from '../theme/colors';
+import { useSession } from '../context/SessionContext';
 
 const STEPS = 5;
 
 interface Props {
-  /** 0 = landing (no dot active), 1–5 = flow steps */
+  /** 0 = landing/hub (no dot active), 1–5 = flow steps */
   currentStep: number;
+  showPoints?: boolean;
+  onLogoPress?: () => void;
 }
 
-export default function TopNav({ currentStep }: Props) {
+export default function TopNav({ currentStep, showPoints, onLogoPress }: Props) {
+  const { participant } = useSession();
+  const points = participant?.patriotism_points ?? 0;
+
   return (
     <View style={styles.bar}>
       <View style={styles.inner}>
-        <View style={styles.logoRow}>
+        <Pressable style={styles.logoRow} onPress={onLogoPress} disabled={!onLogoPress}>
           <Svg width={30} height={30} viewBox="0 0 40 40">
             <Circle cx={20} cy={20} r={19} fill={colors.bg} stroke={colors.green} strokeWidth={1.5} />
             <Path
@@ -28,23 +34,30 @@ export default function TopNav({ currentStep }: Props) {
             <Circle cx={33} cy={16} r={2.6} fill={colors.blue} />
           </Svg>
           <Text style={styles.logoText}>Kivuko la Muungano</Text>
-        </View>
-        <View style={styles.dots}>
-          {Array.from({ length: STEPS }, (_, i) => {
-            const stepNum = i + 1;
-            const active = currentStep === stepNum;
-            const done = currentStep > stepNum;
-            return (
-              <View
-                key={stepNum}
-                style={[
-                  styles.dot,
-                  active && styles.dotActive,
-                  done && styles.dotDone,
-                ]}
-              />
-            );
-          })}
+        </Pressable>
+        <View style={styles.right}>
+          {showPoints && participant ? (
+            <View style={styles.pointsBadge}>
+              <Text style={styles.pointsText}>⭐ {points.toLocaleString()} Pts</Text>
+            </View>
+          ) : null}
+          <View style={styles.dots}>
+            {Array.from({ length: STEPS }, (_, i) => {
+              const stepNum = i + 1;
+              const active = currentStep === stepNum;
+              const done = currentStep > stepNum;
+              return (
+                <View
+                  key={stepNum}
+                  style={[
+                    styles.dot,
+                    active && styles.dotActive,
+                    done && styles.dotDone,
+                  ]}
+                />
+              );
+            })}
+          </View>
         </View>
       </View>
     </View>
@@ -68,6 +81,16 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  right: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  pointsBadge: {
+    backgroundColor: '#F0FAF8',
+    borderWidth: 1,
+    borderColor: '#C5E8E0',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  pointsText: { fontSize: 11, fontWeight: '800', color: colors.greenDeep },
   logoText: {
     fontSize: 19,
     fontWeight: '700',

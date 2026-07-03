@@ -47,7 +47,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       setParticipant(res.participant);
       setSubmitted(true);
       setTimeout(() => {
-        navigation.navigate('Matching', { name, region: side });
+        navigation.navigate('HubDashboard');
       }, 1400);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Usajili umeshindwa. Jaribu tena.');

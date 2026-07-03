@@ -131,15 +131,12 @@ export default function UnionMapScreen({ navigation }: Props) {
                 {mapLines.map((c, i) => {
                   const midX = (c.from[0] + c.to[0]) / 2;
                   const midY = Math.min(c.from[1], c.to[1]) - 40;
+                  const d = `M${c.from[0]} ${c.from[1]} Q ${midX} ${midY}, ${c.to[0]} ${c.to[1]}`;
                   return (
-                    <Path
-                      key={i}
-                      d={`M${c.from[0]} ${c.from[1]} Q ${midX} ${midY}, ${c.to[0]} ${c.to[1]}`}
-                      stroke={c.color}
-                      strokeWidth={1.8}
-                      fill="none"
-                      opacity={0.85}
-                    />
+                    <React.Fragment key={i}>
+                      <Path d={d} stroke={c.color} strokeWidth={5} fill="none" opacity={0.25} />
+                      <Path d={d} stroke={c.color} strokeWidth={2} fill="none" opacity={0.95} />
+                    </React.Fragment>
                   );
                 })}
               </Svg>

@@ -1,7 +1,7 @@
 // screens/CertificateScreen.tsx
 // Step 4 of 5 — The Verifiable CV Certificate (QR Code)
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, Image } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
@@ -11,19 +11,6 @@ import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Certificate'>;
-
-function useMockQrGrid(seed: string) {
-  return useMemo(() => {
-    let x = 0;
-    for (let i = 0; i < seed.length; i++) x = (x * 31 + seed.charCodeAt(i)) % 997;
-    const cells: boolean[] = [];
-    for (let i = 0; i < 49; i++) {
-      x = (x * 1103515245 + 12345) % 2147483648;
-      cells.push(x % 100 > 42);
-    }
-    return cells;
-  }, [seed]);
-}
 
 export default function CertificateScreen({ route, navigation }: Props) {
   const { userName: routeUserName, missionId: routeMissionId } = route.params ?? {};
@@ -35,9 +22,8 @@ export default function CertificateScreen({ route, navigation }: Props) {
   const [certCode, setCertCode] = useState('');
   const [certDate, setCertDate] = useState('');
   const [verifyUrl, setVerifyUrl] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  const qrCells = useMockQrGrid(certCode || 'pending');
 
   const handleGenerate = async () => {
     if (!missionId) {
@@ -55,6 +41,7 @@ export default function CertificateScreen({ route, navigation }: Props) {
       setCertCode(cert.cert_code);
       setCertDate(cert.issued_date);
       setVerifyUrl(cert.verify_url);
+      setQrDataUrl(cert.qr_data_url ?? '');
       setGenerated(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Imeshindwa kutengeneza cheti.');
@@ -109,9 +96,11 @@ export default function CertificateScreen({ route, navigation }: Props) {
                   ) : null}
                 </View>
                 <View style={styles.qrBox}>
-                  {qrCells.map((on, i) => (
-                    <View key={i} style={[styles.qrCell, { opacity: on ? 1 : 0 }]} />
-                  ))}
+                  {qrDataUrl ? (
+                    <Image source={{ uri: qrDataUrl }} style={styles.qrImage} resizeMode="contain" />
+                  ) : (
+                    <Text style={styles.qrPlaceholder}>QR</Text>
+                  )}
                 </View>
               </View>
             </View>
@@ -177,9 +166,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
     borderRadius: 8,
-    padding: 5,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    padding: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
-  qrCell: { width: '14.28%', height: '14.28%', backgroundColor: colors.dark },
+  qrImage: { width: 68, height: 68 },
+  qrPlaceholder: { fontSize: 12, color: colors.textMuted },
 });

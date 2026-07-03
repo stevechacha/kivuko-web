@@ -78,7 +78,7 @@ export default function MissionChatScreen({ route, navigation }: Props) {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!draft.trim() || !participant?.session_token || sending) return;
+    if (!missionId || !draft.trim() || !participant?.session_token || sending) return;
     setSending(true);
     try {
       const res = await api.sendMessage(missionId, draft, participant.session_token);
@@ -90,7 +90,7 @@ export default function MissionChatScreen({ route, navigation }: Props) {
   };
 
   const answerQuestion = async (questionId: string, optionIndex: number) => {
-    if (answers[questionId] !== undefined || !participant?.session_token) return;
+    if (!missionId || answers[questionId] !== undefined || !participant?.session_token) return;
     const updated = { ...answers, [questionId]: optionIndex };
     setAnswers(updated);
 
