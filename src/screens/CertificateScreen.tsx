@@ -10,6 +10,7 @@ import ScreenHeader from '../components/ScreenHeader';
 import CelebrationOverlay from '../components/CelebrationOverlay';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Certificate'>;
@@ -17,6 +18,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Certificate'>;
 export default function CertificateScreen({ navigation }: Props) {
   useCleanWebUrl();
   const { participant, missionId } = useSession();
+  const { t } = useLocale();
   const userName = participant?.name || 'Mzalendo';
   const [generated, setGenerated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,11 +32,11 @@ export default function CertificateScreen({ navigation }: Props) {
 
   const handleGenerate = async () => {
     if (!missionId) {
-      setError('Hakuna dhamira iliyopatikana. Kamilisha dhamira kwanza.');
+      setError(t('certificate.errMission'));
       return;
     }
     if (!participant?.session_token) {
-      setError('Kipindi kimeisha. Tafadhali jisajili tena.');
+      setError(t('certificate.errSession'));
       return;
     }
     setLoading(true);
@@ -48,7 +50,7 @@ export default function CertificateScreen({ navigation }: Props) {
       setGenerated(true);
       setCelebrate(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Imeshindwa kutengeneza cheti.');
+      setError(e instanceof Error ? e.message : t('certificate.errGenerate'));
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export default function CertificateScreen({ navigation }: Props) {
       setTimeout(() => setCopied(false), 2000);
       return;
     }
-    Alert.alert('Kiungo cha Uthibitishaji', verifyUrl);
+    Alert.alert(t('certificate.alertTitle'), verifyUrl);
   };
 
   const openVerify = () => {
@@ -73,11 +75,11 @@ export default function CertificateScreen({ navigation }: Props) {
 
   const shareCertificate = async () => {
     if (!verifyUrl) return;
-    const text = `Nimepata Cheti cha Balozi wa Muungano 🇹🇿 — thibitisha hapa: ${verifyUrl}`;
+    const text = t('certificate.shareText', { url: verifyUrl });
     if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: 'Cheti cha Balozi wa Muungano',
+          title: t('certificate.shareTitle'),
           text,
           url: verifyUrl,
         });
@@ -93,25 +95,22 @@ export default function CertificateScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <CelebrationOverlay
         visible={celebrate}
-        title="Balozi wa Muungano!"
-        subtitle={`${userName} — cheti chako kinaweza kuwekwa kwenye CV papo hapo.`}
+        title={t('certificate.celebrateTitle')}
+        subtitle={t('certificate.celebrateSub', { name: userName })}
         onDone={() => setCelebrate(false)}
       />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <ScreenHeader stepLabel="Hatua 4 ya 5 — Cheti Kinachothibitishwa" title="" />
+        <ScreenHeader stepLabel={t('certificate.stepLabel')} title="" />
 
         {!generated ? (
           <View style={{ alignItems: 'center', marginTop: spacing.lg }}>
-            <Text style={styles.promptText}>
-              Umepata sifa za kutosha kupata Cheti chako rasmi cha Balozi wa Muungano — chenye QR
-              Code inayoweza kuwekwa kwenye CV yako.
-            </Text>
+            <Text style={styles.promptText}>{t('certificate.prompt')}</Text>
             {error && <Text style={styles.errorText}>{error}</Text>}
             <View style={{ marginTop: spacing.lg }}>
               {loading ? (
                 <ActivityIndicator color={colors.green} />
               ) : (
-                <Button label="Tengeneza Cheti →" onPress={handleGenerate} />
+                <Button label={t('certificate.generate')} onPress={handleGenerate} />
               )}
             </View>
           </View>
@@ -122,20 +121,16 @@ export default function CertificateScreen({ navigation }: Props) {
               <View style={styles.crest}>
                 <Text style={{ color: colors.white, fontWeight: '700' }}>KV</Text>
               </View>
-              <Text style={[styles.eyebrowCentered]}>Jamhuri ya Muungano wa Tanzania</Text>
-              <Text style={styles.certHeading}>Cheti cha Ubalozi wa Muungano</Text>
+              <Text style={[styles.eyebrowCentered]}>{t('certificate.republic')}</Text>
+              <Text style={styles.certHeading}>{t('certificate.heading')}</Text>
               <Text style={styles.certName}>{userName}</Text>
-              <Text style={styles.certSub}>
-                Ametambuliwa rasmi kama Balozi wa Muungano kwa kukamilisha Dhamira ya Pamoja ya
-                kwanza akiwa ameoanishwa na kijana kutoka Visiwani, akijenga kivuko la kweli la
-                umoja wa kitaifa.
-              </Text>
+              <Text style={styles.certSub}>{t('certificate.body')}</Text>
 
               <View style={styles.certFooter}>
                 <View>
-                  <Text style={styles.certSignName}>Kivuko la Muungano Hub</Text>
-                  <Text style={styles.certSignMeta}>Tarehe: {certDate}</Text>
-                  <Text style={styles.certSignMeta}>Nambari ya Cheti: {certCode}</Text>
+                  <Text style={styles.certSignName}>{t('certificate.issuer')}</Text>
+                  <Text style={styles.certSignMeta}>{t('certificate.dateLabel', { date: certDate })}</Text>
+                  <Text style={styles.certSignMeta}>{t('certificate.codeLabel', { code: certCode })}</Text>
                   {verifyUrl ? (
                     <Text style={styles.verifyLink} numberOfLines={2}>{verifyUrl}</Text>
                   ) : null}
@@ -151,15 +146,15 @@ export default function CertificateScreen({ navigation }: Props) {
             </View>
 
             <View style={{ marginTop: spacing.xl, alignItems: 'center', gap: 8 }}>
-              <Button label="Thibitisha Cheti (Fungua QR) →" onPress={openVerify} />
+              <Button label={t('certificate.verify')} onPress={openVerify} />
               <Button
-                label={copied ? 'Kiungo Kimekopishwa ✓' : 'Nakili Kiungo cha CV'}
+                label={copied ? t('certificate.copied') : t('certificate.copy')}
                 variant="secondary"
                 onPress={copyVerifyLink}
               />
-              <Button label="Shiriki WhatsApp / Mitandao →" onPress={shareCertificate} />
+              <Button label={t('certificate.share')} onPress={shareCertificate} />
               <Button
-                label="Angalia Ramani Hai ya Muungano →"
+                label={t('certificate.viewMap')}
                 variant="ghost"
                 onPress={() => navigation.navigate('UnionMap')}
               />

@@ -9,6 +9,8 @@ import Button from '../components/Button';
 import UssdSimulator from '../components/UssdSimulator';
 import WhatsAppChat from '../components/WhatsAppChat';
 import { api, type ChatMessage } from '../api/client';
+import { useLocale } from '../context/LocaleContext';
+import { markVisited } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Omnichannel'>;
 
@@ -29,10 +31,15 @@ function toMessage(from: 'me' | 'peer', text: string): ChatMessage {
 }
 
 export default function OmnichannelScreen({ navigation }: Props) {
+  const { t } = useLocale();
   const [waMessages, setWaMessages] = useState<ChatMessage[]>([]);
   const [waSending, setWaSending] = useState(false);
   const [waTyping, setWaTyping] = useState(false);
   const [showWaChat, setShowWaChat] = useState(false);
+
+  useEffect(() => {
+    markVisited('omnichannel');
+  }, []);
 
   useEffect(() => {
     if (!showWaChat || waMessages.length > 0) return;
@@ -79,8 +86,8 @@ export default function OmnichannelScreen({ navigation }: Props) {
           peerInitials={BOT_PEER.initials}
           peerRegionLabel={BOT_PEER.region_label}
           peerHomeArea={BOT_PEER.home_area}
-          headerSubtitle="WhatsApp Business · hai sasa"
-          placeholder="Andika ujumbe…"
+          headerSubtitle={t('omnichannel.waSubtitle')}
+          placeholder={t('omnichannel.waPlaceholder')}
           sending={waSending}
           peerTyping={waTyping}
           onSend={sendWhatsApp}
@@ -94,41 +101,34 @@ export default function OmnichannelScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <TopNav currentStep={0} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.eyebrow}>Omnichannel Access</Text>
-        <Text style={styles.title}>Kila Kijana, Kila Kifaa</Text>
-        <Text style={styles.sub}>
-          Hakuna kijana atacheleweke — mfumo mmoja, njia tatu za kufikia: Wavuti, WhatsApp, na USSD.
-        </Text>
+        <Text style={styles.eyebrow}>{t('omnichannel.eyebrow')}</Text>
+        <Text style={styles.title}>{t('omnichannel.title')}</Text>
+        <Text style={styles.sub}>{t('omnichannel.sub')}</Text>
 
         <View style={styles.card}>
           <View style={styles.cardHead}>
             <Text style={{ fontSize: 28 }}>📱</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>Programu ya Wavuti (PWA)</Text>
+              <Text style={styles.cardTitle}>{t('omnichannel.pwaTitle')}</Text>
               <View style={[styles.statusPill, { backgroundColor: `${colors.green}22` }]}>
-                <Text style={[styles.statusText, { color: colors.green }]}>Hai Sasa</Text>
+                <Text style={[styles.statusText, { color: colors.green }]}>{t('omnichannel.live')}</Text>
               </View>
             </View>
           </View>
-          <Text style={styles.cardDesc}>
-            Uzoefu kamili: uoanishaji, dhamira, cheti, na ramani — kwenye kivinjari cha simu yoyote.
-          </Text>
+          <Text style={styles.cardDesc}>{t('omnichannel.pwaDesc')}</Text>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardHead}>
             <Text style={{ fontSize: 28 }}>💬</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>WhatsApp Learning Bot</Text>
+              <Text style={styles.cardTitle}>{t('omnichannel.waTitle')}</Text>
               <View style={[styles.statusPill, { backgroundColor: `${colors.blue}22` }]}>
-                <Text style={[styles.statusText, { color: colors.blue }]}>Demo Hai — Jaribu Sasa</Text>
+                <Text style={[styles.statusText, { color: colors.blue }]}>{t('omnichannel.waLive')}</Text>
               </View>
             </View>
           </View>
-          <Text style={styles.cardDesc}>
-            Mazungumzo ya kweli na bot ya Kivuko kupitia API — sawa na WhatsApp Business. Andika MUUNGANO au
-            JARIBIO kuanza.
-          </Text>
+          <Text style={styles.cardDesc}>{t('omnichannel.waDesc')}</Text>
           <Pressable style={styles.waPreview} onPress={() => setShowWaChat(true)}>
             <View style={styles.waPreviewBar}>
               <View style={styles.waAvatar}>
@@ -138,11 +138,9 @@ export default function OmnichannelScreen({ navigation }: Props) {
             </View>
             <View style={styles.waPreviewBody}>
               <View style={styles.waPreviewBubble}>
-                <Text style={styles.waPreviewText}>
-                  Habari Mzalendo! 🌊 Andika MUUNGANO kuanza jaribio la historia…
-                </Text>
+                <Text style={styles.waPreviewText}>{t('omnichannel.waPreview')}</Text>
               </View>
-              <Text style={styles.waTapHint}>Gusa kufungua mazungumzo →</Text>
+              <Text style={styles.waTapHint}>{t('omnichannel.waTap')}</Text>
             </View>
           </Pressable>
         </View>
@@ -151,20 +149,18 @@ export default function OmnichannelScreen({ navigation }: Props) {
           <View style={styles.cardHead}>
             <Text style={{ fontSize: 28 }}>📞</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>USSD *150*64#</Text>
+              <Text style={styles.cardTitle}>{t('omnichannel.ussdTitle')}</Text>
               <View style={[styles.statusPill, { backgroundColor: `${colors.gold}33` }]}>
-                <Text style={[styles.statusText, { color: '#7A5E00' }]}>Demo Hai — Jaribu Sasa</Text>
+                <Text style={[styles.statusText, { color: '#7A5E00' }]}>{t('omnichannel.ussdLive')}</Text>
               </View>
             </View>
           </View>
-          <Text style={styles.cardDesc}>
-            Simu za kawaida — bonyeza vitufe hapa chini kama *150*64# halisi. Hakuna intaneti inahitajika.
-          </Text>
+          <Text style={styles.cardDesc}>{t('omnichannel.ussdDesc')}</Text>
           <UssdSimulator />
         </View>
 
         <View style={{ marginTop: spacing.lg, alignItems: 'center' }}>
-          <Button label="Rudi Dashibodi" variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
+          <Button label={t('admin.backDashboard')} variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
         </View>
       </ScrollView>
     </SafeAreaView>

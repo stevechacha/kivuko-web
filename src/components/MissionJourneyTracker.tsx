@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, radius, spacing } from '../theme/colors';
 import { api, type MissionProgress } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 
 export default function MissionJourneyTracker({
   onStepPress,
@@ -10,6 +11,7 @@ export default function MissionJourneyTracker({
   onStepPress?: (step: number, status: string) => void;
 }) {
   const { participant } = useSession();
+  const { t } = useLocale();
   const [progress, setProgress] = useState<MissionProgress | null>(null);
 
   useEffect(() => {
@@ -22,10 +24,14 @@ export default function MissionJourneyTracker({
   return (
     <View style={styles.wrap}>
       <View style={styles.head}>
-        <Text style={styles.title}>Safari ya Dhamira 5 — Joint Mission</Text>
+        <Text style={styles.title}>{t('missionJourney.title')}</Text>
         <Text style={styles.sub}>
-          {progress.completed_count}/{progress.total_steps} zimekamilika · {progress.grade.badge}{' '}
-          {progress.grade.label}
+          {t('missionJourney.progress', {
+            done: progress.completed_count,
+            total: progress.total_steps,
+            badge: progress.grade.badge,
+            label: progress.grade.label,
+          })}
         </Text>
       </View>
       <View style={styles.track}>

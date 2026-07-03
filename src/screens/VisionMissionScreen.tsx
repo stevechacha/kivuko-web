@@ -9,11 +9,13 @@ import Button from '../components/Button';
 import PeerSubmittedBanner from '../components/PeerSubmittedBanner';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VisionMission'>;
 
 export default function VisionMissionScreen({ navigation }: Props) {
   const { participant, peer, updateParticipant } = useSession();
+  const { t } = useLocale();
   const [vision, setVision] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -37,11 +39,9 @@ export default function VisionMissionScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <TopNav currentStep={3} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.eyebrow}>Dhamira 3 ya 5 — Maono ya Mustakabali</Text>
-        <Text style={styles.title}>Tanzania ya Kesho 🔭</Text>
-        <Text style={styles.sub}>
-          Andika maono yako ya Tanzania imara, yenye umoja, na yenye maendeleo — pamoja na pacha wako kutoka upande wa pili wa Muungano.
-        </Text>
+        <Text style={styles.eyebrow}>{t('vision.eyebrow')}</Text>
+        <Text style={styles.title}>{t('vision.title')}</Text>
+        <Text style={styles.sub}>{t('vision.sub')}</Text>
 
         {peer ? <PeerSubmittedBanner peerName={peer.name} /> : null}
 
@@ -50,20 +50,17 @@ export default function VisionMissionScreen({ navigation }: Props) {
           multiline
           value={vision}
           onChangeText={setVision}
-          placeholder="Mimi na pacha wangu tunaamini Tanzania ya kesho itakuwa…"
+          placeholder={t('vision.placeholder')}
           placeholderTextColor="#9AA5A3"
         />
-        <Text style={styles.hint}>{vision.length}/200 herufi (angalau 30)</Text>
+        <Text style={styles.hint}>{t('vision.hint', { count: vision.length })}</Text>
 
         {done ? (
           <View style={styles.success}>
-            <Text style={styles.successTitle}>Maono Yamehifadhiwa! ✨</Text>
-            <Text style={styles.successBody}>+40 Pointi za Uzalendo · Maono yako yameongezwa kwenye Maktaba ya Mustakabali</Text>
+            <Text style={styles.successTitle}>{t('vision.successTitle')}</Text>
+            <Text style={styles.successBody}>{t('vision.successBody')}</Text>
             <View style={{ marginTop: 16 }}>
-              <Button
-                label="Pata Cheti Chako →"
-                onPress={() => navigation.navigate('Certificate')}
-              />
+              <Button label={t('vision.getCert')} onPress={() => navigation.navigate('Certificate')} />
             </View>
           </View>
         ) : (
@@ -71,7 +68,7 @@ export default function VisionMissionScreen({ navigation }: Props) {
             {submitting ? (
               <ActivityIndicator color={colors.green} />
             ) : (
-              <Button label="Wasilisha Maono →" onPress={submit} disabled={vision.trim().length < 30} />
+              <Button label={t('vision.submit')} onPress={submit} disabled={vision.trim().length < 30} />
             )}
           </View>
         )}

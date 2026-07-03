@@ -1,5 +1,5 @@
 // CultureMissionScreen — Step 2: Culture exchange with peer
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -9,17 +9,17 @@ import Button from '../components/Button';
 import PeerSubmittedBanner from '../components/PeerSubmittedBanner';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CultureMission'>;
 
-const PROMPTS = [
-  'Eleza chakula cha kienyeji kutoka eneo lako',
-  'Shiriki methali au usemi unaoupenda',
-  'Andika salamu ya utamaduni wako kwa pacha wako',
-];
-
 export default function CultureMissionScreen({ navigation }: Props) {
   const { participant, peer, updateParticipant } = useSession();
+  const { t } = useLocale();
+  const prompts = useMemo(
+    () => [t('culture.p1'), t('culture.p2'), t('culture.p3')],
+    [t],
+  );
   const [responses, setResponses] = useState<string[]>(['', '', '']);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -45,27 +45,25 @@ export default function CultureMissionScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <TopNav currentStep={2} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.eyebrow}>Dhamira 2 ya 5 — Ubadilishanaji wa Utamaduni</Text>
-        <Text style={styles.title}>Shiriki Utamaduni Wako 🎭</Text>
-        <Text style={styles.sub}>
-          Jibu maswali haya ili kumjulisha pacha wako utamaduni, mila, na maisha yako — hii ndiyo nguvu ya Muungano halisi.
-        </Text>
+        <Text style={styles.eyebrow}>{t('culture.eyebrow')}</Text>
+        <Text style={styles.title}>{t('culture.title')}</Text>
+        <Text style={styles.sub}>{t('culture.sub')}</Text>
 
         {peer ? <PeerSubmittedBanner peerName={peer.name} /> : null}
 
-        {PROMPTS.map((prompt, i) => (
+        {prompts.map((prompt, i) => (
           <View key={i} style={styles.block}>
             <Text style={styles.prompt}>{i + 1}. {prompt}</Text>
             <TextInput
               style={styles.input}
               multiline
               value={responses[i]}
-              onChangeText={(t) => {
+              onChangeText={(text) => {
                 const next = [...responses];
-                next[i] = t;
+                next[i] = text;
                 setResponses(next);
               }}
-              placeholder="Andika jibu lako hapa…"
+              placeholder={t('culture.placeholder')}
               placeholderTextColor="#9AA5A3"
             />
           </View>
@@ -73,10 +71,10 @@ export default function CultureMissionScreen({ navigation }: Props) {
 
         {done ? (
           <View style={styles.success}>
-            <Text style={styles.successTitle}>Dhamira 2 Imekamilika! 🎉</Text>
-            <Text style={styles.successBody}>+40 Pointi za Uzalendo · Pacha wako atapokea ujumbe wako</Text>
+            <Text style={styles.successTitle}>{t('culture.successTitle')}</Text>
+            <Text style={styles.successBody}>{t('culture.successBody')}</Text>
             <View style={{ marginTop: 16 }}>
-              <Button label="Endelea Dhamira 3 →" onPress={() => navigation.navigate('VisionMission')} />
+              <Button label={t('culture.continue')} onPress={() => navigation.navigate('VisionMission')} />
             </View>
           </View>
         ) : (
@@ -84,7 +82,7 @@ export default function CultureMissionScreen({ navigation }: Props) {
             {submitting ? (
               <ActivityIndicator color={colors.green} />
             ) : (
-              <Button label="Wasilisha Dhamira 2 →" onPress={submit} disabled={!canSubmit} />
+              <Button label={t('culture.submit')} onPress={submit} disabled={!canSubmit} />
             )}
           </View>
         )}

@@ -17,6 +17,7 @@ import Button from '../components/Button';
 import MissionJourneyTracker from '../components/MissionJourneyTracker';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
+import { readVisitState } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'HubDashboard'>;
 
@@ -38,6 +39,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
   const points = participant?.patriotism_points ?? 0;
   const firstName = participant?.name?.split(' ')[0] ?? 'Mzalendo';
   const [streakDays, setStreakDays] = useState(1);
+  const [visits, setVisits] = useState(readVisitState);
+
+  useEffect(() => {
+    setVisits(readVisitState());
+  }, []);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof sessionStorage === 'undefined') return;
@@ -96,7 +102,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
       badgeColor: '#E6F3ED',
       title: t('hub.portal3Title'),
       description: t('hub.portal3Desc'),
-      cta: t('hub.portal3Cta'),
+      cta: visits.academy ? t('hub.portal3CtaResume') : t('hub.portal3Cta'),
       accent: colors.green,
       onPress: () => navigation.navigate('Academy', { tab: 'union' }),
     },
@@ -107,7 +113,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
       badgeColor: '#FEE2E2',
       title: t('hub.portal4Title'),
       description: t('hub.portal4Desc'),
-      cta: t('hub.portal4Cta'),
+      cta: visits.patriot ? t('hub.portal4CtaResume') : t('hub.portal4Cta'),
       accent: '#4B5320',
       onPress: () => navigation.navigate('Academy', { tab: 'patriot' }),
     },
@@ -170,7 +176,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
         <View style={styles.quickRow}>
           <Button label={t('hub.quickTimeline')} variant="secondary" onPress={() => navigation.navigate('UnionTimeline')} />
           <Button label={t('hub.quickGala')} variant="secondary" onPress={() => navigation.navigate('GalaLeaderboard')} />
-          <Button label={t('hub.quickOmnichannel')} variant="ghost" onPress={() => navigation.navigate('Omnichannel')} />
+          <Button
+            label={visits.omnichannel ? t('hub.quickOmnichannelResume') : t('hub.quickOmnichannel')}
+            variant="ghost"
+            onPress={() => navigation.navigate('Omnichannel')}
+          />
           <Button label={t('hub.quickJudgeTour')} variant="ghost" onPress={() => navigation.navigate('JudgeTour')} />
           <Button label={t('hub.quickMap')} variant="ghost" onPress={() => navigation.navigate('UnionMap')} />
           <Button label={t('hub.quickAdmin')} variant="ghost" onPress={() => navigation.navigate('AdminDashboard')} />

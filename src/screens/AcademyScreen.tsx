@@ -14,23 +14,32 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import Button from '../components/Button';
+import CivicCompanionBox from '../components/CivicCompanionBox';
 import { api, type AcademyArticle } from '../api/client';
+import { useLocale } from '../context/LocaleContext';
+import { markVisited } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Academy'>;
 type Tab = 'army' | 'union' | 'patriot';
 
-const TABS: { id: Tab; label: string; icon: string; sub: string }[] = [
-  { id: 'army', label: 'Historia ya JWTZ', icon: '🎖️', sub: 'Kuvunjwa kwa TFM na kuzaliwa kwa JWTZ 1964.' },
-  { id: 'union', label: 'Nyaraka za Muungano', icon: '🏛️', sub: 'Hati za Muungano na changamoto zilizovushwa.' },
-  { id: 'patriot', label: 'Misingi ya Uzalendo', icon: '❤️', sub: 'Nembo za Taifa, Wimbo, na viapo vya kulinda nchi.' },
-];
-
 export default function AcademyScreen({ route, navigation }: Props) {
   const initialTab = route.params?.tab ?? 'union';
+  const { t } = useLocale();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [articles, setArticles] = useState<AcademyArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const tabs: { id: Tab; label: string; icon: string; sub: string }[] = [
+    { id: 'army', label: t('academy.tabArmy'), icon: '🎖️', sub: t('academy.tabArmySub') },
+    { id: 'union', label: t('academy.tabUnion'), icon: '🏛️', sub: t('academy.tabUnionSub') },
+    { id: 'patriot', label: t('academy.tabPatriot'), icon: '❤️', sub: t('academy.tabPatriotSub') },
+  ];
+
+  useEffect(() => {
+    markVisited('academy');
+    if (tab === 'patriot') markVisited('patriot');
+  }, [tab]);
 
   useEffect(() => {
     setLoading(true);
@@ -50,22 +59,24 @@ export default function AcademyScreen({ route, navigation }: Props) {
         <View style={styles.header}>
           <Text style={styles.headerIcon}>🛡️</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>Maktaba ya Uzalendo & Historia</Text>
-            <Text style={styles.headerSub}>Makumbusho ya kidijitali ya Muungano na JWTZ (1964 — Sasa)</Text>
+            <Text style={styles.headerTitle}>{t('academy.headerTitle')}</Text>
+            <Text style={styles.headerSub}>{t('academy.headerSub')}</Text>
           </View>
         </View>
 
+        <CivicCompanionBox />
+
         <View style={styles.tabRow}>
-          {TABS.map((t) => (
+          {tabs.map((item) => (
             <Pressable
-              key={t.id}
-              onPress={() => setTab(t.id)}
-              style={[styles.tab, tab === t.id && styles.tabActive]}
+              key={item.id}
+              onPress={() => setTab(item.id)}
+              style={[styles.tab, tab === item.id && styles.tabActive]}
             >
-              <Text style={{ fontSize: 16 }}>{t.icon}</Text>
+              <Text style={{ fontSize: 16 }}>{item.icon}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.tabLabel, tab === t.id && styles.tabLabelActive]}>{t.label}</Text>
-                <Text style={styles.tabSub}>{t.sub}</Text>
+                <Text style={[styles.tabLabel, tab === item.id && styles.tabLabelActive]}>{item.label}</Text>
+                <Text style={styles.tabSub}>{item.sub}</Text>
               </View>
             </Pressable>
           ))}
@@ -90,12 +101,12 @@ export default function AcademyScreen({ route, navigation }: Props) {
               <Text style={styles.body}>{article.body}</Text>
             </>
           ) : (
-            <Text style={styles.error}>Hakuna maudhui kwa sasa.</Text>
+            <Text style={styles.error}>{t('academy.empty')}</Text>
           )}
         </View>
 
         <View style={styles.footer}>
-          <Button label="Rudi Dashibodi" variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
+          <Button label={t('admin.backDashboard')} variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
         </View>
       </ScrollView>
     </SafeAreaView>

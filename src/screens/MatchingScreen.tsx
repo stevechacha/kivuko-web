@@ -10,19 +10,17 @@ import TopNav from '../components/TopNav';
 import CelebrationOverlay from '../components/CelebrationOverlay';
 import { api, type MatchResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
+import { useLocale } from '../context/LocaleContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Matching'>;
 
-const FALLBACK_STATUS = [
-  'Inatafuta wanachama Visiwani…',
-  'Inalinganisha maslahi ya kihistoria…',
-  'Inathibitisha muunganiko wa kivuko…',
-];
+const FALLBACK_STATUS_KEYS = ['matching.status1', 'matching.status2', 'matching.status3'] as const;
 
 export default function MatchingScreen({ navigation }: Props) {
   useCleanWebUrl();
   const { participant, setMission } = useSession();
+  const { t } = useLocale();
   const name = participant?.name || 'Mzalendo';
   const userRegion = participant?.region || 'bara';
   const [matched, setMatched] = useState(false);
@@ -47,7 +45,7 @@ export default function MatchingScreen({ navigation }: Props) {
 
     const runMatch = async () => {
       if (!participant?.session_token) {
-        setError('Kipindi kimeisha. Tafadhali jisajili tena.');
+        setError(t('matching.errSession'));
         return;
       }
       try {
@@ -61,7 +59,7 @@ export default function MatchingScreen({ navigation }: Props) {
           setCelebrate(true);
         }, 2400);
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Uoanishaji umeshindwa.');
+        setError(e instanceof Error ? e.message : t('matching.errMatch'));
         clearInterval(stepTimer);
         loop.stop();
       }
@@ -76,26 +74,34 @@ export default function MatchingScreen({ navigation }: Props) {
   }, [participant?.session_token]);
 
   const peer = matchResult?.peer;
-  const statusMessages = matchResult?.status_messages ?? FALLBACK_STATUS;
-  const userRegionLabel = userRegion === 'visiwani' ? 'Visiwani' : 'Bara';
+  const fallbackStatus = FALLBACK_STATUS_KEYS.map((k) => t(k));
+  const statusMessages = matchResult?.status_messages ?? fallbackStatus;
+  const userRegionLabel = userRegion === 'visiwani' ? t('common.visiwani') : t('common.bara');
 
   return (
     <SafeAreaView style={styles.safe}>
       <CelebrationOverlay
         visible={celebrate}
-        title="Kivuko Limeunganishwa!"
-        subtitle={peer ? `${peer.name.split(' ')[0]} kutoka ${peer.region_label} — mshirika wako wa dhamira.` : undefined}
+        title={t('matching.celebrateTitle')}
+        subtitle={
+          peer
+            ? t('matching.celebrateSub', {
+                name: peer.name.split(' ')[0],
+                region: peer.region_label,
+              })
+            : undefined
+        }
         onDone={() => setCelebrate(false)}
       />
       <TopNav currentStep={2} />
       <View style={styles.content}>
-        <Text style={styles.eyebrow}>Hatua 2 ya 5 — Kiungo cha Kivuko</Text>
+        <Text style={styles.eyebrow}>{t('matching.eyebrow')}</Text>
 
         {error ? (
           <View style={styles.errorWrap}>
             <Text style={styles.errorText}>{error}</Text>
             <Pressable onPress={() => navigation.navigate('Onboarding')}>
-              <Text style={styles.errorLink}>Rudi kwenye Usajili →</Text>
+              <Text style={styles.errorLink}>{t('matching.backRegister')}</Text>
             </Pressable>
           </View>
         ) : !matched ? (
@@ -103,9 +109,7 @@ export default function MatchingScreen({ navigation }: Props) {
             <Animated.View style={[styles.radarCore, { opacity: pulse, transform: [{ scale: pulse }] }]}>
               <Text style={{ fontSize: 26 }}>🧭</Text>
             </Animated.View>
-            <Text style={styles.loadingTitle}>
-              Tunakuoanisha na rafiki kutoka ng'ambo ya bahari…
-            </Text>
+            <Text style={styles.loadingTitle}>{t('matching.loadingTitle')}</Text>
             <Text style={styles.statusText}>
               {statusMessages[Math.min(statusIndex, statusMessages.length - 1)]}
             </Text>
@@ -113,7 +117,7 @@ export default function MatchingScreen({ navigation }: Props) {
         ) : peer ? (
           <View style={styles.resultWrap}>
             <Text style={styles.resultTitle}>
-              Umeoanishwa na <Text style={{ color: colors.blue }}>{peer.name}</Text> kutoka {peer.region_label}!
+              {t('matching.matched', { peer: peer.name, region: peer.region_label })}
             </Text>
 
             <View style={styles.pairRow}>
@@ -134,13 +138,11 @@ export default function MatchingScreen({ navigation }: Props) {
               </View>
             </View>
 
-            <Text style={styles.muted}>
-              Mmeoanishwa kwa msingi wa maslahi ya pamoja katika historia na utamaduni wa Muungano.
-            </Text>
+            <Text style={styles.muted}>{t('matching.matchedNote')}</Text>
 
             <View style={{ marginTop: spacing.lg }}>
               <Button
-                label="Ingia Chumba cha Dhamira →"
+                label={t('matching.enterMission')}
                 variant="secondary"
                 onPress={() => navigation.navigate('MissionChat')}
               />
