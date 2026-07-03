@@ -189,6 +189,14 @@ export interface Certificate {
 
 export type ReportReasonId = 'abusive_language' | 'contact_request' | 'inappropriate_content' | 'other';
 
+export interface WhatsAppBotResponse {
+  reply: string;
+  channel: string;
+  session_id: string;
+  points: number;
+  suggestions: string[];
+}
+
 export interface ReportedItem {
   id: string;
   mission_id: string;
@@ -336,10 +344,10 @@ export const api = {
     );
   },
 
-  whatsappBot(text: string) {
-    return request<{ reply: string; channel: string }>('/channels/whatsapp/chat', {
+  whatsappBot(text: string, sessionId?: string) {
+    return request<WhatsAppBotResponse>('/channels/whatsapp/chat', {
       method: 'POST',
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, session_id: sessionId ?? '' }),
     });
   },
 

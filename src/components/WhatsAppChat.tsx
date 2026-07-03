@@ -36,6 +36,9 @@ export interface WhatsAppChatProps {
   onSend: (text: string) => void | Promise<void>;
   onBack?: () => void;
   headerAction?: React.ReactNode;
+  /** Quick-reply chips (e.g. JARIBIO, MENYU). */
+  suggestions?: string[];
+  onSuggestionPress?: (text: string) => void;
   /** On web, wrap chat in a phone-sized frame (default true). */
   phoneFrame?: boolean;
 }
@@ -91,6 +94,8 @@ export default function WhatsAppChat({
   onSend,
   onBack,
   headerAction,
+  suggestions = [],
+  onSuggestionPress,
   phoneFrame = Platform.OS === 'web',
 }: WhatsAppChatProps) {
   const [draft, setDraft] = React.useState('');
@@ -172,6 +177,21 @@ export default function WhatsAppChat({
         </View>
       </View>
 
+      {suggestions.length > 0 && onSuggestionPress ? (
+        <View style={styles.suggestionsRow}>
+          {suggestions.map((chip) => (
+            <Pressable
+              key={chip}
+              style={styles.suggestionChip}
+              onPress={() => onSuggestionPress(chip)}
+              disabled={sending}
+            >
+              <Text style={styles.suggestionText}>{chip}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
       <View style={styles.inputBar}>
         <View style={styles.inputWrap}>
           <TextInput
@@ -212,6 +232,24 @@ export default function WhatsAppChat({
   return chat;
 }
 
+function FormattedText({ text, style }: { text: string; style: object }) {
+  const parts = text.split(/(\*[^*]+\*)/g);
+  return (
+    <Text style={style}>
+      {parts.map((part, i) => {
+        if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+          return (
+            <Text key={i} style={[style, styles.boldText]}>
+              {part.slice(1, -1)}
+            </Text>
+          );
+        }
+        return <Text key={i}>{part}</Text>;
+      })}
+    </Text>
+  );
+}
+
 function MessageBubble({
   message,
   peerFirstName,
@@ -232,7 +270,7 @@ function MessageBubble({
     <View style={[styles.bubbleRow, mine ? styles.bubbleRowMe : styles.bubbleRowPeer]}>
       <View style={[styles.bubble, mine ? styles.bubbleMe : styles.bubblePeer]}>
         {!mine && <Text style={styles.senderName}>{peerFirstName}</Text>}
-        <Text style={styles.bubbleText}>{message.text}</Text>
+        <FormattedText text={message.text} style={styles.bubbleText} />
         <View style={styles.metaRow}>
           <Text style={styles.timeText}>{formatTime(message.created_at)}</Text>
           {mine && <Text style={styles.ticks}>✓✓</Text>}
@@ -343,6 +381,26 @@ const styles = StyleSheet.create({
   bubblePeer: { backgroundColor: WA.bubblePeer, borderTopLeftRadius: 2 },
   senderName: { fontSize: 11, fontWeight: '700', color: WA.headerLight, marginBottom: 1 },
   bubbleText: { fontSize: 14, lineHeight: 19, color: '#111B21' },
+  boldText: { fontWeight: '700' },
+  suggestionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    backgroundColor: WA.inputBg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#D1D7DB',
+  },
+  suggestionChip: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#D1D7DB',
+  },
+  suggestionText: { fontSize: 12, fontWeight: '700', color: WA.headerLight },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 2 },
   timeText: { fontSize: 10, color: '#667781' },
   ticks: { fontSize: 11, color: WA.tick, fontWeight: '700', letterSpacing: -2 },

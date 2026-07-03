@@ -1,5 +1,5 @@
 // OmnichannelScreen — live WhatsApp bot demo + USSD vision
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -22,6 +22,8 @@ const BOT_PEER = {
   home_area: 'Tanzania',
 };
 
+const DEFAULT_SUGGESTIONS = ['JARIBIO', 'SOMO', 'MENYU'];
+
 function toMessage(from: 'me' | 'peer', text: string): ChatMessage {
   return {
     id: `${Date.now()}-${Math.random()}`,
@@ -38,46 +40,65 @@ export default function OmnichannelScreen({ navigation }: Props) {
   const [waSending, setWaSending] = useState(false);
   const [waTyping, setWaTyping] = useState(false);
   const [showWaChat, setShowWaChat] = useState(false);
+  const [sessionId, setSessionId] = useState<string | undefined>();
+  const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
+  const [botPoints, setBotPoints] = useState(0);
 
   useEffect(() => {
     markVisited('omnichannel');
+  }, []);
+
+  const applyBotResponse = useCallback((res: Awaited<ReturnType<typeof api.whatsappBot>>) => {
+    if (res.session_id) setSessionId(res.session_id);
+    if (res.suggestions?.length) setSuggestions(res.suggestions);
+    setBotPoints(res.points ?? 0);
+    setWaMessages((prev) => [...prev, toMessage('peer', res.reply)]);
   }, []);
 
   useEffect(() => {
     if (!showWaChat || waMessages.length > 0) return;
     setWaTyping(true);
     api
-      .whatsappBot('')
-      .then((res) => {
-        setWaMessages([toMessage('peer', res.reply)]);
-      })
+      .whatsappBot('', sessionId)
+      .then(applyBotResponse)
       .catch(() => {
         setWaMessages([
           toMessage(
             'peer',
-            'Habari Mzalendo! 🌊 Andika *MUUNGANO* kuanza jaribio la historia ya taifa.',
+            'Habari Mzalendo! 🌊 Andika *MUUNGANO* au *MENYU* kuanza. Jaribio lina maswali 6 ya historia ya taifa.',
           ),
         ]);
+        setSuggestions(DEFAULT_SUGGESTIONS);
       })
       .finally(() => setWaTyping(false));
-  }, [showWaChat, waMessages.length]);
+  }, [showWaChat, waMessages.length, sessionId, applyBotResponse]);
 
   const sendWhatsApp = async (text: string) => {
     setWaSending(true);
     setWaMessages((prev) => [...prev, toMessage('me', text)]);
     setWaTyping(true);
     try {
-      const res = await api.whatsappBot(text);
+      const res = await api.whatsappBot(text, sessionId);
       setTimeout(() => {
-        setWaMessages((prev) => [...prev, toMessage('peer', res.reply)]);
+        applyBotResponse(res);
         setWaTyping(false);
-      }, 900);
+      }, 700);
     } catch {
       setWaTyping(false);
+      setWaMessages((prev) => [
+        ...prev,
+        toMessage('peer', 'Samahani, hitilafu ya mtandao. Jaribu tena au andika *MENYU*.'),
+      ]);
+      setSuggestions(['MENYU', 'JARIBIO']);
     } finally {
       setWaSending(false);
     }
   };
+
+  const headerSubtitle =
+    botPoints > 0
+      ? `${t('omnichannel.waSubtitle')} · ⭐ ${botPoints} ${t('common.pts')}`
+      : t('omnichannel.waSubtitle');
 
   if (showWaChat) {
     return (
@@ -88,12 +109,14 @@ export default function OmnichannelScreen({ navigation }: Props) {
           peerInitials={BOT_PEER.initials}
           peerRegionLabel={BOT_PEER.region_label}
           peerHomeArea={BOT_PEER.home_area}
-          headerSubtitle={t('omnichannel.waSubtitle')}
+          headerSubtitle={headerSubtitle}
           placeholder={t('omnichannel.waPlaceholder')}
           sending={waSending}
           peerTyping={waTyping}
           onSend={sendWhatsApp}
           onBack={() => setShowWaChat(false)}
+          suggestions={suggestions}
+          onSuggestionPress={sendWhatsApp}
         />
       </SafeAreaView>
     );
@@ -141,6 +164,13 @@ export default function OmnichannelScreen({ navigation }: Props) {
             <View style={styles.waPreviewBody}>
               <View style={styles.waPreviewBubble}>
                 <Text style={styles.waPreviewText}>{t('omnichannel.waPreview')}</Text>
+              </View>
+              <View style={styles.chipRow}>
+                {DEFAULT_SUGGESTIONS.map((chip) => (
+                  <View key={chip} style={styles.chip}>
+                    <Text style={styles.chipText}>{chip}</Text>
+                  </View>
+                ))}
               </View>
               <Text style={styles.waTapHint}>{t('omnichannel.waTap')}</Text>
             </View>
@@ -234,6 +264,16 @@ const styles = StyleSheet.create({
     maxWidth: '85%',
   },
   waPreviewText: { fontSize: 13, color: '#111B21', lineHeight: 18 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
+  chip: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#D1D7DB',
+  },
+  chipText: { fontSize: 11, fontWeight: '700', color: '#128C7E' },
   waTapHint: { fontSize: 11, color: '#8696A0', marginTop: 12, textAlign: 'center', fontWeight: '600' },
   ussdLine: {
     fontFamily: 'monospace',
