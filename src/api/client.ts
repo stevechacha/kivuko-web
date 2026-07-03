@@ -33,11 +33,18 @@ async function request<T>(
       headers,
       signal: controller.signal,
     });
-    const body = await res.json().catch(() => ({}));
+    const contentType = res.headers.get('content-type') || '';
+    const body = contentType.includes('application/json')
+      ? await res.json().catch(() => ({}))
+      : {};
 
     if (!res.ok) {
+      const fallback =
+        res.status >= 500
+          ? 'Server error. Try again in a moment.'
+          : 'Request failed';
       throw new ApiError(
-        body.detail || body.message || 'Request failed',
+        body.detail || body.message || fallback,
         res.status,
         body.login_required === true,
       );
