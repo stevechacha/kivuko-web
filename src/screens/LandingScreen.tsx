@@ -24,6 +24,7 @@ import LiveImpactTicker from '../components/LiveImpactTicker';
 import LiveActivityFeed from '../components/LiveActivityFeed';
 import PlatformStatusChip from '../components/PlatformStatusChip';
 import MarketTrustBar from '../components/MarketTrustBar';
+import WinningPitchPillars from '../components/WinningPitchPillars';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { api, type ElderAudio, type LiveImpact } from '../api/client';
@@ -104,6 +105,7 @@ export default function LandingScreen({ navigation }: Props) {
             <PlatformStatusChip />
             {impact?.activity?.length ? <LiveActivityFeed items={impact.activity} /> : null}
             <MarketTrustBar />
+            <WinningPitchPillars navigation={navigation} />
             <JudgeDemoBanner navigation={navigation} />
             <Pressable
               style={styles.audioWidget}

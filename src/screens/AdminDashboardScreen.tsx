@@ -233,6 +233,9 @@ export default function AdminDashboardScreen({ navigation }: Props) {
                     <View key={r.id} style={styles.flagCard}>
                       <Text style={styles.flagTitle}>{r.reported_name} · {r.mission_title}</Text>
                       <Text style={styles.flagMeta}>{r.reported_at_label} · {r.reason}</Text>
+                      {r.auto_flagged ? (
+                        <Text style={styles.autoFlag}>{t('moderator.autoFlagged')}</Text>
+                      ) : null}
                       {r.excerpt ? <Text style={styles.flagExcerpt}>"{r.excerpt}"</Text> : null}
                       <View style={styles.storyActions}>
                         <Pressable disabled={actingReportId === r.id} onPress={() => resolveReport(r.id, 'dismiss')}>
@@ -442,6 +445,7 @@ const styles = StyleSheet.create({
   flagCard: { backgroundColor: colors.white, borderRadius: radius.md, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: colors.line },
   flagTitle: { fontSize: 13, fontWeight: '700', color: colors.dark },
   flagMeta: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  autoFlag: { fontSize: 10, fontWeight: '800', color: '#DC2626', marginTop: 4 },
   flagExcerpt: { fontSize: 12, color: colors.textMuted, fontStyle: 'italic', marginTop: 6 },
   storyActions: { flexDirection: 'row', gap: 16, marginTop: 10 },
   storyAction: { fontSize: 12, fontWeight: '700', color: colors.green },

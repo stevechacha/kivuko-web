@@ -24,6 +24,7 @@ import OmnichannelScreen from './src/screens/OmnichannelScreen';
 import JudgeTourScreen from './src/screens/JudgeTourScreen';
 import ModeratorFlaggedContentScreen from './src/screens/ModeratorFlaggedContentScreen';
 import ElderContributionScreen from './src/screens/ElderContributionScreen';
+import ElderRadioScreen from './src/screens/ElderRadioScreen';
 import CertificateGalleryScreen from './src/screens/CertificateGalleryScreen';
 import PartnerDashboardScreen from './src/screens/PartnerDashboardScreen';
 import RadioPartnerScreen from './src/screens/RadioPartnerScreen';
@@ -60,6 +61,7 @@ export default function App() {
           <Stack.Screen name="JudgeTour" component={JudgeTourScreen} />
           <Stack.Screen name="ModeratorFlaggedContent" component={ModeratorFlaggedContentScreen} />
           <Stack.Screen name="ElderContribution" component={ElderContributionScreen} />
+          <Stack.Screen name="ElderRadio" component={ElderRadioScreen} />
           <Stack.Screen name="CertificateGallery" component={CertificateGalleryScreen} />
           <Stack.Screen name="PartnerDashboard" component={PartnerDashboardScreen} />
           <Stack.Screen name="RadioPartner" component={RadioPartnerScreen} />

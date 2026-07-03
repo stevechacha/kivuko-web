@@ -64,7 +64,7 @@ export default function ElderContributionScreen({ navigation }: Props) {
           <View style={styles.success}>
             <Text style={styles.successTitle}>{t('elder.successTitle')}</Text>
             <Text style={styles.successBody}>{t('elder.successBody')}</Text>
-            <Button label={t('elder.viewRadio')} onPress={() => navigation.navigate('RadioPartner')} />
+            <Button label={t('elder.viewRadio')} onPress={() => navigation.navigate('ElderRadio')} />
           </View>
         ) : (
           <>

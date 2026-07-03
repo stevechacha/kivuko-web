@@ -133,6 +133,11 @@ export default function ModeratorFlaggedContentScreen({ navigation }: Props) {
                       {REASON_KEYS[item.reason] ? t(REASON_KEYS[item.reason]) : item.reason}
                     </Text>
                   </View>
+                  {item.auto_flagged ? (
+                    <View style={styles.autoBadge}>
+                      <Text style={styles.autoBadgeText}>{t('moderator.autoFlagged')}</Text>
+                    </View>
+                  ) : null}
                 </View>
 
                 {item.excerpt ? (
@@ -251,6 +256,8 @@ const styles = StyleSheet.create({
   cardMeta: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
   reasonBadge: { backgroundColor: '#FDF0EE', borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
   reasonBadgeText: { fontSize: 10, fontWeight: '700', color: '#993C1D' },
+  autoBadge: { backgroundColor: '#FEE2E2', borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3, marginTop: 4, alignSelf: 'flex-start' },
+  autoBadgeText: { fontSize: 9, fontWeight: '800', color: '#DC2626' },
   excerptBox: { backgroundColor: '#F8F7F3', borderRadius: 8, padding: 10, marginTop: 10 },
   excerptText: { fontSize: 12.5, color: colors.textMuted, lineHeight: 18, fontStyle: 'italic' },
   actionRow: { flexDirection: 'row', gap: 8, marginTop: 12 },

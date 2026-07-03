@@ -39,6 +39,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
       JudgeTour: 'onyesho',
       ModeratorFlaggedContent: 'admin/ripoti',
       ElderContribution: 'wazee',
+      ElderRadio: 'redio-wazee',
       CertificateGallery: 'vyeti',
       PartnerDashboard: 'washirika',
       RadioPartner: 'redio',

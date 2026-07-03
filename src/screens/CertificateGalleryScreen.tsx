@@ -19,6 +19,7 @@ import { api, type Certificate } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
 import { useAppBack } from '../navigation/useAppBack';
+import { markVisited } from '../utils/visitTracking';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CertificateGallery'>;
 
@@ -31,6 +32,7 @@ export default function CertificateGalleryScreen({ navigation }: Props) {
   const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
+    markVisited('gallery');
     if (!participant?.session_token) {
       setLoading(false);
       return;

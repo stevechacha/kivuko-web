@@ -338,7 +338,10 @@ export interface PartnerDashboard {
   regions_active: number;
   institutions: { code: string; name: string; home_area: string; region: string; youth_count: number }[];
   pending_elder_stories: number;
+  elder_radio_nominees: number;
+  auto_flagged_pending: number;
   rewards_pending_tzs: number;
+  recent_certificates: { cert_code: string; user_name: string; issued_date: string }[];
 }
 
 export interface RadioPartnerData {

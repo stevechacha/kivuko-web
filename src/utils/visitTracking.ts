@@ -6,6 +6,9 @@ const KEYS = {
   omnichannel: 'kivuko_visited_omnichannel',
   moderator: 'kivuko_visited_moderator',
   gala: 'kivuko_visited_gala',
+  elder: 'kivuko_visited_elder',
+  gallery: 'kivuko_visited_gallery',
+  partner: 'kivuko_visited_partner',
 } as const;
 
 export type VisitKey = keyof typeof KEYS;
@@ -31,5 +34,8 @@ export function readVisitState(): Record<VisitKey, boolean> {
     omnichannel: hasVisited('omnichannel'),
     moderator: hasVisited('moderator'),
     gala: hasVisited('gala'),
+    elder: hasVisited('elder'),
+    gallery: hasVisited('gallery'),
+    partner: hasVisited('partner'),
   };
 }

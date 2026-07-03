@@ -21,6 +21,7 @@ export type RootStackParamList = {
   JudgeTour: undefined;
   ModeratorFlaggedContent: undefined;
   ElderContribution: undefined;
+  ElderRadio: undefined;
   CertificateGallery: undefined;
   PartnerDashboard: undefined;
   RadioPartner: undefined;

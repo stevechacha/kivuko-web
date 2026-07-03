@@ -17,6 +17,7 @@ import TopNav from '../components/TopNav';
 import Button from '../components/Button';
 import MissionJourneyTracker from '../components/MissionJourneyTracker';
 import InviteFriendCard from '../components/InviteFriendCard';
+import WinningPitchPillars from '../components/WinningPitchPillars';
 import AchievementBadges from '../components/AchievementBadges';
 import { useSession } from '../context/SessionContext';
 import { useLocale } from '../context/LocaleContext';
@@ -164,6 +165,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
         />
 
         <InviteFriendCard />
+        <WinningPitchPillars navigation={navigation} />
         <AchievementBadges
           points={points}
           missionSteps={progressSteps}

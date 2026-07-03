@@ -32,6 +32,27 @@ export default function CertificateScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const downloadPdf = async () => {
+    if (!certCode || !participant?.session_token) return;
+    setPdfLoading(true);
+    try {
+      const blob = await api.downloadCertificatePdf(certCode, participant.session_token);
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${certCode}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('gallery.downloadPdf'));
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!missionId) {
@@ -157,6 +178,16 @@ export default function CertificateScreen({ navigation }: Props) {
                 onPress={copyVerifyLink}
               />
               <Button label={t('certificate.share')} onPress={shareCertificate} />
+              <Button
+                label={pdfLoading ? t('common.loading') : t('gallery.downloadPdf')}
+                variant="secondary"
+                onPress={downloadPdf}
+              />
+              <Button
+                label={t('pitch.certTitle')}
+                variant="secondary"
+                onPress={() => navigation.navigate('CertificateGallery')}
+              />
               <Button
                 label={t('certificate.viewMap')}
                 variant="ghost"
