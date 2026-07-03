@@ -19,4 +19,5 @@ export type RootStackParamList = {
   GalaLeaderboard: undefined;
   Omnichannel: undefined;
   JudgeTour: undefined;
+  ModeratorFlaggedContent: undefined;
 };

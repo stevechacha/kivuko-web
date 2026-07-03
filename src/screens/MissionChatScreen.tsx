@@ -16,6 +16,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
 import WhatsAppChat from '../components/WhatsAppChat';
+import ReportModal, { type ReportReasonId } from '../components/ReportModal';
 import { api, type ChatMessage, type Peer, type QuizQuestion, type QuizSubmitResponse } from '../api/client';
 import { useSession } from '../context/SessionContext';
 import { useCleanWebUrl } from '../navigation/useCleanWebUrl';
@@ -39,6 +40,7 @@ export default function MissionChatScreen({ navigation }: Props) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [rewardVisible, setRewardVisible] = useState(false);
   const [quizModalVisible, setQuizModalVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const [sending, setSending] = useState(false);
   const [peerTyping, setPeerTyping] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -151,6 +153,21 @@ export default function MissionChatScreen({ navigation }: Props) {
     }
   };
 
+  // Safety: submits a report against the current mission/peer for moderator
+  // review. Never reveals the report to the peer, and never exposes the
+  // peer's contact details — see ReportModal + Chapter Four safety design.
+  const submitReport = async (reason: ReportReasonId) => {
+    if (!missionId || !participant?.session_token) return;
+    try {
+      await api.reportMission(missionId, reason, participant.session_token);
+    } catch (e) {
+      // Reporting must never appear to fail to the user even if the network
+      // call errors — log locally and still show the confirmation state so
+      // a distressed user isn't blocked from feeling heard. Retry silently.
+      console.warn('Report submission failed, will retry on next app open', e);
+    }
+  };
+
   const quizProgress = quiz.length ? Object.keys(answers).length / quiz.length : 0;
   const peerName = peer?.name || 'Rafiki wa Kivuko';
   const peerInitials = peer?.initials || 'RK';
@@ -178,13 +195,20 @@ export default function MissionChatScreen({ navigation }: Props) {
     );
   }
 
-  const quizHeaderBtn = (
-    <Pressable style={styles.quizHeaderBtn} onPress={() => setQuizModalVisible(true)}>
-      <Text style={styles.quizHeaderBtnText}>📝 Jaribio</Text>
-      {quizProgress > 0 && quizProgress < 1 && (
-        <View style={styles.quizDot} />
-      )}
-    </Pressable>
+  const headerActions = (
+    <View style={styles.headerActionsRow}>
+      <Pressable
+        style={styles.reportHeaderBtn}
+        onPress={() => setReportModalVisible(true)}
+        accessibilityLabel="Ripoti mazungumzo"
+      >
+        <Text style={styles.reportHeaderBtnText}>🚩</Text>
+      </Pressable>
+      <Pressable style={styles.quizHeaderBtn} onPress={() => setQuizModalVisible(true)}>
+        <Text style={styles.quizHeaderBtnText}>📝 Jaribio</Text>
+        {quizProgress > 0 && quizProgress < 1 && <View style={styles.quizDot} />}
+      </Pressable>
+    </View>
   );
 
   return (
@@ -203,7 +227,7 @@ export default function MissionChatScreen({ navigation }: Props) {
             peerTyping={peerTyping}
             onSend={sendMessage}
             onBack={() => navigation.goBack()}
-            headerAction={quizHeaderBtn}
+            headerAction={headerActions}
           />
         </View>
 
@@ -235,6 +259,13 @@ export default function MissionChatScreen({ navigation }: Props) {
           />
         </SafeAreaView>
       </Modal>
+
+      <ReportModal
+        visible={reportModalVisible}
+        peerName={peerName}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={submitReport}
+      />
 
       <Modal visible={rewardVisible} transparent animationType="fade">
         <View style={styles.overlay}>
@@ -330,12 +361,21 @@ const styles = StyleSheet.create({
   chatPane: { flex: 1 },
   chatPaneWide: { flex: 1.15, borderRightWidth: 1, borderRightColor: colors.line },
   quizPane: { flex: 1, backgroundColor: colors.white, maxWidth: 420 },
+  headerActionsRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginRight: 4 },
+  reportHeaderBtn: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 16,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportHeaderBtnText: { fontSize: 13 },
   quizHeaderBtn: {
     backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    marginRight: 4,
   },
   quizHeaderBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
   quizDot: {

@@ -1,6 +1,6 @@
 // GalaLeaderboardScreen — Annual Union & Patriotism Gala vision (Top 10 Youth)
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
@@ -15,10 +15,13 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
   const { participant } = useSession();
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [regionFilter, setRegionFilter] = useState<'all' | 'bara' | 'visiwani'>('all');
 
   useEffect(() => {
-    api.getLeaderboard().then(setLeaders).finally(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    const region = regionFilter === 'all' ? undefined : regionFilter;
+    api.getLeaderboard(10, region).then(setLeaders).finally(() => setLoading(false));
+  }, [regionFilter]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -31,6 +34,20 @@ export default function GalaLeaderboardScreen({ navigation }: Props) {
             Mwisho wa kila mzunguko, vijana 10 bora wanasherehekewa kwenye Gala ya Kitaifa ya Muungano na Uzalendo —
             heshima ya kweli kwa wajasiri wa kidijitali.
           </Text>
+        </View>
+
+        <View style={styles.filterRow}>
+          {(['all', 'bara', 'visiwani'] as const).map((r) => (
+            <Pressable
+              key={r}
+              style={[styles.filterChip, regionFilter === r && styles.filterChipActive]}
+              onPress={() => setRegionFilter(r)}
+            >
+              <Text style={[styles.filterText, regionFilter === r && styles.filterTextActive]}>
+                {r === 'all' ? 'Wote' : r === 'bara' ? '🏔️ Bara' : '🌊 Visiwani'}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         {loading ? (
@@ -79,6 +96,11 @@ const styles = StyleSheet.create({
   heroBadge: { fontSize: 10, fontWeight: '800', color: colors.gold },
   heroTitle: { fontSize: 22, fontWeight: '800', color: colors.white, marginTop: 8 },
   heroSub: { fontSize: 12, color: '#CBD5E1', marginTop: 8, lineHeight: 18 },
+  filterRow: { flexDirection: 'row', gap: 8, marginBottom: spacing.md },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line },
+  filterChipActive: { backgroundColor: colors.green, borderColor: colors.green },
+  filterText: { fontSize: 12, fontWeight: '700', color: colors.textMuted },
+  filterTextActive: { color: colors.white },
   list: { gap: 8 },
   row: {
     flexDirection: 'row',

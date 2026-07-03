@@ -180,6 +180,20 @@ export interface Certificate {
   qr_data_url?: string;
 }
 
+export type ReportReasonId = 'abusive_language' | 'contact_request' | 'inappropriate_content' | 'other';
+
+export interface ReportedItem {
+  id: string;
+  mission_id: string;
+  mission_title: string;
+  reporter_name: string;
+  reported_name: string;
+  reason: ReportReasonId | string;
+  excerpt?: string;
+  reported_at_label: string;
+  status: 'pending' | 'resolved';
+}
+
 export interface MapConnection {
   id: string;
   from_region: string;
@@ -280,6 +294,7 @@ export const api = {
     college: string;
     home_area: string;
     region: 'bara' | 'visiwani';
+    accepted_terms: boolean;
   }) {
     return request<RegisterResponse>('/users/register', {
       method: 'POST',
@@ -365,8 +380,28 @@ export const api = {
     return request<TimelineEvent[]>('/timeline/events');
   },
 
-  getLeaderboard(limit = 10) {
-    return request<LeaderboardEntry[]>(`/leaderboard/youth?limit=${limit}`);
+  getLeaderboard(limit = 10, region?: 'bara' | 'visiwani') {
+    const regionQ = region ? `&region=${region}` : '';
+    return request<LeaderboardEntry[]>(`/leaderboard/youth?limit=${limit}${regionQ}`);
+  },
+
+  reportMission(missionId: string, reason: ReportReasonId, token: string) {
+    return request<ReportedItem>(
+      '/reports',
+      { method: 'POST', body: JSON.stringify({ mission_id: missionId, reason }) },
+      token,
+    );
+  },
+
+  getReportedContent(status: 'pending' | 'resolved') {
+    return request<ReportedItem[]>(`/admin/reports?status=${status}`);
+  },
+
+  resolveReport(reportId: string, action: 'dismiss' | 'warn' | 'suspend') {
+    return request<ReportedItem>(`/admin/reports/${reportId}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
   },
 
   submitChemshaBongo(score: number, total: number, token: string) {

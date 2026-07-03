@@ -35,6 +35,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const finishSession = (message?: string) => {
     setSuccessMessage(message ?? (mode === 'login' ? 'Umefanikiwa kuingia!' : 'Karibu, Mzalendo!'));
@@ -49,6 +50,10 @@ export default function OnboardingScreen({ navigation, route }: Props) {
       setError('Jaza jina, namba ya simu, na mkoa/eneo lako.');
       return;
     }
+    if (!acceptedTerms) {
+      setError('Lazima ukubali masharti ya uoanishaji na usalama.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -58,6 +63,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
         college: college.trim(),
         home_area: region.trim(),
         region: side,
+        accepted_terms: acceptedTerms,
       });
       applySession(res);
       finishSession(res.message);
@@ -176,6 +182,15 @@ export default function OnboardingScreen({ navigation, route }: Props) {
                     onPress={() => setSide('visiwani')}
                   />
                 </View>
+                <Pressable style={styles.consentRow} onPress={() => setAcceptedTerms((v) => !v)}>
+                  <View style={[styles.consentBox, acceptedTerms && styles.consentBoxChecked]}>
+                    {acceptedTerms && <Text style={styles.consentTick}>✓</Text>}
+                  </View>
+                  <Text style={styles.consentText}>
+                    Nakubali kuoanishwa na mzalendo mwenzangu, masharti ya matumizi, na kuwa maudhui yanaweza
+                    kukaguliwa kwa usalama (Consent-Based Publishing).
+                  </Text>
+                </Pressable>
               </>
             )}
           </View>
@@ -362,4 +377,18 @@ const styles = StyleSheet.create({
   welcomeBody: { color: colors.white, fontSize: 13, opacity: 0.92, marginTop: 2 },
   errorText: { color: colors.danger, fontSize: 13, marginTop: spacing.md },
   ctaRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 24, gap: 4 },
+  consentRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginTop: 4 },
+  consentBox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  consentBoxChecked: { backgroundColor: colors.green, borderColor: colors.green },
+  consentTick: { color: colors.white, fontSize: 12, fontWeight: '800' },
+  consentText: { flex: 1, fontSize: 12, color: colors.textMuted, lineHeight: 18 },
 });

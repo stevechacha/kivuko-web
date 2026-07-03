@@ -71,6 +71,24 @@ export default function CertificateScreen({ navigation }: Props) {
     }
   };
 
+  const shareCertificate = async () => {
+    if (!verifyUrl) return;
+    const text = `Nimepata Cheti cha Balozi wa Muungano 🇹🇿 — thibitisha hapa: ${verifyUrl}`;
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Cheti cha Balozi wa Muungano',
+          text,
+          url: verifyUrl,
+        });
+        return;
+      } catch {
+        // fall through to copy
+      }
+    }
+    copyVerifyLink();
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <CelebrationOverlay
@@ -139,6 +157,7 @@ export default function CertificateScreen({ navigation }: Props) {
                 variant="secondary"
                 onPress={copyVerifyLink}
               />
+              <Button label="Shiriki WhatsApp / Mitandao →" onPress={shareCertificate} />
               <Button
                 label="Angalia Ramani Hai ya Muungano →"
                 variant="ghost"

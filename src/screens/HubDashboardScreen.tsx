@@ -1,5 +1,5 @@
 // HubDashboardScreen — Main portal after registration (4 gateways from improvement designs)
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -35,6 +35,28 @@ export default function HubDashboardScreen({ navigation }: Props) {
   const { participant, missionId } = useSession();
   const points = participant?.patriotism_points ?? 0;
   const firstName = participant?.name?.split(' ')[0] ?? 'Mzalendo';
+  const [streakDays, setStreakDays] = useState(1);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof sessionStorage === 'undefined') return;
+    const today = new Date().toISOString().slice(0, 10);
+    const raw = sessionStorage.getItem('kivuko_streak');
+    let next = 1;
+    if (raw) {
+      try {
+        const { lastDate, days } = JSON.parse(raw) as { lastDate: string; days: number };
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yKey = yesterday.toISOString().slice(0, 10);
+        if (lastDate === today) next = days;
+        else if (lastDate === yKey) next = days + 1;
+      } catch {
+        next = 1;
+      }
+    }
+    sessionStorage.setItem('kivuko_streak', JSON.stringify({ lastDate: today, days: next }));
+    setStreakDays(next);
+  }, []);
 
   const portals: Portal[] = [
     {
@@ -108,6 +130,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
             <Text style={styles.pointsLabel}>Pointi za Uzalendo</Text>
             <Text style={styles.pointsValue}>{points.toLocaleString()} Pts</Text>
           </View>
+          {streakDays >= 2 && (
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakText}>🔥 Siku {streakDays} mfululizo — Endelea hivyo!</Text>
+            </View>
+          )}
         </View>
 
         <MissionJourneyTracker
@@ -209,6 +236,15 @@ const styles = StyleSheet.create({
   },
   pointsLabel: { fontSize: 12, color: colors.white, fontWeight: '600' },
   pointsValue: { fontSize: 14, color: colors.gold, fontWeight: '800' },
+  streakBadge: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(241,196,15,0.2)',
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  streakText: { fontSize: 11, fontWeight: '800', color: colors.gold },
   sectionLabel: {
     fontSize: 11,
     fontWeight: '800',

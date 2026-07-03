@@ -6,13 +6,14 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import Button from '../components/Button';
+import PeerSubmittedBanner from '../components/PeerSubmittedBanner';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VisionMission'>;
 
 export default function VisionMissionScreen({ navigation }: Props) {
-  const { participant, missionId: sessionMissionId, updateParticipant } = useSession();
+  const { participant, peer, updateParticipant } = useSession();
   const [vision, setVision] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -41,6 +42,8 @@ export default function VisionMissionScreen({ navigation }: Props) {
         <Text style={styles.sub}>
           Andika maono yako ya Tanzania imara, yenye umoja, na yenye maendeleo — pamoja na pacha wako kutoka upande wa pili wa Muungano.
         </Text>
+
+        {peer ? <PeerSubmittedBanner peerName={peer.name} /> : null}
 
         <TextInput
           style={styles.input}

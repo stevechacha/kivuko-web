@@ -6,6 +6,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import TopNav from '../components/TopNav';
 import Button from '../components/Button';
+import PeerSubmittedBanner from '../components/PeerSubmittedBanner';
 import { api } from '../api/client';
 import { useSession } from '../context/SessionContext';
 
@@ -18,7 +19,7 @@ const PROMPTS = [
 ];
 
 export default function CultureMissionScreen({ navigation }: Props) {
-  const { participant, updateParticipant } = useSession();
+  const { participant, peer, updateParticipant } = useSession();
   const [responses, setResponses] = useState<string[]>(['', '', '']);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -49,6 +50,8 @@ export default function CultureMissionScreen({ navigation }: Props) {
         <Text style={styles.sub}>
           Jibu maswali haya ili kumjulisha pacha wako utamaduni, mila, na maisha yako — hii ndiyo nguvu ya Muungano halisi.
         </Text>
+
+        {peer ? <PeerSubmittedBanner peerName={peer.name} /> : null}
 
         {PROMPTS.map((prompt, i) => (
           <View key={i} style={styles.block}>

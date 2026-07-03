@@ -1,4 +1,4 @@
-// AdminDashboardScreen — Live admin stats (improvement/admin.html concept)
+// AdminDashboardScreen — moderator panel with stats, flagged queue, stories, gala shortlist
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -7,24 +7,42 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme/colors';
 import Button from '../components/Button';
-import { api, type AdminDashboard } from '../api/client';
+import { api, type AdminDashboard, type LeaderboardEntry, type ReportedItem } from '../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AdminDashboard'>;
 
+type AdminTab = 'stats' | 'flagged' | 'stories' | 'gala';
+
+const MOCK_STORIES = [
+  { id: 's1', title: 'Kumbukumbu ya Muungano — Dodoma', author: 'Amina J.', status: 'Inasubiri' },
+  { id: 's2', title: 'Sauti ya Bibi kutoka Unguja', author: 'Khadija M.', status: 'Inasubiri' },
+];
+
 export default function AdminDashboardScreen({ navigation }: Props) {
+  const [tab, setTab] = useState<AdminTab>('stats');
   const [stats, setStats] = useState<AdminDashboard | null>(null);
+  const [pendingReports, setPendingReports] = useState<ReportedItem[]>([]);
+  const [galaShortlist, setGalaShortlist] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api
-      .getAdminDashboard()
-      .then(setStats)
+    Promise.all([
+      api.getAdminDashboard(),
+      api.getReportedContent('pending').catch(() => [] as ReportedItem[]),
+      api.getLeaderboard(10).catch(() => [] as LeaderboardEntry[]),
+    ])
+      .then(([dash, reports, leaders]) => {
+        setStats(dash);
+        setPendingReports(reports);
+        setGalaShortlist(leaders);
+      })
       .catch((e) => setError(e instanceof Error ? e.message : 'Imeshindwa kupakia dashibodi.'))
       .finally(() => setLoading(false));
   }, []);
@@ -39,41 +57,116 @@ export default function AdminDashboardScreen({ navigation }: Props) {
         </View>
       </View>
 
+      <View style={styles.tabRow}>
+        {(
+          [
+            ['stats', 'Takwimu'],
+            ['flagged', `Ripoti${pendingReports.length ? ` (${pendingReports.length})` : ''}`],
+            ['stories', 'Hadithi'],
+            ['gala', 'Gala Top 10'],
+          ] as const
+        ).map(([id, label]) => (
+          <Pressable
+            key={id}
+            style={[styles.tab, tab === id && styles.tabActive]}
+            onPress={() => setTab(id)}
+          >
+            <Text style={[styles.tabText, tab === id && styles.tabTextActive]}>{label}</Text>
+          </Pressable>
+        ))}
+      </View>
+
       <ScrollView contentContainerStyle={styles.scroll}>
         {loading ? (
           <ActivityIndicator color={colors.gold} size="large" style={{ marginTop: 40 }} />
         ) : error ? (
           <Text style={styles.error}>{error}</Text>
-        ) : stats ? (
+        ) : (
           <>
-            <Text style={styles.sectionTitle}>Takwimu za Moja kwa Moja</Text>
-            <View style={styles.statGrid}>
-              <StatCard label="Wanachama" value={stats.total_participants} />
-              <StatCard label="Jozi Hai" value={stats.active_matches} />
-              <StatCard label="Dhamira Zilizokamilika" value={stats.completed_missions} />
-              <StatCard label="Vyeti Vilivyotolewa" value={stats.certificates_issued} />
-              <StatCard label="Bara" value={stats.bara_participants} accent={colors.green} />
-              <StatCard label="Visiwani" value={stats.visiwani_participants} accent={colors.blue} />
-            </View>
-
-            <View style={styles.connectionsCard}>
-              <Text style={styles.connectionsTitle}>Miunganisho ya Hivi Karibuni</Text>
-              {stats.recent_connections.slice(0, 6).map((c) => (
-                <View key={c.id} style={styles.connectionRow}>
-                  <Text style={styles.connectionText}>
-                    {c.from_region} → {c.to_region}
-                  </Text>
+            {tab === 'stats' && stats && (
+              <>
+                <View style={styles.statGrid}>
+                  <StatCard label="Wanachama" value={stats.total_participants} />
+                  <StatCard label="Jozi Hai" value={stats.active_matches} />
+                  <StatCard label="Dhamira Zilizokamilika" value={stats.completed_missions} />
+                  <StatCard label="Vyeti" value={stats.certificates_issued} />
+                  <StatCard label="Bara" value={stats.bara_participants} accent={colors.green} />
+                  <StatCard label="Visiwani" value={stats.visiwani_participants} accent={colors.blue} />
                 </View>
-              ))}
-            </View>
+                <View style={styles.connectionsCard}>
+                  <Text style={styles.connectionsTitle}>Miunganisho ya Hivi Karibuni</Text>
+                  {stats.recent_connections.slice(0, 6).map((c) => (
+                    <View key={c.id} style={styles.connectionRow}>
+                      <Text style={styles.connectionText}>
+                        {c.from_region} → {c.to_region}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
 
-            <Text style={styles.hint}>
-              Django Admin (/admin/) inapatikana kwa usimamizi wa masomo, sauti za wazee, na roles.
-            </Text>
+            {tab === 'flagged' && (
+              <>
+                <Text style={styles.sectionHint}>
+                  Ripoti za mazungumzo zinazosubiri ukaguzi — kulingana na Sura ya 4 ya usalama.
+                </Text>
+                {pendingReports.length === 0 ? (
+                  <Text style={styles.empty}>Hakuna ripoti zinazosubiri kwa sasa.</Text>
+                ) : (
+                  pendingReports.slice(0, 5).map((r) => (
+                    <View key={r.id} style={styles.flagCard}>
+                      <Text style={styles.flagTitle}>{r.reported_name} · {r.mission_title}</Text>
+                      <Text style={styles.flagMeta}>{r.reported_at_label} · {r.reason}</Text>
+                      {r.excerpt ? <Text style={styles.flagExcerpt}>"{r.excerpt}"</Text> : null}
+                    </View>
+                  ))
+                )}
+                <View style={{ marginTop: spacing.md }}>
+                  <Button
+                    label="Fungua Foleni Kamili ya Ripoti →"
+                    onPress={() => navigation.navigate('ModeratorFlaggedContent')}
+                  />
+                </View>
+              </>
+            )}
+
+            {tab === 'stories' && (
+              <>
+                <Text style={styles.sectionHint}>Hadithi za mdomo zinazosubiri idhini (Consent-Based Publishing).</Text>
+                {MOCK_STORIES.map((s) => (
+                  <View key={s.id} style={styles.flagCard}>
+                    <Text style={styles.flagTitle}>{s.title}</Text>
+                    <Text style={styles.flagMeta}>{s.author} · {s.status}</Text>
+                    <View style={styles.storyActions}>
+                      <Text style={styles.storyAction}>✓ Idhinisha</Text>
+                      <Text style={styles.storyActionMuted}>✕ Kataa</Text>
+                    </View>
+                  </View>
+                ))}
+              </>
+            )}
+
+            {tab === 'gala' && (
+              <>
+                <Text style={styles.sectionHint}>Orodha fupi ya Gala ya Uzalendo — idhini ya msimamizi.</Text>
+                {galaShortlist.map((e) => (
+                  <View key={e.rank} style={styles.galaRow}>
+                    <Text style={styles.galaRank}>{e.rank}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.galaName}>{e.name}</Text>
+                      <Text style={styles.galaMeta}>{e.region_label} · {e.patriotism_points} pts</Text>
+                    </View>
+                    <Text style={styles.galaCheck}>☐</Text>
+                  </View>
+                ))}
+              </>
+            )}
           </>
-        ) : null}
+        )}
 
         <View style={{ marginTop: spacing.xl, alignItems: 'center', gap: 8 }}>
+          <Button label="Maudhui Yaliyoripotiwa" variant="secondary" onPress={() => navigation.navigate('ModeratorFlaggedContent')} />
           <Button label="Angalia Ramani Hai" variant="secondary" onPress={() => navigation.navigate('UnionMap')} />
           <Button label="Rudi Dashibodi" variant="ghost" onPress={() => navigation.navigate('HubDashboard')} />
         </View>
@@ -117,8 +210,13 @@ const styles = StyleSheet.create({
   },
   liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' },
   liveText: { fontSize: 10, color: '#FCA5A5', fontWeight: '800' },
+  tabRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, padding: spacing.md, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.line },
+  tab: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: '#F4F7F6' },
+  tabActive: { backgroundColor: colors.dark },
+  tabText: { fontSize: 11, fontWeight: '700', color: colors.textMuted },
+  tabTextActive: { color: colors.white },
   scroll: { padding: spacing.lg, paddingBottom: 60, maxWidth: 900, width: '100%', alignSelf: 'center' },
-  sectionTitle: { fontSize: 12, fontWeight: '800', color: colors.textMuted, textTransform: 'uppercase', marginBottom: spacing.md },
+  sectionHint: { fontSize: 12, color: colors.textMuted, marginBottom: spacing.md, lineHeight: 18 },
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statCard: {
     flexBasis: '30%',
@@ -141,12 +239,20 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   connectionsTitle: { fontSize: 14, fontWeight: '700', color: colors.dark, marginBottom: 12 },
-  connectionRow: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-  },
+  connectionRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line },
   connectionText: { fontSize: 13, color: colors.blueDeep, fontWeight: '600' },
-  hint: { fontSize: 11, color: colors.textMuted, marginTop: spacing.lg, fontStyle: 'italic' },
+  flagCard: { backgroundColor: colors.white, borderRadius: radius.md, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: colors.line },
+  flagTitle: { fontSize: 13, fontWeight: '700', color: colors.dark },
+  flagMeta: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  flagExcerpt: { fontSize: 12, color: colors.textMuted, fontStyle: 'italic', marginTop: 6 },
+  storyActions: { flexDirection: 'row', gap: 16, marginTop: 10 },
+  storyAction: { fontSize: 12, fontWeight: '700', color: colors.green },
+  storyActionMuted: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
+  galaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.white, padding: 12, borderRadius: radius.md, marginBottom: 6, borderWidth: 1, borderColor: colors.line },
+  galaRank: { fontSize: 16, fontWeight: '800', width: 24, textAlign: 'center' },
+  galaName: { fontSize: 13, fontWeight: '700', color: colors.dark },
+  galaMeta: { fontSize: 11, color: colors.textMuted },
+  galaCheck: { fontSize: 18, color: colors.gold },
+  empty: { fontSize: 13, color: colors.textMuted, textAlign: 'center', paddingVertical: 24 },
   error: { color: colors.danger, textAlign: 'center', marginTop: 20 },
 });

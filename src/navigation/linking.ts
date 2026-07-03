@@ -37,6 +37,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
       GalaLeaderboard: 'gala',
       Omnichannel: 'njia-zote',
       JudgeTour: 'onyesho',
+      ModeratorFlaggedContent: 'admin/ripoti',
     },
   },
 };
