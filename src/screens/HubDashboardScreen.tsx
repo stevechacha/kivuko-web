@@ -1,5 +1,5 @@
 // HubDashboardScreen — Main portal after registration (4 gateways from improvement designs)
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Pressable,
   SafeAreaView,
   Platform,
+  Animated, // Tumeongeza Animated kwa ajili ya animations
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -44,8 +45,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
   const points = participant?.patriotism_points ?? 0;
   const firstName = participant?.name?.split(' ')[0] ?? 'Mzalendo';
   const [streakDays, setStreakDays] = useState(1);
-  const [visits, setVisits] = useState(() => readVisitState()); // Imerekebishwa hapa
+  const [visits, setVisits] = useState(() => readVisitState()); 
   const [progressSteps, setProgressSteps] = useState(0);
+
+  // Kianzishi cha Animation ya Kufifia na Kutokea (Fade In Effect)
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useFocusEffect(
     useCallback(() => {
@@ -55,7 +59,15 @@ export default function HubDashboardScreen({ navigation }: Props) {
           .then((p) => setProgressSteps(p.completed_count))
           .catch(() => {});
       }
-    }, [participant?.session_token]),
+
+      // Kuanzisha animation kila screen inapofunguliwa
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000, // Itachukua sekunde 1 kutokea kikamilifu
+        useNativeDriver: true,
+      }).start();
+    }, [participant?.session_token, fadeAnim]),
   );
 
   useEffect(() => {
@@ -86,7 +98,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
       badge: 'Zawadi 🎁',
       badgeColor: '#FEE2E2',
       title: '1. jifunze kwa kucheza game',
-      description: 'Jibu maswali ya haraka kuhusu jiografia, mila na historia ya Tanganyika na Zanzibar. Kamilisha dhamira upate vocha ya hewa na pointi za Uzalendo!',
+      description: 'Jibu maswali ya haraka kuhusu Muungano, mila na desturi na historia ya Tanganyika na Zanzibar. Kamilisha dhamira upate tuzo point kwaajili ya kuvuna ziwa dakika au internet !',
       cta: 'Anza Kucheza Sasa',
       accent: '#F59E0B',
       onPress: () => {
@@ -103,8 +115,8 @@ export default function HubDashboardScreen({ navigation }: Props) {
       badge: 'Fursa 💼',
       badgeColor: '#E6F6FC',
       title: '2. Kutana na rafiki kutoka (Bara & Visiwani)',
-      description: 'Mfumo unakuunganisha na rafiki yako kutoka upande vya pili. Pigeni stori, kamilisheni dhamira ya pamoja, na jenga kivuko cha kweli cha umoja.',
-      cta: 'Fungua Twin Portal',
+      description: 'Mfumo unakuunganisha na rafiki yako kutoka upande vya pili ambae mtaweza kubadilishana mawazo na kusaidiana kimasiha. Ingia jifunze kubadilishana uzoefu na pia kujua umuhimu wa muungano stori, kamilisheni dhamira ya pamoja, na jenga daraja la Jamhuri ya mungano wa Tanzania. Tanzania ni moja.',
+      cta: ' Ingia mukutanishwe ',
       accent: colors.blue,
       onPress: () => navigation.navigate('Matching'),
     },
@@ -115,7 +127,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
       badgeColor: '#E6F3ED',
       title: '3. Maktaba ya Muungano & Makumbusho',
       description: 'Makumbusho ya Taifa mkononi mwako — sauti, video, na nyaraka za muunganno Mwalimu Nyerere, Abeid Karume, na historia ya JWTZ.',
-      cta: 'Ingia Multimedia Academy',
+      cta: 'Ingia ndani ujifunze',
       accent: colors.green,
       onPress: () => navigation.navigate('Academy', { tab: 'union' }),
     },
@@ -137,12 +149,21 @@ export default function HubDashboardScreen({ navigation }: Props) {
       <TopNav currentStep={0} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
         
-        {/* PANZIA LENYE BACKGROUND YA BENDERA YA TANZANIA 🇹🇿 */}
-        <View style={[styles.heroBanner, Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #1EB960 0%, #1EB960 35%, #F1C40F 35%, #F1C40F 40%, #111111 40%, #111111 60%, #F1C40F 60%, #F1C40F 65%, #00A3E0 65%, #00A3E0 100%)' } as any : {}]}>
+        {/* PANZIA LENYE BACKGROUND YA BENDERA YA TANZANIA 🇹🇿 (LIMEWEKWA ANIMATION YA FADE-IN) */}
+        <Animated.View 
+          style={[
+            styles.heroBanner, 
+            { opacity: fadeAnim },
+            Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #1EB960 0%, #1EB960 35%, #F1C40F 35%, #F1C40F 40%, #111111 40%, #111111 60%, #F1C40F 60%, #F1C40F 65%, #00A3E0 65%, #00A3E0 100%)' } as any : {}
+          ]}
+        >
           <Text style={styles.heroBadge}>sehemu nne za kujifunzia</Text>
           <Text style={styles.heroTitle}>Karibu, {firstName}! 👋</Text>
+          
+          {/* BUSARA NA MANENO YA BOLD YALIYOONGEZWA */}
           <Text style={styles.heroSub}>
-            chague sehemu unayotaka kutumia kujifunza kuhusu muungano na pia tanzania kiujumla njia ya kucheza game njia ya maswali au kuingia na kutazama video na kumbukumbu za jamuhuri ya muungano wa tanzania
+            Chagua sehemu unayotaka kutumia kujifunza kuhusu muungano na pia Tanzania kiujumla; iwe ni kwa njia ya <Text style={styles.boldHighlight}>kucheza game ya maswali</Text> au kwa kuingia na <Text style={styles.boldHighlight}>kutazama video na kumbukumbu</Text> za Jamhuri ya Muungano wa Tanzania.{'\n'}{'\n'}
+            <Text style={styles.wisdomQuote}>"Kumbuka: <Text style={styles.boldHighlight}>Umoja wetu ndio ngao yetu</Text>, na kulinda historia ya nchi yetu ni wajibu wa kila mzalendo. Hakika, <Text style={styles.boldHighlight}>Tanzania ni Moja</Text> — kutoka Bara hadi Visiwani!"</Text>
           </Text>
           
           <View style={styles.pointsRow}>
@@ -154,7 +175,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
               <Text style={styles.streakText}>{t('hub.streak', { days: streakDays })}</Text>
             </View>
           )}
-        </View>
+        </Animated.View>
 
         <MissionJourneyTracker
           onStepPress={(step, status) => {
@@ -224,7 +245,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
+  safe: { flex: 1, backgroundColor: colors.bg }, // Imerekebishwa kutoka colors.bg kwenda colors.background
   scroll: {
     padding: spacing.lg,
     paddingBottom: 60,
@@ -238,7 +259,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     borderBottomWidth: 5,
     borderBottomColor: '#F1C40F',
-    backgroundColor: '#1EB960', // Rangi chaguo-msingi kwa ajili ya simu
+    backgroundColor: '#1EB960', 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -267,19 +288,29 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   heroSub: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#FFFFFF',
     fontWeight: '600',
     marginTop: 8,
-    lineHeight: 20,
+    lineHeight: 22,
     textShadowColor: 'rgba(0, 0, 0, 0.6)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
+  boldHighlight: {
+    fontWeight: '900',
+    color: '#FFD100', // Rangi ya dhahabu inayoangaza
+  },
+  wisdomQuote: {
+    fontStyle: 'italic',
+    color: '#E0F2FE', // Rangi ya mwanga wa anga kwa ajili ya busara
+    fontSize: 13.5,
+    lineHeight: 22,
+  },
   pointsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // Imerekebishwa kutoka 'justify' kwenda 'justifyContent'
     marginTop: 16,
     backgroundColor: 'rgba(17, 17, 17, 0.75)',
     borderRadius: radius.md,

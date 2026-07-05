@@ -188,20 +188,29 @@ export default function LandingScreen({ navigation }: Props) {
               <BridgeIllustration width={Math.min(width - 48, 420)} height={340} />
             )}
 
-            {/* SEHEMU MPYA: PICHA ZA WAASISI WA MUUNGANO 🇹🇿 */}
+            {/* SEHEMU MPYA: PICHA ZA WAASISI WA JAMHURI YA MUUNGANO 🇹🇿 */}
             <View style={styles.foundersContainer}>
               <Text style={styles.foundersSectionTitle}>Waasisi wa Jamhuri ya Muungano</Text>
               <View style={styles.avatarStack}>
-                {/* Mwalimu Nyerere - Picha ya Kushoto */}
-                <Image 
-                  source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Julius_Nyerere_1977.jpg' }} 
-                  style={styles.founderAvatarLeft} 
-                />
-                {/* Abeid Karume - Picha ya Kulia */}
-                <Image 
-                  source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Abeid_Karume.jpg' }} 
-                  style={styles.founderAvatarRight} 
-                />
+                
+                {/* Mwalimu Nyerere - Box la Kushoto la Square */}
+                <View style={styles.founderSquareLeft}>
+                  <Image 
+                    source={{ uri: 'https://thejnlc.org/wp-content/uploads/2023/12/nyerere-more4.png' }} 
+                    style={styles.founderImageControlled} 
+                    resizeMode="cover"
+                  />
+                </View>
+                
+                {/* Sheikh Abeid Karume - Box la Kulia la Square */}
+                <View style={styles.founderSquareRight}>
+                  <Image 
+                    source={{ uri: 'https://www.vpo.go.tz/uploads/vp/1b00287c72391ac4c194b734a554a5d5.jpeg' }} 
+                    style={styles.founderImageControlled} 
+                    resizeMode="cover"
+                  />
+                </View>
+
               </View>
               <Text style={styles.foundersNames}>Mwl. J.K. Nyerere & Sheikh A.A. Karume</Text>
             </View>
@@ -309,7 +318,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  audioTitle: { fontSize: 13, fontWeight: '600', color: '#11221e' }, // Imerekebishwa kutoka #FFFFFF kuwa ya giza
+  audioTitle: { fontSize: 13, fontWeight: '600', color: '#11221e' },
   audioSub: { fontSize: 12, color: '#556260', marginTop: 2 },
   audioBars: { flexDirection: 'row', gap: 3, alignItems: 'flex-end', height: 16 },
   bar: { width: 3, height: 4, backgroundColor: '#FFD100', borderRadius: 2, opacity: 0.4 },
@@ -333,41 +342,47 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     textTransform: 'uppercase',
-    marginBottom: 12,
+    marginBottom: 16,
     letterSpacing: 0.5,
   },
-  avatarStack: {
-    flexDirection: 'row',
-    height: 90,
-    width: 150,
-    justifyContent: 'center',
+ avatarStack: {
+    flexDirection: 'row',     // Inaweka mabox pembeni kwa pembeni
+    height: 120,             // Urefu wa eneo la picha
+    width: '100%',           // Inachukua upana wote unaohitajika
+    justifyContent: 'center', // Inayaweka mabox katikati ya screen
     alignItems: 'center',
-    position: 'relative',
+    gap: 16,                 // HAPA: Hapa ndio umbali (space) kati ya box la kushoto na kulia!
   },
-  founderAvatarLeft: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  founderSquareLeft: {
+    width: 110,  
+    height: 110,
+    borderRadius: 12,
     borderWidth: 3,
     borderColor: '#056e54',
-    backgroundColor: '#000',
+    backgroundColor: '#d7eae5',
+    overflow: 'hidden',
   },
-  founderAvatarRight: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  founderSquareRight: {
+    width: 110,
+    height: 110,
+    borderRadius: 12,
     borderWidth: 3,
     borderColor: '#056e54',
-    backgroundColor: '#000',
-    position: 'absolute',
-    left: 65,
-    zIndex: 2,
+    backgroundColor: '#d7eae5',
+    overflow: 'hidden',
+    // position: 'absolute' IMEONDOLEWA - Ili lisibebe lingine
+    // left: 95 IMEONDOLEWA - Ili lisilalie lingine
+  
+  },
+  founderImageControlled: {
+    width: '100%',  // Imeongezwa ili picha zijae vizuri ndani ya box la square
+    height: '100%',
   },
   foundersNames: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    marginTop: 8,
+    marginTop: 12,
   },
 
   patrioticQuoteCard: {

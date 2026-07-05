@@ -14,7 +14,7 @@ function flatten(obj: StringTree, prefix = ''): Record<string, string> {
 
 const swTree = {
   common: {
-    logo: 'Kivuko la Muungano',
+    logo: 'DARAJA LA MUUNGANO',
     home: 'Rudi Nyumbani',
     back: 'Nyuma',
     dashboard: 'Dashibodi',
@@ -32,26 +32,26 @@ const swTree = {
     apiOffline: 'API haipatikani',
   },
   landing: {
-    eyebrow: 'Elimu ya Muungano Ubunifu — MVP Demo',
+    eyebrow: 'Elimu ya Muungano',
     h1Line1: 'Bara na Visiwani,',
     h1Accent: 'Kizazi Kimoja.',
     lead:
-      'Kivuko la Muungano Hub inaoanisha kijana mmoja Bara na kijana mmoja Visiwani, na kuwapeleka pamoja kwenye Dhamira za Pamoja kuhusu historia, utamaduni, na maono ya taifa — huku kila hatua ikijengeka kuwa uzoefu wa kweli, si somo la kukariri.',
+      'Daraja la Muungano Hub inaoanisha kijana mmoja Bara na kijana mmoja Visiwani, na kuwapeleka pamoja kwenye Dhamira za Pamoja kuhusu historia, utamaduni, na maono ya taifa — huku kila hatua ikijengeka kuwa uzoefu wa kweli, si somo la kukariri.',
     startJourney: 'Anza Safari →',
     login: 'Ingia →',
     viewMap: 'Angalia Ramani ya Muungano',
     voiceTitle: 'Sauti ya Umoja — {name}',
     voiceLoading: 'Inapakia maktaba ya sauti…',
     voiceSubEmpty: 'Maktaba ya sauti itapatikana baada ya kuunganisha na API',
-    footer: 'Kivuko la Muungano Hub — Onyesho la MVP · Elimu ya Muungano Ubunifu Challenge 2026',
+    footer: 'Kivuko la Muungano Hub — Onyesho  · Elimu ya Muungano Ubunifu Challenge 2026',
   },
   continueBanner: {
     title: 'Karibu tena, {name}!',
-    body: 'Kipindi chako kimehifadhiwa. Endelea safari yako ya Kivuko.',
+    body: 'Kipindi chako kimehifadhiwa. Endelea safari yako ya kuwa mzalendo na barozi wa muungano.',
     resumeMission: 'Endelea Dhamira →',
   },
   judgeBanner: {
-    badge: '🎬 ONYESHO LA WAAMUZI',
+    badge: '🎬 ONYESHO LA VIJANA WABUNIFU',
     title: 'Anza Safari ya Mwanzo hadi Mwisho',
     body:
       'Mwongozo wa hatua 9 kwa dakika 3 — na one-line pitch tayari kwa waamuzi. Imewekwa tayari kwa video ya mashindano.',
@@ -104,18 +104,18 @@ const swTree = {
     phRegion: 'mfano: Dodoma',
   },
   judgeTour: {
-    badge: '🎬 ONYESHO LA WAAMUZI',
+    badge: '🎬 ONYESHO LA vijana wabunifu',
     title: 'Safari ya Dakika 3 — Mwanzo hadi Mwisho',
     sub:
       'Fuata hatua hizi kwa mpangilio. Kila hatua inaonyesha muda wa video na inaunganisha moja kwa moja na skrini halisi ya mfumo.',
     progress: '{done}/{total} hatua zimekamilika',
     continue: '▶ Endelea: {step} →',
     completeTitle: '🏆 Onyesho Limekamilika!',
-    completeBody: 'Umeona nguzo nne za ushindi — wazee/redio, cheti cha CV, usalama wa kiotomatiki, na dashibodi ya washirika.',
+    completeBody: 'Umeona Sehemu nne za ushindi — wazee/redio, cheti , usalama wa kiotomatiki, na dashibodi ya washirika.',
     replay: 'Rudi Mwanzo →',
     pitchLabel: 'ONE-LINE PITCH (kwa waamuzi)',
     pitch:
-      '"Kivuko la Muungano Hub inaoanisha vijana wa Bara na Visiwani, inawapeleka kwenye Dhamira 5, inawapa cheti cha QR kinachothibitishwa, na inaonyesha umoja kwenye Ramani Hai — kupitia wavuti, WhatsApp, na USSD."',
+      '"Daraja la Muungano Hub inaoanisha vijana wa Bara na Visiwani, inawapeleka kwenye Dhamira 5, inawapa cheti cha QR kinachothibitishwa, na inaonyesha umoja kwenye Ramani Hai — kupitia wavuti, WhatsApp, na USSD."',
     s1Title: 'Usajili wa Mzalendo',
     s1Desc: 'Jisajili Bara au Visiwani — taarifa halisi kutoka API.',
     s2Title: 'Dashibodi ya Kitaifa',
@@ -134,8 +134,8 @@ const swTree = {
     s7Desc: 'Miunganiko ya dhahabu Bara–Visiwani + sauti za wazee.',
     s8Title: 'Gala, Historia, WhatsApp',
     s8Desc: 'Top 10 vijana, mstari wa historia, bot ya WhatsApp.',
-    s9Title: '🎙️ Wazee Top 10 — Redio',
-    s9Desc: 'Nguzo ya pili ya utambulisho — hadithi za wazee zilizoidhinishwa kwa redio ya taifa.',
+    s9Title: '🎙️Top 10 ya Wazee wanaochangia mwazo na historia ya muungano — Redioni',
+    s9Desc: 'sehemu ya  ya pili ya utambulisho — hadithi za wazee zilizoidhinishwa kwa redio ya taifa.',
     s10Title: '📜 Galeri ya Vyeti + PDF',
     s10Desc: 'Cheti cha QR kinachopakuliwa — tayari kwa CV na waajiri.',
     s11Title: '🏛️ Washirika: Thibitisha & Ufikiaji',
@@ -159,7 +159,7 @@ const swTree = {
     heroBadge: 'Lango Kuu la Kitaifa 🇹🇿',
     greeting: 'Karibu, {name}! 👋',
     sub:
-      'Mifumo minne, jukwaa moja la kidijitali. Jipime akili, vuna maokoto, ungana na pacha wako, na tembelea makumbusho ya kihistoria sasa hivi!',
+      'Mifumo minne, jukwaa moja la kidijitali. Jipime akili, vuna maokoto, ungana na rafiki yako, na tembelea makumbusho ya kihistoria sasa hivi!',
     points: 'Pointi za Uzalendo',
     streak: '🔥 Siku {days} mfululizo — Endelea hivyo!',
     inviteTitle: 'Alika Rafiki wa Muungano',
@@ -170,16 +170,16 @@ const swTree = {
     portal1Badge: 'Zawadi 🎁',
     portal1Title: '1. Chemsha Bongo ya Muungano',
     portal1Desc:
-      'Jibu maswali ya haraka kuhusu jiografia, mila na historia ya Tanganyika na Zanzibar. Kamilisha dhamira upate vocha ya hewa na pointi za Uzalendo!',
+      'Jibu maswali ya haraka kuhusu muungano, mila na historia ya Tanganyika na Zanzibar. Kamilisha dhamira upate vocha ya hewa na pointi za Uzalendo!',
     portal1CtaPlay: 'Anza Kucheza Sasa',
     portal1CtaResume: 'Endelea Dhamira →',
     portal2Badge: 'Fursa 💼',
-    portal2Title: '2. Kutana na Pacha (Bara & Visiwani)',
+    portal2Title: '2. Kutana na rafiki (Bara & Visiwani)',
     portal2Desc:
-      'Mfumo unakuunganisha na pacha wako kutoka upande wa pili. Pigeni stori, kamilisheni dhamira ya pamoja, na jenga kivuko cha kweli cha umoja.',
+      'Mfumo unakuunganisha na rafiki wako kutoka upande wa pili. Pigeni stori, kamilisheni dhamira ya pamoja, na jenga kivuko cha kweli cha umoja.',
     portal2Cta: 'Fungua Twin Portal',
     portal3Badge: 'Academy',
-    portal3Title: '3. Maktuba ya Muungano & Makumbusho',
+    portal3Title: '3. Maktaba ya Muungano & Makumbusho',
     portal3Desc:
       'Makumbusho ya Taifa mkononi mwako — sauti, video, na nyaraka za Mwalimu Nyerere, Abeid Karume, na historia ya JWTZ.',
     portal3Cta: 'Ingia Multimedia Academy',
