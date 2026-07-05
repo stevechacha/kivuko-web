@@ -17,7 +17,6 @@ import TopNav from '../components/TopNav';
 import Button from '../components/Button';
 import MissionJourneyTracker from '../components/MissionJourneyTracker';
 import InviteFriendCard from '../components/InviteFriendCard';
-import WinningPitchPillars from '../components/WinningPitchPillars';
 import AchievementBadges from '../components/AchievementBadges';
 import TwinPeerCard from '../components/TwinPeerCard';
 import { useSession } from '../context/SessionContext';
@@ -45,7 +44,7 @@ export default function HubDashboardScreen({ navigation }: Props) {
   const points = participant?.patriotism_points ?? 0;
   const firstName = participant?.name?.split(' ')[0] ?? 'Mzalendo';
   const [streakDays, setStreakDays] = useState(1);
-  const [visits, setVisits] = useState(readVisitState);
+  const [visits, setVisits] = useState(() => readVisitState()); // Imerekebishwa hapa
   const [progressSteps, setProgressSteps] = useState(0);
 
   useFocusEffect(
@@ -84,11 +83,11 @@ export default function HubDashboardScreen({ navigation }: Props) {
     {
       id: 'quiz',
       icon: '🎮',
-      badge: t('hub.portal1Badge'),
+      badge: 'Zawadi 🎁',
       badgeColor: '#FEE2E2',
-      title: t('hub.portal1Title'),
-      description: t('hub.portal1Desc'),
-      cta: missionId ? t('hub.portal1CtaResume') : t('hub.portal1CtaPlay'),
+      title: '1. jifunze kwa kucheza game',
+      description: 'Jibu maswali ya haraka kuhusu jiografia, mila na historia ya Tanganyika na Zanzibar. Kamilisha dhamira upate vocha ya hewa na pointi za Uzalendo!',
+      cta: 'Anza Kucheza Sasa',
       accent: '#F59E0B',
       onPress: () => {
         if (missionId) {
@@ -101,33 +100,33 @@ export default function HubDashboardScreen({ navigation }: Props) {
     {
       id: 'peer',
       icon: '🤝',
-      badge: t('hub.portal2Badge'),
+      badge: 'Fursa 💼',
       badgeColor: '#E6F6FC',
-      title: t('hub.portal2Title'),
-      description: t('hub.portal2Desc'),
-      cta: t('hub.portal2Cta'),
+      title: '2. Kutana na rafiki kutoka (Bara & Visiwani)',
+      description: 'Mfumo unakuunganisha na rafiki yako kutoka upande vya pili. Pigeni stori, kamilisheni dhamira ya pamoja, na jenga kivuko cha kweli cha umoja.',
+      cta: 'Fungua Twin Portal',
       accent: colors.blue,
       onPress: () => navigation.navigate('Matching'),
     },
     {
       id: 'academy',
       icon: '📚',
-      badge: t('hub.portal3Badge'),
+      badge: 'jifunze kwa kutzama',
       badgeColor: '#E6F3ED',
-      title: t('hub.portal3Title'),
-      description: t('hub.portal3Desc'),
-      cta: visits.academy ? t('hub.portal3CtaResume') : t('hub.portal3Cta'),
+      title: '3. Maktaba ya Muungano & Makumbusho',
+      description: 'Makumbusho ya Taifa mkononi mwako — sauti, video, na nyaraka za muunganno Mwalimu Nyerere, Abeid Karume, na historia ya JWTZ.',
+      cta: 'Ingia Multimedia Academy',
       accent: colors.green,
       onPress: () => navigation.navigate('Academy', { tab: 'union' }),
     },
     {
       id: 'patriot',
       icon: '🛡️',
-      badge: t('hub.portal4Badge'),
+      badge: 'historia 🛡️',
       badgeColor: '#FEE2E2',
-      title: t('hub.portal4Title'),
-      description: t('hub.portal4Desc'),
-      cta: visits.patriot ? t('hub.portal4CtaResume') : t('hub.portal4Cta'),
+      title: '4. Uzalendo na Historia ya Jeshi la wananchi',
+      description: 'Maktaba ya ndani ya Uzalendo, nembo za taifa, na historia ya Jeshi la Wananchi wa Tanzania tangu 1964.',
+      cta: 'Ingia Multimedia Academy',
       accent: '#4B5320',
       onPress: () => navigation.navigate('Academy', { tab: 'patriot' }),
     },
@@ -137,10 +136,15 @@ export default function HubDashboardScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <TopNav currentStep={0} showPoints />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.heroBanner}>
-          <Text style={styles.heroBadge}>{t('hub.heroBadge')}</Text>
-          <Text style={styles.heroTitle}>{t('hub.greeting', { name: firstName })}</Text>
-          <Text style={styles.heroSub}>{t('hub.sub')}</Text>
+        
+        {/* PANZIA LENYE BACKGROUND YA BENDERA YA TANZANIA 🇹🇿 */}
+        <View style={[styles.heroBanner, Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #1EB960 0%, #1EB960 35%, #F1C40F 35%, #F1C40F 40%, #111111 40%, #111111 60%, #F1C40F 60%, #F1C40F 65%, #00A3E0 65%, #00A3E0 100%)' } as any : {}]}>
+          <Text style={styles.heroBadge}>sehemu nne za kujifunzia</Text>
+          <Text style={styles.heroTitle}>Karibu, {firstName}! 👋</Text>
+          <Text style={styles.heroSub}>
+            chague sehemu unayotaka kutumia kujifunza kuhusu muungano na pia tanzania kiujumla njia ya kucheza game njia ya maswali au kuingia na kutazama video na kumbukumbu za jamuhuri ya muungano wa tanzania
+          </Text>
+          
           <View style={styles.pointsRow}>
             <Text style={styles.pointsLabel}>{t('hub.points')}</Text>
             <Text style={styles.pointsValue}>{points.toLocaleString()} {t('common.pts')}</Text>
@@ -166,8 +170,9 @@ export default function HubDashboardScreen({ navigation }: Props) {
         />
 
         <InviteFriendCard />
+        
         {peer && missionId ? <TwinPeerCard peer={peer} navigation={navigation} /> : null}
-        <WinningPitchPillars navigation={navigation} />
+        
         <AchievementBadges
           points={points}
           missionSteps={progressSteps}
@@ -197,96 +202,21 @@ export default function HubDashboardScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.quickGrid}>
-          <Button
-            label={t('hub.quickArchive')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('OralHistoryArchive')}
-          />
-          <Button
-            label={t('hub.quickRewards')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('MyRewards')}
-          />
-          <Button
-            label={t('hub.quickImpact')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('NationalImpact')}
-          />
-          <Button
-            label={t('hub.quickAiTutor')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('AiTutor')}
-          />
-          <Button
-            label={t('hub.quickTimeline')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('UnionTimeline')}
-          />
-          <Button
-            label={t('hub.quickGala')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('GalaLeaderboard')}
-          />
-          <Button
-            label={t('hub.quickCeremony')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('GalaCeremony')}
-          />
-          <Button
-            label={t('hub.quickGallery')}
-            variant="secondary"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('CertificateGallery')}
-          />
-          <Button
-            label={t('hub.quickElder')}
-            variant="ghost"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('ElderContribution')}
-          />
-          <Button
-            label={t('hub.quickPartner')}
-            variant="ghost"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('PartnerDashboard')}
-          />
-          <Button
-            label={t('hub.quickRadio')}
-            variant="ghost"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('RadioPartner')}
-          />
-          <Button
-            label={visits.omnichannel ? t('hub.quickOmnichannelResume') : t('hub.quickOmnichannel')}
-            variant="ghost"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('Omnichannel')}
-          />
-          <Button
-            label={t('hub.quickJudgeTour')}
-            variant="ghost"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('JudgeTour')}
-          />
-          <Button
-            label={t('hub.quickMap')}
-            variant="ghost"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('UnionMap')}
-          />
-          <Button
-            label={t('hub.quickAdmin')}
-            variant="ghost"
-            style={styles.quickBtn}
-            onPress={() => navigation.navigate('AdminDashboard')}
-          />
+          <Button label={t('hub.quickArchive')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('OralHistoryArchive')} />
+          <Button label={t('hub.quickRewards')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('MyRewards')} />
+          <Button label={t('hub.quickImpact')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('NationalImpact')} />
+          <Button label={t('hub.quickAiTutor')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('AiTutor')} />
+          <Button label={t('hub.quickTimeline')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('UnionTimeline')} />
+          <Button label={t('hub.quickGala')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('GalaLeaderboard')} />
+          <Button label={t('hub.quickCeremony')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('GalaCeremony')} />
+          <Button label={t('hub.quickGallery')} variant="secondary" style={styles.quickBtn} onPress={() => navigation.navigate('CertificateGallery')} />
+          <Button label={t('hub.quickElder')} variant="ghost" style={styles.quickBtn} onPress={() => navigation.navigate('ElderContribution')} />
+          <Button label={t('hub.quickPartner')} variant="ghost" style={styles.quickBtn} onPress={() => navigation.navigate('PartnerDashboard')} />
+          <Button label={t('hub.quickRadio')} variant="ghost" style={styles.quickBtn} onPress={() => navigation.navigate('RadioPartner')} />
+          <Button label={visits?.omnichannel ? t('hub.quickOmnichannelResume') : t('hub.quickOmnichannel')} variant="ghost" style={styles.quickBtn} onPress={() => navigation.navigate('Omnichannel')} />
+          <Button label={t('hub.quickJudgeTour')} variant="ghost" style={styles.quickBtn} onPress={() => navigation.navigate('JudgeTour')} />
+          <Button label={t('hub.quickMap')} variant="ghost" style={styles.quickBtn} onPress={() => navigation.navigate('UnionMap')} />
+          <Button label={t('hub.quickAdmin')} variant="ghost" style={styles.quickBtn} onPress={() => navigation.navigate('AdminDashboard')} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -303,56 +233,69 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   heroBanner: {
-    backgroundColor: colors.dark,
     borderRadius: radius.lg,
     padding: spacing.lg,
-    borderBottomWidth: 4,
-    borderBottomColor: colors.gold,
     marginBottom: spacing.lg,
+    borderBottomWidth: 5,
+    borderBottomColor: '#F1C40F',
+    backgroundColor: '#1EB960', // Rangi chaguo-msingi kwa ajili ya simu
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
   },
   heroBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.gold,
-    color: colors.dark,
+    backgroundColor: '#111111',
+    color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '800',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: radius.pill,
     overflow: 'hidden',
+    textTransform: 'uppercase',
   },
   heroTitle: {
     fontSize: Platform.OS === 'web' ? 32 : 24,
-    fontWeight: '800',
-    color: colors.white,
-    marginTop: 10,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    marginTop: 12,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
   },
   heroSub: {
     fontSize: 13,
-    color: '#CBD5E1',
+    color: '#FFFFFF',
+    fontWeight: '600',
     marginTop: 8,
     lineHeight: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   pointsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 16,
-    backgroundColor: 'rgba(17,122,101,0.35)',
+    backgroundColor: 'rgba(17, 17, 17, 0.75)',
     borderRadius: radius.md,
     padding: 12,
   },
-  pointsLabel: { fontSize: 12, color: colors.white, fontWeight: '600' },
-  pointsValue: { fontSize: 14, color: colors.gold, fontWeight: '800' },
+  pointsLabel: { fontSize: 12, color: '#FFFFFF', fontWeight: '600' },
+  pointsValue: { fontSize: 14, color: '#F1C40F', fontWeight: '800' },
   streakBadge: {
     marginTop: 10,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(241,196,15,0.2)',
+    backgroundColor: 'rgba(17, 17, 17, 0.8)',
     borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  streakText: { fontSize: 11, fontWeight: '800', color: colors.gold },
+  streakText: { fontSize: 11, fontWeight: '800', color: '#F1C40F' },
   sectionLabel: {
     fontSize: 11,
     fontWeight: '800',
@@ -361,11 +304,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginBottom: spacing.md,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 14,
-  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
   portalCard: {
     flexBasis: Platform.OS === 'web' ? '48%' : '100%',
     flexGrow: 1,
@@ -377,32 +316,13 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   portalHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  portalIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  portalIcon: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   portalBadge: { borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start' },
   portalBadgeText: { fontSize: 9, fontWeight: '800', color: colors.dark },
   portalTitle: { fontSize: 14, fontWeight: '800', color: colors.dark, marginBottom: 6 },
   portalDesc: { fontSize: 12, color: colors.textMuted, lineHeight: 18, marginBottom: 14 },
   portalCta: { borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   portalCtaText: { color: colors.white, fontSize: 12, fontWeight: '700' },
-  quickGrid: {
-    marginTop: spacing.xl,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'center',
-    width: '100%',
-  },
-  quickBtn: {
-    width: Platform.OS === 'web' ? '48%' : '100%',
-    maxWidth: 360,
-    flexGrow: 1,
-    marginRight: 0,
-    marginBottom: 0,
-  },
+  quickGrid: { marginTop: spacing.xl, flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', width: '100%' },
+  quickBtn: { width: Platform.OS === 'web' ? '48%' : '100%', maxWidth: 360, flexGrow: 1, marginRight: 0, marginBottom: 0 },
 });

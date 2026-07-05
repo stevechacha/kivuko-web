@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   Animated,
   Easing,
+  Image,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -45,7 +46,7 @@ export default function LandingScreen({ navigation }: Props) {
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
   const [impact, setImpact] = useState<LiveImpact | null>(null);
   const { width } = useWindowDimensions();
-  const isWide = width >= 1024; // Imeongezwa kulingana na muundo wa Dashboard pana
+  const isWide = width >= 1024;
 
   const flagAnimation = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -103,7 +104,6 @@ export default function LandingScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* TEEKA BANNER JUU KABISA YA SCREEN */}
       <View style={styles.topAlertBanner}>
         <Text style={styles.topAlertText}>
           LENGO KUU LA MFUMO HUU NI <Text style={styles.highlightText}>KUJIFUNZA UMUHIMU NA HISTORIA YA MUUNGANO</Text> — KARIBU EWE MTANZANIA WA BARA NA VISIWANI ILI TUJENGE MUUNGANO ULIO BORA.
@@ -115,7 +115,7 @@ export default function LandingScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Animated.View style={[styles.heroGrid, isWide && styles.heroGridWide, { opacity: fadeAnim }]}>
           
-          {/* UPANDE WA KUSHOTO: MAANDISHI, FOMU NA NYINGINEZO */}
+          {/* UPANDE WA KUSHOTO */}
           <View style={[styles.heroCopy, isWide && { flex: 1.1 }]}>
             <Text style={styles.eyebrow}>ELIMU YA MUUNGANO BARA NA VISIWANI </Text>
             
@@ -127,7 +127,6 @@ export default function LandingScreen({ navigation }: Props) {
             <MinistryBrandingBanner />
             <PwaInstallBanner />
             
-            {/* SEHEMU YA CTA (BUTTONS) */}
             <View style={styles.ctaRow}>
               {participant ? (
                 <Button label={t('common.openDashboard')} onPress={() => navigation.navigate('HubDashboard')} />
@@ -153,7 +152,6 @@ export default function LandingScreen({ navigation }: Props) {
             <WinningPitchPillars navigation={navigation} />
             <JudgeDemoBanner navigation={navigation} />
             
-            {/* WIDGET YA AUDIO CHINI YA FOMU */}
             <Pressable
               style={styles.audioWidget}
               onPress={toggleAudio}
@@ -182,13 +180,31 @@ export default function LandingScreen({ navigation }: Props) {
             </Pressable>
           </View>
           
-          {/* UPANDE WA KULIA: PANELI YA USALENDO NA UJUMBE WA CHINI */}
+          {/* UPANDE WA KULIA: PANELI, WAASISI, NA UJUMBE */}
           <View style={[styles.bridgeWrap, isWide && { flex: 0.9 }]}>
             {isWide ? (
               <PatrioticHeroPanel />
             ) : (
               <BridgeIllustration width={Math.min(width - 48, 420)} height={340} />
             )}
+
+            {/* SEHEMU MPYA: PICHA ZA WAASISI WA MUUNGANO 🇹🇿 */}
+            <View style={styles.foundersContainer}>
+              <Text style={styles.foundersSectionTitle}>Waasisi wa Jamhuri ya Muungano</Text>
+              <View style={styles.avatarStack}>
+                {/* Mwalimu Nyerere - Picha ya Kushoto */}
+                <Image 
+                  source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Julius_Nyerere_1977.jpg' }} 
+                  style={styles.founderAvatarLeft} 
+                />
+                {/* Abeid Karume - Picha ya Kulia */}
+                <Image 
+                  source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Abeid_Karume.jpg' }} 
+                  style={styles.founderAvatarRight} 
+                />
+              </View>
+              <Text style={styles.foundersNames}>Mwl. J.K. Nyerere & Sheikh A.A. Karume</Text>
+            </View>
 
             {/* SEHEMU YA UJUMBE MKUU WA CHINI KUTOKA KWENYE PICHA */}
             <View style={styles.patrioticQuoteCard}>
@@ -222,10 +238,10 @@ export default function LandingScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#056e54' }, // Rangi ya giza ya asili (kutoka kwenye picha)
+  safe: { flex: 1, backgroundColor: '#056e54' },
   
   topAlertBanner: {
-    backgroundColor: '#c19e16', // Rangi ya Njano/Dhahabu ya Muungano
+    backgroundColor: '#c19e16',
     paddingVertical: 8,
     paddingHorizontal: 16,
     width: '100%',
@@ -258,7 +274,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     letterSpacing: 1,
     fontWeight: '700',
-    color: '#FFD100', // Rangi ya njano angavu
+    color: '#FFD100',
     marginTop: 10,
   },
   h1: {
@@ -268,7 +284,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: Platform.OS === 'web' ? 'system-ui, sans-serif' : undefined,
   },
-  accent: { color: '#FFD100' }, // Rangi ya herufi za msisitizo
+  accent: { color: '#FFD100' },
   ctaRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 20, gap: 8 },
   
   audioWidget: {
@@ -293,22 +309,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  audioTitle: { fontSize: 13, fontWeight: '600', color: '#FFFFFF' },
-  audioSub: { fontSize: 12, color: '#8b9492', marginTop: 2 },
+  audioTitle: { fontSize: 13, fontWeight: '600', color: '#11221e' }, // Imerekebishwa kutoka #FFFFFF kuwa ya giza
+  audioSub: { fontSize: 12, color: '#556260', marginTop: 2 },
   audioBars: { flexDirection: 'row', gap: 3, alignItems: 'flex-end', height: 16 },
   bar: { width: 3, height: 4, backgroundColor: '#FFD100', borderRadius: 2, opacity: 0.4 },
   barActive: { height: 14, opacity: 1 },
   
   bridgeWrap: { alignItems: 'center', width: '100%', marginTop: 20 },
   
-  // PANELI YA CHINI YA USALENDO (QUOTE CARD)
+  foundersContainer: {
+    backgroundColor: 'rgba(17, 34, 30, 0.6)',
+    borderRadius: 16,
+    padding: 16,
+    width: '100%',
+    maxWidth: 500,
+    alignItems: 'center',
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 209, 0, 0.2)',
+  },
+  foundersSectionTitle: {
+    color: '#FFD100',
+    fontSize: 13,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  avatarStack: {
+    flexDirection: 'row',
+    height: 90,
+    width: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  founderAvatarLeft: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#056e54',
+    backgroundColor: '#000',
+  },
+  founderAvatarRight: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#056e54',
+    backgroundColor: '#000',
+    position: 'absolute',
+    left: 65,
+    zIndex: 2,
+  },
+  foundersNames: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 8,
+  },
+
   patrioticQuoteCard: {
     backgroundColor: 'rgba(11, 19, 17, 0.85)',
     borderWidth: 1,
     borderColor: '#1F3430',
     borderRadius: 12,
     padding: 24,
-    marginTop: 24,
+    marginTop: 20,
     width: '100%',
     maxWidth: 500,
     alignItems: 'center',
@@ -349,7 +417,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   redHighlight: {
-    color: '#FF3B30', // Rangi nyekundu ya neno "Udini"
+    color: '#FF3B30',
     fontWeight: '800',
   },
 
